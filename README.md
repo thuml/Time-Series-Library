@@ -84,6 +84,7 @@ If you have any questions or suggestions, feel free to contact:
 
 - Haixu Wu (whx20@mails.tsinghua.edu.cn)
 - Tengge Hu (htg21@mails.tsinghua.edu.cn)
+- Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
 
 or describe it in Issues.
 
