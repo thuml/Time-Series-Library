@@ -3,6 +3,7 @@ import torch.nn as nn
 from layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer
 from layers.SelfAttention_Family import DSAttention, AttentionLayer
 from layers.Embed import DataEmbedding
+import torch.nn.functional as F
 
 
 class Projector(nn.Module):
@@ -98,6 +99,10 @@ class Model(nn.Module):
             self.projection = nn.Linear(configs.d_model, configs.c_out, bias=True)
         if self.task_name == 'anomaly_detection':
             self.projection = nn.Linear(configs.d_model, configs.c_out, bias=True)
+        if self.task_name == 'classification':
+            self.act = F.gelu
+            self.dropout = nn.Dropout(configs.dropout)
+            self.projection = nn.Linear(configs.d_model * configs.seq_len, configs.num_class)
 
         self.tau_learner = Projector(enc_in=configs.enc_in, seq_len=configs.seq_len, hidden_dims=configs.p_hidden_dims,
                                      hidden_layers=configs.p_hidden_layers, output_dim=1)
@@ -161,13 +166,35 @@ class Model(nn.Module):
 
         tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
         delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
-
+        # embedding
         enc_out = self.enc_embedding(x_enc, None)
         enc_out, attns = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
 
         dec_out = self.projection(enc_out)
         dec_out = dec_out * std_enc + mean_enc
         return dec_out
+
+    def classification(self, x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask, dec_self_mask, dec_enc_mask):
+        x_raw = x_enc.clone().detach()
+
+        # Normalization
+        mean_enc = x_enc.mean(1, keepdim=True).detach()  # B x 1 x E
+        std_enc = torch.sqrt(
+            torch.var(x_enc - mean_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
+
+        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
+        delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
+        # embedding
+        enc_out = self.enc_embedding(x_enc, None)
+        enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask, tau=tau, delta=delta)
+
+        # Output
+        output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
+        output = self.dropout(output)
+        output = output * x_mark_enc.unsqueeze(-1)  # zero-out padding embeddings
+        output = output.reshape(output.shape[0], -1)  # (batch_size, seq_length * d_model)
+        output = self.projection(output)  # (batch_size, num_classes)
+        return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None,
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
@@ -182,5 +209,9 @@ class Model(nn.Module):
         if self.task_name == 'anomaly_detection':
             dec_out = self.anomaly_detection(x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask, dec_self_mask,
                                              dec_enc_mask)
+            return dec_out  # [B, L, D]
+        if self.task_name == 'classification':
+            dec_out = self.classification(x_enc, x_mark_enc, x_dec, x_mark_dec, enc_self_mask, dec_self_mask,
+                                          dec_enc_mask)
             return dec_out  # [B, L, D]
         return None
