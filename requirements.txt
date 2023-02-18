@@ -7,6 +7,6 @@ requests==2.27.1
 scikit_learn==1.2.1
 scipy==1.8.0
 sktime==0.4.1
-sympy==1.11.1
-torch==1.11.0
+sympy==1.10.0
+torch==1.8.0
 tqdm==4.64.0

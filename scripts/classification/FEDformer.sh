@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=5
 
-model_name=Fedformer
+model_name=FEDformer
 
 python -u run.py \
   --task_name classification \

@@ -13,7 +13,7 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method='random'):
     'random' means sampling randomly;
     'else' means sampling the lowest modes;
     """
-    modes = min(modes, seq_len//2)
+    modes = min(modes, seq_len // 2)
     if mode_select_method == 'random':
         index = list(range(0, seq_len // 2))
         np.random.shuffle(index)
@@ -97,7 +97,7 @@ class FourierCrossAttention(nn.Module):
         xq = q.permute(0, 2, 3, 1)  # size = [B, H, E, L]
         xk = k.permute(0, 2, 3, 1)
         xv = v.permute(0, 2, 3, 1)
-        
+
         # Compute Fourier coefficients
         xq_ft_ = torch.zeros(B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat)
         xq_ft = torch.fft.rfft(xq, dim=-1)
@@ -131,7 +131,3 @@ class FourierCrossAttention(nn.Module):
         # Return to time domain
         out = torch.fft.irfft(out_ft / self.in_channels / self.out_channels, n=xq.size(-1))
         return (out, None)
-    
-
-
-

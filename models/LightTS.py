@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pdb
 
+
 class IEBlock(nn.Module):
     def __init__(self, input_dim, hid_dim, output_dim, num_node, c_dim=None):
         super(IEBlock, self).__init__()
@@ -31,7 +32,6 @@ class IEBlock(nn.Module):
 
         self.output_proj = nn.Linear(self.hid_dim // 4, self.output_dim)
 
-
     def forward(self, x):
         x = self.spatial_proj(x.permute(0, 2, 1))
         x = x.permute(0, 2, 1) + self.channel_proj(x.permute(0, 2, 1))
@@ -44,25 +44,22 @@ class IEBlock(nn.Module):
 
 class Model(nn.Module):
     def __init__(self, configs, chunk_size=24, c_dim=40):
-        # lookback, lookahead, hid_dim, num_node, dropout=0, chunk_size=40, c_dim=40
         super(Model, self).__init__()
 
         self.lookback = configs.seq_len
         self.task_name = configs.task_name
-        if self.task_name == 'classification' or self.task_name == 'anomaly_detection'\
-            or self.task_name == 'imputation':   
+        if self.task_name == 'classification' or self.task_name == 'anomaly_detection' \
+                or self.task_name == 'imputation':
             self.lookahead = configs.seq_len
         else:
             self.lookahead = configs.pred_len
-        
-        if configs.data == 'm4':
-            self.chunk_size = configs.pred_len
-        elif configs.task_name=='classification' or configs.task_name=='anomaly_detection':
-            self.chunk_size = configs.seq_len
+
+        if configs.task_name == 'long_term_forecast' or configs.task_name == 'short_term_forecast':
+            self.chunk_size = min(configs.pred_len, configs.seq_len, chunk_size)
         else:
-            self.chunk_size = chunk_size
-        
-        assert(self.lookback % self.chunk_size == 0)
+            self.chunk_size = min(configs.seq_len, chunk_size)
+
+        assert (self.lookback % self.chunk_size == 0)
         self.num_chunks = self.lookback // self.chunk_size
 
         self.hid_dim = configs.d_model
@@ -102,11 +99,6 @@ class Model(nn.Module):
             c_dim=self.c_dim
         )
 
-        # self.ar = nn.Sequential(
-        #     nn.Linear(self.lookback, self.hid_dim //4),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(self.hid_dim // 4, self.lookahead)
-        # )
         self.ar = nn.Linear(self.lookback, self.lookahead)
 
     def encoder(self, x):
@@ -121,7 +113,7 @@ class Model(nn.Module):
         x1 = x1.reshape(-1, self.chunk_size, self.num_chunks)
         x1 = self.layer_1(x1)
         x1 = self.chunk_proj_1(x1).squeeze(dim=-1)
-        
+
         # interval sampling
         x2 = x.reshape(B, self.chunk_size, self.num_chunks, N)
         x2 = x2.permute(0, 3, 1, 2)
@@ -141,13 +133,13 @@ class Model(nn.Module):
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         return self.encoder(x_enc)
-    
+
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
         return self.encoder(x_enc)
-    
+
     def anomaly_detection(self, x_enc):
         return self.encoder(x_enc)
-    
+
     def classification(self, x_enc, x_mark_enc):
         enc_out = self.encoder(x_enc)
 

@@ -1,21 +1,8 @@
 import torch
 import torch.nn as nn
 import pdb
-from layers.ETS_encoder import EncoderLayer, Encoder
-from layers.ETS_decoder import DecoderLayer, Decoder
-
-
-class ETSEmbedding(nn.Module):
-    def __init__(self, c_in, d_model, dropout=0.1):
-        super().__init__()
-        self.conv = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                              kernel_size=3, padding=2, bias=False)
-        self.dropout = nn.Dropout(p=dropout)
-        nn.init.kaiming_normal_(self.conv.weight)
-
-    def forward(self, x,):
-        x = self.conv(x.permute(0,2,1))[..., :-2]
-        return self.dropout(x.transpose(1,2))
+from layers.Embed import DataEmbedding
+from layers.ETSformer_EncDec import EncoderLayer, Encoder, DecoderLayer, Decoder
 
 
 class Transform:
@@ -46,19 +33,19 @@ class Model(nn.Module):
             self.pred_len = configs.seq_len
         else:
             self.pred_len = configs.pred_len
-        
+
         if self.task_name == 'classification':
             self.c_out = configs.enc_in
         else:
             self.c_out = configs.c_out
-        
 
         self.configs = configs
 
         assert configs.e_layers == configs.d_layers, "Encoder and decoder layers must be equal"
 
         # Embedding
-        self.enc_embedding = ETSEmbedding(configs.enc_in, configs.d_model, dropout=configs.dropout)
+        self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
+                                           configs.dropout)
 
         # Encoder
         self.encoder = Encoder(
@@ -71,7 +58,6 @@ class Model(nn.Module):
                 ) for _ in range(configs.e_layers)
             ]
         )
-
         # Decoder
         self.decoder = Decoder(
             [
@@ -81,7 +67,6 @@ class Model(nn.Module):
                 ) for _ in range(configs.d_layers)
             ],
         )
-
         self.transform = Transform(sigma=0.2)
 
         if self.task_name == 'classification':
@@ -89,39 +74,38 @@ class Model(nn.Module):
             self.dropout = nn.Dropout(configs.dropout)
             self.projection = nn.Linear(configs.d_model * configs.seq_len, configs.num_class)
 
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
-                enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         with torch.no_grad():
             if self.training:
                 x_enc = self.transform.transform(x_enc)
-        res = self.enc_embedding(x_enc)
-        level, growths, seasons = self.encoder(res, x_enc, attn_mask=enc_self_mask)
+        res = self.enc_embedding(x_enc, x_mark_enc)
+        level, growths, seasons = self.encoder(res, x_enc, attn_mask=None)
 
         growth, season = self.decoder(growths, seasons)
         preds = level[:, -1:] + growth + season
         return preds
 
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
-        res = self.enc_embedding(x_enc)
+        res = self.enc_embedding(x_enc, x_mark_enc)
         level, growths, seasons = self.encoder(res, x_enc, attn_mask=None)
         growth, season = self.decoder(growths, seasons)
         preds = level[:, -1:] + growth + season
         return preds
 
     def anomaly_detection(self, x_enc):
-        res = self.enc_embedding(x_enc)
+        res = self.enc_embedding(x_enc, None)
         level, growths, seasons = self.encoder(res, x_enc, attn_mask=None)
         growth, season = self.decoder(growths, seasons)
         preds = level[:, -1:] + growth + season
         return preds
 
     def classification(self, x_enc, x_mark_enc):
-        res = self.enc_embedding(x_enc)
+        res = self.enc_embedding(x_enc, None)
         _, growths, seasons = self.encoder(res, x_enc, attn_mask=None)
 
-        growths = torch.sum(torch.stack(growths,0),0)[:, :self.seq_len, :]
-        seasons = torch.sum(torch.stack(seasons,0),0)[:, :self.seq_len, :]
-        
+        growths = torch.sum(torch.stack(growths, 0), 0)[:, :self.seq_len, :]
+        seasons = torch.sum(torch.stack(seasons, 0), 0)[:, :self.seq_len, :]
+
         enc_out = growths + seasons
         output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
         output = self.dropout(output)

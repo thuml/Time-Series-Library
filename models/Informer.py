@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from utils.masking import TriangularCausalMask, ProbMask
 from layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer, ConvLayer
 from layers.SelfAttention_Family import FullAttention, ProbAttention, AttentionLayer
-from layers.Embed import DataEmbedding, TokenEmbedding
+from layers.Embed import DataEmbedding
 import numpy as np
 import pdb
 
@@ -13,6 +13,7 @@ class Model(nn.Module):
     """
     Informer with Propspare attention in O(LlogL) complexity
     """
+
     def __init__(self, configs):
         super(Model, self).__init__()
         self.pred_len = configs.pred_len
@@ -22,13 +23,9 @@ class Model(nn.Module):
         self.task_name = configs.task_name
 
         # Embedding
-        if self.configs.data == 'm4':
-            self.enc_embedding = TokenEmbedding(configs.enc_in, configs.d_model)
-            self.dec_embedding = TokenEmbedding(configs.dec_in, configs.d_model)
-        else:
-            self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
-                                                      configs.dropout)
-            self.dec_embedding = DataEmbedding(configs.dec_in, configs.d_model, configs.embed, configs.freq,
+        self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
+                                           configs.dropout)
+        self.dec_embedding = DataEmbedding(configs.dec_in, configs.d_model, configs.embed, configs.freq,
                                            configs.dropout)
 
         # Encoder
@@ -72,7 +69,6 @@ class Model(nn.Module):
             norm_layer=torch.nn.LayerNorm(configs.d_model),
             projection=nn.Linear(configs.d_model, configs.c_out, bias=True)
         )
-
         if self.task_name == 'imputation':
             self.projection = nn.Linear(configs.d_model, configs.c_out, bias=True)
         if self.task_name == 'anomaly_detection':
@@ -82,8 +78,8 @@ class Model(nn.Module):
             self.dropout = nn.Dropout(configs.dropout)
             self.projection = nn.Linear(configs.d_model * configs.seq_len, configs.num_class)
 
-    def long_forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
-                enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
+                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
 
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         dec_out = self.dec_embedding(x_dec, x_mark_dec)
@@ -93,17 +89,6 @@ class Model(nn.Module):
 
         return dec_out  # [B, L, D]
 
-    def short_forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
-                enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
-
-        enc_out = self.enc_embedding(x_enc) # [B,T,C]
-        dec_out = self.dec_embedding(x_dec)
-        enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
-
-        dec_out = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask)
-
-        return dec_out  # [B, L, D]
-    
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
         # enc
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
@@ -111,7 +96,7 @@ class Model(nn.Module):
         # final
         dec_out = self.projection(enc_out)
         return dec_out
-    
+
     def anomaly_detection(self, x_enc):
         # enc
         enc_out = self.enc_embedding(x_enc, None)
@@ -134,11 +119,8 @@ class Model(nn.Module):
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
-        if self.task_name == 'long_term_forecast':
-            dec_out = self.long_forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
-            return dec_out[:, -self.pred_len:, :]  # [B, L, D]
-        if self.task_name == 'short_term_forecast':
-            dec_out = self.short_forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
+        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
+            dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]
         if self.task_name == 'imputation':
             dec_out = self.imputation(x_enc, x_mark_enc, x_dec, x_mark_dec, mask)
