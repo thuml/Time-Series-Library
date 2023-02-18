@@ -6,9 +6,6 @@ from torch import Tensor
 from typing import List, Tuple
 import math
 from functools import partial
-from torch import nn, einsum, diagonal
-from math import log2, ceil
-import pdb
 from sympy import Poly, legendre, Symbol, chebyshevt
 from scipy.special import eval_legendre
 
@@ -97,8 +94,6 @@ def get_phi_psi(k, base):
         kUse = 2 * k
         roots = Poly(chebyshevt(kUse, 2 * x - 1)).all_roots()
         x_m = np.array([rt.evalf(20) for rt in roots]).astype(np.float64)
-        # x_m[x_m==0.5] = 0.5 + 1e-8 # add small noise to avoid the case of 0.5 belonging to both phi(2x) and phi(2x-1)
-        # not needed for our purpose here, we use even k always to avoid
         wm = np.pi / kUse / 2
 
         psi1_coeff = np.zeros((k, k))
@@ -206,7 +201,6 @@ class MultiWaveletTransform(nn.Module):
     def __init__(self, ich=1, k=8, alpha=16, c=128,
                  nCZ=1, L=0, base='legendre', attention_dropout=0.1):
         super(MultiWaveletTransform, self).__init__()
-        print('base', base)
         self.k = k
         self.c = c
         self.L = L
@@ -252,8 +246,6 @@ class MultiWaveletCross(nn.Module):
                  initializer=None, activation='tanh',
                  **kwargs):
         super(MultiWaveletCross, self).__init__()
-        print('base', base)
-
         self.c = c
         self.k = k
         self.L = L
@@ -342,7 +334,6 @@ class MultiWaveletCross(nn.Module):
 
         # decompose
         for i in range(ns - self.L):
-            # print('q shape',q.shape)
             d, q = self.wavelet_transform(q)
             Ud_q += [tuple([d, q])]
             Us_q += [d]
@@ -395,7 +386,6 @@ class FourierCrossAttentionW(nn.Module):
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=16, activation='tanh',
                  mode_select_method='random'):
         super(FourierCrossAttentionW, self).__init__()
-        print('corss fourier correlation used!')
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.modes1 = modes
@@ -522,15 +512,14 @@ class MWT_CZ1d(nn.Module):
         x = torch.cat([x, extra_x], 1)
         Ud = torch.jit.annotate(List[Tensor], [])
         Us = torch.jit.annotate(List[Tensor], [])
-        #         decompose
+        # decompose
         for i in range(ns - self.L):
-            # print('x shape',x.shape)
             d, x = self.wavelet_transform(x)
             Ud += [self.A(d) + self.B(x)]
             Us += [self.C(d)]
         x = self.T0(x)  # coarsest scale transform
 
-        #        reconstruct
+        # reconstruct
         for i in range(ns - 1 - self.L, -1, -1):
             x = x + Us[i]
             x = torch.cat((x, Ud[i]), -1)

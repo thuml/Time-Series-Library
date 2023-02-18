@@ -1,26 +1,22 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.masking import TriangularCausalMask, ProbMask
 from layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer, ConvLayer
-from layers.SelfAttention_Family import FullAttention, ProbAttention, AttentionLayer
+from layers.SelfAttention_Family import ProbAttention, AttentionLayer
 from layers.Embed import DataEmbedding
-import numpy as np
-import pdb
 
 
 class Model(nn.Module):
     """
     Informer with Propspare attention in O(LlogL) complexity
+    Paper link: https://ojs.aaai.org/index.php/AAAI/article/view/17325/17132
     """
 
     def __init__(self, configs):
         super(Model, self).__init__()
+        self.task_name = configs.task_name
         self.pred_len = configs.pred_len
         self.label_len = configs.label_len
-        self.output_attention = configs.output_attention
-        self.configs = configs
-        self.task_name = configs.task_name
 
         # Embedding
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
@@ -78,14 +74,13 @@ class Model(nn.Module):
             self.dropout = nn.Dropout(configs.dropout)
             self.projection = nn.Linear(configs.d_model * configs.seq_len, configs.num_class)
 
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
-                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
 
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         dec_out = self.dec_embedding(x_dec, x_mark_dec)
-        enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
+        enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
-        dec_out = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask)
+        dec_out = self.decoder(dec_out, enc_out, x_mask=None, cross_mask=None)
 
         return dec_out  # [B, L, D]
 

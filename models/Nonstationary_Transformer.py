@@ -9,6 +9,7 @@ import torch.nn.functional as F
 class Projector(nn.Module):
     '''
     MLP to learn the De-stationary factors
+    Paper link: https://openreview.net/pdf?id=ucNDIDRNjjv
     '''
 
     def __init__(self, enc_in, seq_len, hidden_dims, hidden_layers, output_dim, kernel_size=3):

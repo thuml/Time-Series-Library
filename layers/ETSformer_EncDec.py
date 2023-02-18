@@ -5,8 +5,25 @@ import torch.fft as fft
 from einops import rearrange, reduce, repeat
 import math, random
 from scipy.fftpack import next_fast_len
-import pdb
 
+
+class Transform:
+    def __init__(self, sigma):
+        self.sigma = sigma
+
+    @torch.no_grad()
+    def transform(self, x):
+        return self.jitter(self.shift(self.scale(x)))
+
+    def jitter(self, x):
+        return x + (torch.randn(x.shape).to(x.device) * self.sigma)
+
+    def scale(self, x):
+        return x * (torch.randn(x.size(-1)).to(x.device) * self.sigma + 1)
+
+    def shift(self, x):
+        return x + (torch.randn(x.size(-1)).to(x.device) * self.sigma)
+    
 
 def conv1d_fft(f, g, dim=-1):
     N = f.size(dim)

@@ -6,31 +6,31 @@ from layers.AutoCorrelation import AutoCorrelationLayer
 from layers.FourierCorrelation import FourierBlock, FourierCrossAttention
 from layers.MultiWaveletCorrelation import MultiWaveletCross, MultiWaveletTransform
 from layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
-import math
-import numpy as np
 
 
 class Model(nn.Module):
     """
     FEDformer performs the attention mechanism on frequency domain and achieved O(N) complexity
+    Paper link: https://proceedings.mlr.press/v162/zhou22g.html
     """
 
-    def __init__(self, configs):
+    def __init__(self, configs, version='Wavelets', mode_select='random', modes=32):
+        """
+        version: str, for FEDformer, there are two versions to choose, options: [Fourier, Wavelets].
+        mode_select: str, for FEDformer, there are two mode selection method, options: [random, low].
+        modes: int, modes to be selected.
+        """
         super(Model, self).__init__()
-        self.configs = configs
-        self.version = 'Wavelets'
-        self.mode_select = 'random'
-        self.modes = 32
+        self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
-        self.output_attention = configs.output_attention
-        self.task_name = configs.task_name
+        self.version = version
+        self.mode_select = mode_select
+        self.modes = modes
 
         # Decomp
-        kernel_size = configs.moving_avg
-        self.decomp = series_decomp(kernel_size)
-
+        self.decomp = series_decomp(configs.moving_avg)
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
                                            configs.dropout)
         self.dec_embedding = DataEmbedding(configs.dec_in, configs.d_model, configs.embed, configs.freq,
@@ -65,10 +65,6 @@ class Model(nn.Module):
                                                       modes=self.modes,
                                                       mode_select_method=self.mode_select)
         # Encoder
-        enc_modes = int(min(self.modes, configs.seq_len // 2))
-        dec_modes = int(min(self.modes, (configs.seq_len // 2 + configs.pred_len) // 2))
-        print('enc_modes: {}, dec_modes: {}'.format(enc_modes, dec_modes))
-
         self.encoder = Encoder(
             [
                 EncoderLayer(
@@ -116,8 +112,7 @@ class Model(nn.Module):
             self.dropout = nn.Dropout(configs.dropout)
             self.projection = nn.Linear(configs.d_model * configs.seq_len, configs.num_class)
 
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
-                      enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
         seasonal_init, trend_init = self.decomp(x_enc)
@@ -127,11 +122,9 @@ class Model(nn.Module):
         # enc
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         dec_out = self.dec_embedding(seasonal_init, x_mark_dec)
-
-        enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
+        enc_out, attns = self.encoder(enc_out, attn_mask=None)
         # dec
-        seasonal_part, trend_part = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask,
-                                                 trend=trend_init)
+        seasonal_part, trend_part = self.decoder(dec_out, enc_out, x_mask=None, cross_mask=None, trend=trend_init)
         # final
         dec_out = trend_part + seasonal_part
         return dec_out

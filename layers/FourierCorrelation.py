@@ -1,7 +1,3 @@
-# coding=utf-8
-# author=maziqing
-# email=maziqing.mzq@alibaba-inc.com
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -24,8 +20,10 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method='random'):
     return index
 
 
-# ########## fourier layer #############
 class FourierBlock(nn.Module):
+    """
+    Fourier layers
+    """
     def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method='random'):
         super(FourierBlock, self).__init__()
         print('fourier enhanced block used!')
@@ -63,8 +61,10 @@ class FourierBlock(nn.Module):
         return (x, None)
 
 
-# ########## Fourier Cross Former ####################
 class FourierCrossAttention(nn.Module):
+    """
+    Fourier Cross Former
+    """
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=64, mode_select_method='random',
                  activation='tanh', policy=0):
         super(FourierCrossAttention, self).__init__()

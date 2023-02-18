@@ -1,45 +1,23 @@
 import torch
 import torch.nn as nn
-import pdb
 from layers.Embed import DataEmbedding
-from layers.ETSformer_EncDec import EncoderLayer, Encoder, DecoderLayer, Decoder
-
-
-class Transform:
-    def __init__(self, sigma):
-        self.sigma = sigma
-
-    @torch.no_grad()
-    def transform(self, x):
-        return self.jitter(self.shift(self.scale(x)))
-
-    def jitter(self, x):
-        return x + (torch.randn(x.shape).to(x.device) * self.sigma)
-
-    def scale(self, x):
-        return x * (torch.randn(x.size(-1)).to(x.device) * self.sigma + 1)
-
-    def shift(self, x):
-        return x + (torch.randn(x.size(-1)).to(x.device) * self.sigma)
+from layers.ETSformer_EncDec import EncoderLayer, Encoder, DecoderLayer, Decoder, Transform
 
 
 class Model(nn.Module):
+    """
+    Paper link: https://arxiv.org/abs/2202.01381
+    """
+
     def __init__(self, configs):
         super(Model, self).__init__()
+        self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
-        self.task_name = configs.task_name
         if self.task_name == 'classification' or self.task_name == 'anomaly_detection' or self.task_name == 'imputation':
             self.pred_len = configs.seq_len
         else:
             self.pred_len = configs.pred_len
-
-        if self.task_name == 'classification':
-            self.c_out = configs.enc_in
-        else:
-            self.c_out = configs.c_out
-
-        self.configs = configs
 
         assert configs.e_layers == configs.d_layers, "Encoder and decoder layers must be equal"
 
@@ -51,7 +29,7 @@ class Model(nn.Module):
         self.encoder = Encoder(
             [
                 EncoderLayer(
-                    configs.d_model, configs.n_heads, self.c_out, configs.seq_len, self.pred_len, configs.top_k,
+                    configs.d_model, configs.n_heads, configs.enc_in, configs.seq_len, self.pred_len, configs.top_k,
                     dim_feedforward=configs.d_ff,
                     dropout=configs.dropout,
                     activation=configs.activation,
@@ -62,7 +40,7 @@ class Model(nn.Module):
         self.decoder = Decoder(
             [
                 DecoderLayer(
-                    configs.d_model, configs.n_heads, self.c_out, self.pred_len,
+                    configs.d_model, configs.n_heads, configs.c_out, self.pred_len,
                     dropout=configs.dropout,
                 ) for _ in range(configs.d_layers)
             ],
