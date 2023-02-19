@@ -88,6 +88,8 @@ If you have any questions or suggestions, feel free to contact:
 
 or describe it in Issues.
 
+**For the sake of communication, English is preferred in Issues. If you want to discuss this in Chinese, please send us an email.**
+
 ## Acknowledgement
 
 This library is constructed based on the following repos:
