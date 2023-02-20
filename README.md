@@ -33,7 +33,7 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 
 ## Usage
 
-1. Install Python 3.6. For convenience, execute the following command.
+1. Install Python 3.8. For convenience, execute the following command.
 
 ```
 pip install -r requirements.txt
