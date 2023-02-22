@@ -44,7 +44,7 @@ class TimesBlock(nn.Module):
             if (self.seq_len + self.pred_len) % period != 0:
                 length = (
                     ((self.seq_len + self.pred_len) // period) + 1) * period
-                padding = x[:, -(length - (self.seq_len + self.pred_len)):, :]
+                padding = torch.zeros([x.shape[0], (length - (self.seq_len + self.pred_len)), x.shape[2]])
                 out = torch.cat([x, padding], dim=1)
             else:
                 length = (self.seq_len + self.pred_len)
