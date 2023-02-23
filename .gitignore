@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/scripts/long_term_forecast/Traffic_script/PatchTST1.sh
+/backups/
+/result.xlsx
+/~$result.xlsx
+/Time-Series-Library.zip
+/temp.sh

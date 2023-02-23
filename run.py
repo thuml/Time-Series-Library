@@ -91,6 +91,11 @@ parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids o
 parser.add_argument('--p_hidden_dims', type=int, nargs='+', default=[128, 128], help='hidden layer dimensions of projector (List)')
 parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
+# PatchTST
+parser.add_argument('--head_dropout', type=float, default=0.0, help='head dropout')
+parser.add_argument('--patch_len', type=int, default=16, help='patch length')
+parser.add_argument('--stride', type=int, default=8, help='stride')
+
 args = parser.parse_args()
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
