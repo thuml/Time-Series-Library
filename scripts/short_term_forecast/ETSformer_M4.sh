@@ -1,18 +1,18 @@
 export CUDA_VISIBLE_DEVICES=1
 
-model_name=Fedformer
+model_name=ETSformer
 
 python -u run.py \
   --task_name short_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/m4 \
+  --root_path ../dataset/m4 \
   --seasonal_patterns 'Monthly' \
   --model_id m4_Monthly \
   --model $model_name \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
@@ -34,7 +34,7 @@ python -u run.py \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
@@ -56,7 +56,7 @@ python -u run.py \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
@@ -78,7 +78,7 @@ python -u run.py \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
@@ -100,7 +100,7 @@ python -u run.py \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \
@@ -122,7 +122,7 @@ python -u run.py \
   --data m4 \
   --features M \
   --e_layers 2 \
-  --d_layers 1 \
+  --d_layers 2 \
   --factor 3 \
   --enc_in 1 \
   --dec_in 1 \

@@ -1,7 +1,7 @@
 import os
 import torch
-from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer,\
-                   Informer, LightTS, Reformer, PatchTST
+from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+    Informer, LightTS, Reformer, ETSformer, PatchTST
 
 
 class Exp_Basic(object):
@@ -13,10 +13,11 @@ class Exp_Basic(object):
             'Transformer': Transformer,
             'Nonstationary_Transformer': Nonstationary_Transformer,
             'DLinear': DLinear,
-            'Fedformer':FEDformer,
-            'Informer':Informer,
-            'LightTS':LightTS,
-            'Reformer':Reformer,
+            'FEDformer': FEDformer,
+            'Informer': Informer,
+            'LightTS': LightTS,
+            'Reformer': Reformer,
+            'ETSformer': ETSformer,
             'PatchTST': PatchTST,
         }
         self.device = self._acquire_device()

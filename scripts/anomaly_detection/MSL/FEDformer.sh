@@ -5,7 +5,7 @@ python -u run.py \
   --is_training 1 \
   --root_path ./dataset/MSL \
   --model_id MSL \
-  --model Informer \
+  --model FEDformer \
   --data MSL \
   --features M \
   --seq_len 100 \

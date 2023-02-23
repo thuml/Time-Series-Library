@@ -8,6 +8,7 @@ import os
 import time
 import warnings
 import numpy as np
+import pdb
 
 warnings.filterwarnings('ignore')
 
@@ -106,7 +107,7 @@ class Exp_Classification(Exp_Basic):
                 label = label.to(self.device)
 
                 outputs = self.model(batch_x, padding_mask, None, None)
-                loss = criterion(outputs, label.long().squeeze())
+                loss = criterion(outputs, label.long().squeeze(-1))
                 train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:

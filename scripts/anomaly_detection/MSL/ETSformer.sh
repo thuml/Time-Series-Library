@@ -5,14 +5,15 @@ python -u run.py \
   --is_training 1 \
   --root_path ./dataset/MSL \
   --model_id MSL \
-  --model Fedformer \
+  --model ETSformer \
   --data MSL \
   --features M \
   --seq_len 100 \
-  --pred_len 0 \
+  --pred_len 100 \
   --d_model 128 \
   --d_ff 128 \
   --e_layers 3 \
+  --d_layers 3 \
   --enc_in 55 \
   --c_out 55 \
   --anomaly_ratio 1 \
