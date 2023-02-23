@@ -31,6 +31,9 @@ Till February 2023, the top three models for five different tasks are:
 
 See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comprehensive benchmark. We will release a real-time updated online version in March.
 
+**Newly added baselines.** We will add them into the leaderboard after a comprehensive evaluation.
+  - [x] **PatchTST** - A Time Series is Worth 64 Words: Long-term Forecasting with Transformers. [[ICLR 2023]](https://openreview.net/pdf?id=Jbdc0vTOcol) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/PatchTST.py)
+
 ## Usage
 
 1. Install Python 3.8. For convenience, execute the following command.
