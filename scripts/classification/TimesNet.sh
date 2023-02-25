@@ -44,10 +44,10 @@ python -u run.py \
   --model_id Handwriting \
   --model TimesNet \
   --data UEA \
-  --e_layers 3 \
+  --e_layers 2 \
   --batch_size 16 \
   --d_model 32 \
-  --d_ff 32 \
+  --d_ff 64 \
   --top_k 3 \
   --des 'Exp' \
   --itr 1 \
@@ -118,8 +118,8 @@ python -u run.py \
   --data UEA \
   --e_layers 3 \
   --batch_size 16 \
-  --d_model 64 \
-  --d_ff 64 \
+  --d_model 32 \
+  --d_ff 32 \
   --top_k 3 \
   --des 'Exp' \
   --itr 1 \
