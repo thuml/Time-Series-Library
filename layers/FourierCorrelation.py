@@ -24,7 +24,6 @@ class FourierBlock(nn.Module):
     """
     Fourier layers
     """
-
     def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method='random'):
         super(FourierBlock, self).__init__()
         print('fourier enhanced block used!')
@@ -66,7 +65,6 @@ class FourierCrossAttention(nn.Module):
     """
     Fourier Cross Former
     """
-
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=64, mode_select_method='random',
                  activation='tanh', policy=0):
         super(FourierCrossAttention, self).__init__()

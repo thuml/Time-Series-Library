@@ -1,9 +1,7 @@
 import os
 import torch
-import os
-import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
-    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST,MICN
+    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN
 
 
 class Exp_Basic(object):

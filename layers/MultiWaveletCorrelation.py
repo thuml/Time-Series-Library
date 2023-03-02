@@ -6,6 +6,9 @@ from torch import Tensor
 from typing import List, Tuple
 import math
 from functools import partial
+from torch import nn, einsum, diagonal
+from math import log2, ceil
+import pdb
 from sympy import Poly, legendre, Symbol, chebyshevt
 from scipy.special import eval_legendre
 
@@ -94,6 +97,8 @@ def get_phi_psi(k, base):
         kUse = 2 * k
         roots = Poly(chebyshevt(kUse, 2 * x - 1)).all_roots()
         x_m = np.array([rt.evalf(20) for rt in roots]).astype(np.float64)
+        # x_m[x_m==0.5] = 0.5 + 1e-8 # add small noise to avoid the case of 0.5 belonging to both phi(2x) and phi(2x-1)
+        # not needed for our purpose here, we use even k always to avoid
         wm = np.pi / kUse / 2
 
         psi1_coeff = np.zeros((k, k))
@@ -201,6 +206,7 @@ class MultiWaveletTransform(nn.Module):
     def __init__(self, ich=1, k=8, alpha=16, c=128,
                  nCZ=1, L=0, base='legendre', attention_dropout=0.1):
         super(MultiWaveletTransform, self).__init__()
+        print('base', base)
         self.k = k
         self.c = c
         self.L = L
@@ -246,6 +252,8 @@ class MultiWaveletCross(nn.Module):
                  initializer=None, activation='tanh',
                  **kwargs):
         super(MultiWaveletCross, self).__init__()
+        print('base', base)
+
         self.c = c
         self.k = k
         self.L = L
@@ -334,6 +342,7 @@ class MultiWaveletCross(nn.Module):
 
         # decompose
         for i in range(ns - self.L):
+            # print('q shape',q.shape)
             d, q = self.wavelet_transform(q)
             Ud_q += [tuple([d, q])]
             Us_q += [d]
@@ -386,10 +395,26 @@ class FourierCrossAttentionW(nn.Module):
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=16, activation='tanh',
                  mode_select_method='random'):
         super(FourierCrossAttentionW, self).__init__()
+        print('corss fourier correlation used!')
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.modes1 = modes
         self.activation = activation
+
+    def compl_mul1d(self, order, x, weights):
+        x_flag = True
+        w_flag = True
+        if not torch.is_complex(x):
+            x_flag = False
+            x = torch.complex(x, torch.zeros_like(x).to(x.device))
+        if not torch.is_complex(weights):
+            w_flag = False
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
+        if x_flag or w_flag:
+            return torch.complex(torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                                 torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real))
+        else:
+            return torch.einsum(order, x.real, weights.real)
 
     def forward(self, q, k, v, mask):
         B, L, E, H = q.shape
@@ -410,15 +435,15 @@ class FourierCrossAttentionW(nn.Module):
         xk_ft = torch.fft.rfft(xk, dim=-1)
         for i, j in enumerate(self.index_k_v):
             xk_ft_[:, :, :, i] = xk_ft[:, :, :, j]
-        xqk_ft = (torch.einsum("bhex,bhey->bhxy", xq_ft_, xk_ft_))
+        xqk_ft = (self.compl_mul1d("bhex,bhey->bhxy", xq_ft_, xk_ft_))
         if self.activation == 'tanh':
-            xqk_ft = xqk_ft.tanh()
+            xqk_ft = torch.complex(xqk_ft.real.tanh(), xqk_ft.imag.tanh())
         elif self.activation == 'softmax':
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
             raise Exception('{} actiation function is not implemented'.format(self.activation))
-        xqkv_ft = torch.einsum("bhxy,bhey->bhex", xqk_ft, xk_ft_)
+        xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
 
         xqkvw = xqkv_ft
         out_ft = torch.zeros(B, H, E, L // 2 + 1, device=xq.device, dtype=torch.cfloat)
@@ -440,13 +465,26 @@ class sparseKernelFT1d(nn.Module):
 
         self.modes1 = alpha
         self.scale = (1 / (c * k * c * k))
-        self.weights1 = nn.Parameter(self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.cfloat))
+        self.weights1 = nn.Parameter(self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float))
+        self.weights2 = nn.Parameter(self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float))
         self.weights1.requires_grad = True
+        self.weights2.requires_grad = True
         self.k = k
 
-    def compl_mul1d(self, x, weights):
-        # (batch, in_channel, x ), (in_channel, out_channel, x) -> (batch, out_channel, x)
-        return torch.einsum("bix,iox->box", x, weights)
+    def compl_mul1d(self, order, x, weights):
+        x_flag = True
+        w_flag = True
+        if not torch.is_complex(x):
+            x_flag = False
+            x = torch.complex(x, torch.zeros_like(x).to(x.device))
+        if not torch.is_complex(weights):
+            w_flag = False
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
+        if x_flag or w_flag:
+            return torch.complex(torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                                 torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real))
+        else:
+            return torch.einsum(order, x.real, weights.real)
 
     def forward(self, x):
         B, N, c, k = x.shape  # (B, N, c, k)
@@ -456,9 +494,9 @@ class sparseKernelFT1d(nn.Module):
         x_fft = torch.fft.rfft(x)
         # Multiply relevant Fourier modes
         l = min(self.modes1, N // 2 + 1)
-        # l = N//2+1
         out_ft = torch.zeros(B, c * k, N // 2 + 1, device=x.device, dtype=torch.cfloat)
-        out_ft[:, :, :l] = self.compl_mul1d(x_fft[:, :, :l], self.weights1[:, :, :l])
+        out_ft[:, :, :l] = self.compl_mul1d("bix,iox->box", x_fft[:, :, :l],
+                                            torch.complex(self.weights1, self.weights2)[:, :, :l])
         x = torch.fft.irfft(out_ft, n=N)
         x = x.permute(0, 2, 1).view(B, N, c, k)
         return x
@@ -512,14 +550,13 @@ class MWT_CZ1d(nn.Module):
         x = torch.cat([x, extra_x], 1)
         Ud = torch.jit.annotate(List[Tensor], [])
         Us = torch.jit.annotate(List[Tensor], [])
-        # decompose
         for i in range(ns - self.L):
             d, x = self.wavelet_transform(x)
             Ud += [self.A(d) + self.B(x)]
             Us += [self.C(d)]
         x = self.T0(x)  # coarsest scale transform
 
-        # reconstruct
+        #        reconstruct
         for i in range(ns - 1 - self.L, -1, -1):
             x = x + Us[i]
             x = torch.cat((x, Ud[i]), -1)
