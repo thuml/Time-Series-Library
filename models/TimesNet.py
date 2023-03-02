@@ -43,7 +43,7 @@ class TimesBlock(nn.Module):
             # padding
             if (self.seq_len + self.pred_len) % period != 0:
                 length = (
-                    ((self.seq_len + self.pred_len) // period) + 1) * period
+                                 ((self.seq_len + self.pred_len) // period) + 1) * period
                 padding = torch.zeros([x.shape[0], (length - (self.seq_len + self.pred_len)), x.shape[2]]).to(x.device)
                 out = torch.cat([x, padding], dim=1)
             else:
@@ -81,7 +81,7 @@ class Model(nn.Module):
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
         self.model = nn.ModuleList([TimesBlock(configs)
-                                   for _ in range(configs.e_layers)])
+                                    for _ in range(configs.e_layers)])
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
                                            configs.dropout)
         self.layer = configs.e_layers
@@ -120,11 +120,11 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
@@ -148,11 +148,11 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         return dec_out
 
     def anomaly_detection(self, x_enc):
@@ -173,11 +173,11 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(
-                1, self.pred_len + self.seq_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(
+                      1, self.pred_len + self.seq_len, 1))
         return dec_out
 
     def classification(self, x_enc, x_mark_enc):

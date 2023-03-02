@@ -5,7 +5,7 @@ from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
 
 
-class Flatten_Head(nn.Module):
+class FlattenHead(nn.Module):
     def __init__(self, n_vars, nf, target_window, head_dropout=0):
         super().__init__()
         self.n_vars = n_vars
@@ -57,13 +57,13 @@ class Model(nn.Module):
 
         # Prediction Head
         self.head_nf = configs.d_model * \
-            int((configs.seq_len - patch_len) / stride + 2)
+                       int((configs.seq_len - patch_len) / stride + 2)
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            self.head = Flatten_Head(configs.enc_in, self.head_nf, configs.pred_len,
-                                     head_dropout=configs.dropout)
+            self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
+                                    head_dropout=configs.dropout)
         elif self.task_name == 'imputation' or self.task_name == 'anomaly_detection':
-            self.head = Flatten_Head(configs.enc_in, self.head_nf, configs.seq_len,
-                                     head_dropout=configs.dropout)
+            self.head = FlattenHead(configs.enc_in, self.head_nf, configs.seq_len,
+                                    head_dropout=configs.dropout)
         elif self.task_name == 'classification':
             self.flatten = nn.Flatten(start_dim=-2)
             self.dropout = nn.Dropout(configs.dropout)
@@ -98,9 +98,9 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
@@ -134,9 +134,9 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
         return dec_out
 
     def anomaly_detection(self, x_enc):
@@ -167,9 +167,9 @@ class Model(nn.Module):
 
         # De-Normalization from Non-stationary Transformer
         dec_out = dec_out * \
-            (stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
         dec_out = dec_out + \
-            (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+                  (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
         return dec_out
 
     def classification(self, x_enc, x_mark_enc):

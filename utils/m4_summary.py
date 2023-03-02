@@ -24,6 +24,7 @@ from data_provider.m4 import M4Dataset
 from data_provider.m4 import M4Meta
 import os
 
+
 def group_values(values, groups, group_name):
     return np.array([v[~np.isnan(v)] for v in values[groups == group_name]])
 

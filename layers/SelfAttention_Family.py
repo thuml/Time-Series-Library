@@ -103,8 +103,8 @@ class ProbAttention(nn.Module):
 
         # use the reduced Q to calculate Q_K
         Q_reduce = Q[torch.arange(B)[:, None, None],
-                     torch.arange(H)[None, :, None],
-                     M_top, :]  # factor*ln(L_q)
+                   torch.arange(H)[None, :, None],
+                   M_top, :]  # factor*ln(L_q)
         Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # factor*ln(L_q)*L_k
 
         return Q_K, M_top
@@ -132,13 +132,13 @@ class ProbAttention(nn.Module):
         attn = torch.softmax(scores, dim=-1)  # nn.Softmax(dim=-1)(scores)
 
         context_in[torch.arange(B)[:, None, None],
-                   torch.arange(H)[None, :, None],
-                   index, :] = torch.matmul(attn, V).type_as(context_in)
+        torch.arange(H)[None, :, None],
+        index, :] = torch.matmul(attn, V).type_as(context_in)
         if self.output_attention:
             attns = (torch.ones([B, H, L_V, L_V]) /
                      L_V).type_as(attn).to(attn.device)
             attns[torch.arange(B)[:, None, None], torch.arange(H)[
-                None, :, None], index, :] = attn
+                                                  None, :, None], index, :] = attn
             return (context_in, attns)
         else:
             return (context_in, None)
@@ -152,7 +152,7 @@ class ProbAttention(nn.Module):
         values = values.transpose(2, 1)
 
         U_part = self.factor * \
-            np.ceil(np.log(L_K)).astype('int').item()  # c*ln(L_k)
+                 np.ceil(np.log(L_K)).astype('int').item()  # c*ln(L_k)
         u = self.factor * \
             np.ceil(np.log(L_Q)).astype('int').item()  # c*ln(L_q)
 

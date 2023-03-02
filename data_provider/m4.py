@@ -79,7 +79,7 @@ class M4Dataset:
     values: np.ndarray
 
     @staticmethod
-    def load(training: bool = True, dataset_file:str='../dataset/m4') -> 'M4Dataset':
+    def load(training: bool = True, dataset_file: str = '../dataset/m4') -> 'M4Dataset':
         """
         Load cached dataset.
 

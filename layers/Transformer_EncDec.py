@@ -63,7 +63,7 @@ class Encoder(nn.Module):
         attns = []
         if self.conv_layers is not None:
             for i, (attn_layer, conv_layer) in enumerate(zip(self.attn_layers, self.conv_layers)):
-                delta = delta if i==0 else None
+                delta = delta if i == 0 else None
                 x, attn = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta)
                 x = conv_layer(x)
                 attns.append(attn)
@@ -133,4 +133,3 @@ class Decoder(nn.Module):
         if self.projection is not None:
             x = self.projection(x)
         return x
-

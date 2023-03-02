@@ -23,7 +23,7 @@ class Transform:
 
     def shift(self, x):
         return x + (torch.randn(x.size(-1)).to(x.device) * self.sigma)
-    
+
 
 def conv1d_fft(f, g, dim=-1):
     N = f.size(dim)
@@ -261,6 +261,7 @@ class Encoder(nn.Module):
             seasons.append(season)
 
         return level, growths, seasons
+
 
 class DampingLayer(nn.Module):
 
