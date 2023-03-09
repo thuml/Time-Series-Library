@@ -1,3 +1,7 @@
+# coding=utf-8
+# author=maziqing
+# email=maziqing.mzq@alibaba-inc.com
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -20,10 +24,8 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method='random'):
     return index
 
 
+# ########## fourier layer #############
 class FourierBlock(nn.Module):
-    """
-    Fourier layers
-    """
     def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method='random'):
         super(FourierBlock, self).__init__()
         print('fourier enhanced block used!')
@@ -37,12 +39,25 @@ class FourierBlock(nn.Module):
 
         self.scale = (1 / (in_channels * out_channels))
         self.weights1 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index), dtype=torch.cfloat))
+            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index), dtype=torch.float))
+        self.weights2 = nn.Parameter(
+            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index), dtype=torch.float))
 
     # Complex multiplication
-    def compl_mul1d(self, input, weights):
-        # (batch, in_channel, x ), (in_channel, out_channel, x) -> (batch, out_channel, x)
-        return torch.einsum("bhi,hio->bho", input, weights)
+    def compl_mul1d(self, order, x, weights):
+        x_flag = True
+        w_flag = True
+        if not torch.is_complex(x):
+            x_flag = False
+            x = torch.complex(x, torch.zeros_like(x).to(x.device))
+        if not torch.is_complex(weights):
+            w_flag = False
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
+        if x_flag or w_flag:
+            return torch.complex(torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                                 torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real))
+        else:
+            return torch.einsum(order, x.real, weights.real)
 
     def forward(self, q, k, v, mask):
         # size = [B, L, H, E]
@@ -55,16 +70,15 @@ class FourierBlock(nn.Module):
         for wi, i in enumerate(self.index):
             if i >= x_ft.shape[3] or wi >= out_ft.shape[3]:
                 continue
-            out_ft[:, :, :, wi] = self.compl_mul1d(x_ft[:, :, :, i], self.weights1[:, :, :, wi])
+            out_ft[:, :, :, wi] = self.compl_mul1d("bhi,hio->bho", x_ft[:, :, :, i],
+                                                   torch.complex(self.weights1, self.weights2)[:, :, :, wi])
         # Return to time domain
         x = torch.fft.irfft(out_ft, n=x.size(-1))
         return (x, None)
 
 
+# ########## Fourier Cross Former ####################
 class FourierCrossAttention(nn.Module):
-    """
-    Fourier Cross Former
-    """
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=64, mode_select_method='random',
                  activation='tanh', policy=0):
         super(FourierCrossAttention, self).__init__()
@@ -84,12 +98,25 @@ class FourierCrossAttention(nn.Module):
 
         self.scale = (1 / (in_channels * out_channels))
         self.weights1 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index_q), dtype=torch.cfloat))
+            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index_q), dtype=torch.float))
+        self.weights2 = nn.Parameter(
+            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index_q), dtype=torch.float))
 
     # Complex multiplication
-    def compl_mul1d(self, input, weights):
-        # (batch, in_channel, x ), (in_channel, out_channel, x) -> (batch, out_channel, x)
-        return torch.einsum("bhi,hio->bho", input, weights)
+    def compl_mul1d(self, order, x, weights):
+        x_flag = True
+        w_flag = True
+        if not torch.is_complex(x):
+            x_flag = False
+            x = torch.complex(x, torch.zeros_like(x).to(x.device))
+        if not torch.is_complex(weights):
+            w_flag = False
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
+        if x_flag or w_flag:
+            return torch.complex(torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                                 torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real))
+        else:
+            return torch.einsum(order, x.real, weights.real)
 
     def forward(self, q, k, v, mask):
         # size = [B, L, H, E]
@@ -113,16 +140,16 @@ class FourierCrossAttention(nn.Module):
             xk_ft_[:, :, :, i] = xk_ft[:, :, :, j]
 
         # perform attention mechanism on frequency domain
-        xqk_ft = (torch.einsum("bhex,bhey->bhxy", xq_ft_, xk_ft_))
+        xqk_ft = (self.compl_mul1d("bhex,bhey->bhxy", xq_ft_, xk_ft_))
         if self.activation == 'tanh':
-            xqk_ft = xqk_ft.tanh()
+            xqk_ft = torch.complex(xqk_ft.real.tanh(), xqk_ft.imag.tanh())
         elif self.activation == 'softmax':
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
             raise Exception('{} actiation function is not implemented'.format(self.activation))
-        xqkv_ft = torch.einsum("bhxy,bhey->bhex", xqk_ft, xk_ft_)
-        xqkvw = torch.einsum("bhex,heox->bhox", xqkv_ft, self.weights1)
+        xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
+        xqkvw = self.compl_mul1d("bhex,heox->bhox", xqkv_ft, torch.complex(self.weights1, self.weights2))
         out_ft = torch.zeros(B, H, E, L // 2 + 1, device=xq.device, dtype=torch.cfloat)
         for i, j in enumerate(self.index_q):
             if i >= xqkvw.shape[3] or j >= out_ft.shape[3]:
