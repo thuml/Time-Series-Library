@@ -146,12 +146,12 @@ class DataEmbedding_wo_pos(nn.Module):
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, d_model, patch_len, stride, dropout):
+    def __init__(self, d_model, patch_len, stride, padding, dropout):
         super(PatchEmbedding, self).__init__()
         # Patching
         self.patch_len = patch_len
         self.stride = stride
-        self.padding_patch_layer = nn.ReplicationPad1d((0, stride))
+        self.padding_patch_layer = nn.ReplicationPad1d((0, padding))
 
         # Backbone, Input encoding: projection of feature vectors onto a d-dim vector space
         self.value_embedding = TokenEmbedding(patch_len, d_model)

@@ -34,10 +34,11 @@ class Model(nn.Module):
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
+        padding = stride
 
         # patching and embedding
         self.patch_embedding = PatchEmbedding(
-            configs.d_model, patch_len, stride, configs.dropout)
+            configs.d_model, patch_len, stride, padding, configs.dropout)
 
         # Encoder
         self.encoder = Encoder(

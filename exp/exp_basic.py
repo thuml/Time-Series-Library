@@ -1,7 +1,7 @@
 import os
 import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
-    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN
+    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer
 
 
 class Exp_Basic(object):
@@ -21,6 +21,7 @@ class Exp_Basic(object):
             'PatchTST': PatchTST,
             'Pyraformer': Pyraformer,
             'MICN': MICN,
+            'Crossformer': Crossformer,
         }
         self.device = self._acquire_device()
         self.model = self._build_model().to(self.device)
