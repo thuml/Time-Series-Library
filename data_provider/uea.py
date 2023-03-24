@@ -30,7 +30,6 @@ def collate_fn(data, max_len=None):
         print('here')
         max_len = max(lengths)
 
-    print(f'!!!!!!!!!!!! batch_size = {batch_size}, max_len = {max_len}, features[0].shape[-1] = {features[0].shape[-1]}')
     X = torch.zeros(batch_size, max_len, features[0].shape[-1])  # (batch_size, padded_length, feat_dim)
     for i in range(batch_size):
         end = min(lengths[i], max_len)
@@ -38,7 +37,6 @@ def collate_fn(data, max_len=None):
 
     targets = torch.stack(labels, dim=0)  # (batch_size, num_labels)
 
-    print(f'@@@@@ max_len={max_len}')
     padding_masks = padding_mask(torch.tensor(lengths, dtype=torch.int16),
                                  max_len=max_len)  # (batch_size, padded_length) boolean tensor, "1" means keep
 

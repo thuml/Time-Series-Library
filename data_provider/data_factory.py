@@ -29,7 +29,6 @@ def load_seq_len():
 
 def collate_fn_local(x):
     seq_len=load_seq_len()
-    print(f'AAAAAAAAAA seq_len  = {seq_len}')
     return collate_fn(x, max_len=seq_len)
 
 

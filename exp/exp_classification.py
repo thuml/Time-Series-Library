@@ -100,7 +100,6 @@ class Exp_Classification(Exp_Basic):
             epoch_time = time.time()
 
             for i, (batch_x, label, padding_mask) in enumerate(train_loader):
-                print('$$$$$$$$$$$$$$$$$', i)
                 iter_count += 1
                 model_optim.zero_grad()
 
