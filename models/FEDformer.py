@@ -29,6 +29,8 @@ class Model(nn.Module):
         self.mode_select = mode_select
         self.modes = modes
 
+        print(f'FEDformer init, configs = {configs}')
+
         # Decomp
         self.decomp = series_decomp(configs.moving_avg)
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
@@ -69,7 +71,7 @@ class Model(nn.Module):
             [
                 EncoderLayer(
                     AutoCorrelationLayer(
-                        encoder_self_att,
+                        encoder_self_att, # instead of multi-head attention in transformer
                         configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
@@ -115,7 +117,7 @@ class Model(nn.Module):
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
-        seasonal_init, trend_init = self.decomp(x_enc)
+        seasonal_init, trend_init = self.decomp(x_enc) # x - moving_avg, moving_avg 
         # decoder input
         trend_init = torch.cat([trend_init[:, -self.label_len:, :], mean], dim=1)
         seasonal_init = F.pad(seasonal_init[:, -self.label_len:, :], (0, 0, 0, self.pred_len))
@@ -145,10 +147,11 @@ class Model(nn.Module):
         dec_out = self.projection(enc_out)
         return dec_out
 
+    # x_enc is a tensor representing the input sequence of the model. 
     def classification(self, x_enc, x_mark_enc):
         # enc
-        enc_out = self.enc_embedding(x_enc, None)
-        enc_out, attns = self.encoder(enc_out, attn_mask=None)
+        enc_out = self.enc_embedding(x_enc, None) #  map each element of the input sequence to a continuous vector space
+        enc_out, attns = self.encoder(enc_out, attn_mask=None) # to capture the relationships between the elements in the sequence.
 
         # Output
         output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
