@@ -152,7 +152,7 @@ class Model(nn.Module):
         # enc
         enc_out = self.enc_embedding(x_enc, None) #  map each element of the input sequence to a continuous vector space
         enc_out, attns = self.encoder(enc_out, attn_mask=None) # to capture the relationships between the elements in the sequence.
-
+        
         # Output
         output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
         output = self.dropout(output)
