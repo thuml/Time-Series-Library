@@ -27,7 +27,10 @@ def collate_fn(data, max_len=None):
     # Stack and pad features and masks (convert 2D to 3D tensors, i.e. add batch dimension)
     lengths = [X.shape[0] for X in features]  # original sequence length for each time series
     if max_len is None:
+        print('here')
         max_len = max(lengths)
+
+    print(f'!!!!!!!!!!!! batch_size = {batch_size}, max_len = {max_len}, features[0].shape[-1] = {features[0].shape[-1]}')
     X = torch.zeros(batch_size, max_len, features[0].shape[-1])  # (batch_size, padded_length, feat_dim)
     for i in range(batch_size):
         end = min(lengths[i], max_len)
