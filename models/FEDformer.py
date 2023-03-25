@@ -29,8 +29,6 @@ class Model(nn.Module):
         self.mode_select = mode_select
         self.modes = modes
 
-        print(f'FEDformer init, configs = {configs}')
-
         # Decomp
         self.decomp = series_decomp(configs.moving_avg)
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
