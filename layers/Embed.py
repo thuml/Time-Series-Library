@@ -154,7 +154,7 @@ class PatchEmbedding(nn.Module):
         self.padding_patch_layer = nn.ReplicationPad1d((0, padding))
 
         # Backbone, Input encoding: projection of feature vectors onto a d-dim vector space
-        self.value_embedding = TokenEmbedding(patch_len, d_model)
+        self.value_embedding = nn.Linear(patch_len, d_model, bias=False)
 
         # Positional embedding
         self.position_embedding = PositionalEmbedding(d_model)
