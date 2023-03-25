@@ -18,19 +18,6 @@ data_dict = {
     'UEA': UEAloader
 }
 
-def save_seq_len(seq_len):
-    with open('seq_len', 'w') as f:
-        f.write(str(seq_len))
-
-def load_seq_len():
-    with open('seq_len', 'r') as f:
-        return int(f.read())
-
-
-def collate_fn_local(x):
-    seq_len=load_seq_len()
-    return collate_fn(x, max_len=seq_len)
-
 
 def data_provider(args, flag):
     Data = data_dict[args.data]
@@ -71,9 +58,6 @@ def data_provider(args, flag):
             root_path=args.root_path,
             flag=flag,
         )
-        print(f'.......creating dataloader........', flag, len(data_set), args.data)
-        
-        save_seq_len(args.seq_len)
 
         data_loader = DataLoader(
             data_set,
@@ -81,7 +65,7 @@ def data_provider(args, flag):
             shuffle=shuffle_flag,
             num_workers=args.num_workers,
             drop_last=drop_last,
-            collate_fn=collate_fn_local
+            collate_fn=lambda x: collate_fn(x, max_len=args.seq_len)
         )
         return data_set, data_loader
     else:

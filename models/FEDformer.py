@@ -71,7 +71,7 @@ class Model(nn.Module):
             [
                 EncoderLayer(
                     AutoCorrelationLayer(
-                        encoder_self_att, # instead of multi-head attention in transformer
+                        encoder_self_att,  # instead of multi-head attention in transformer
                         configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
@@ -117,7 +117,7 @@ class Model(nn.Module):
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
-        seasonal_init, trend_init = self.decomp(x_enc) # x - moving_avg, moving_avg 
+        seasonal_init, trend_init = self.decomp(x_enc)  # x - moving_avg, moving_avg
         # decoder input
         trend_init = torch.cat([trend_init[:, -self.label_len:, :], mean], dim=1)
         seasonal_init = F.pad(seasonal_init[:, -self.label_len:, :], (0, 0, 0, self.pred_len))
@@ -148,38 +148,16 @@ class Model(nn.Module):
         return dec_out
 
     def classification(self, x_enc, x_mark_enc):
-        """
-        Args:
-            x_enc: a tensor representing the input sequence of the model
-            x_mark_enc: padding_mask: This sequence is used to indicate which elements of the input sequence are actual data and which are padding
-                        True: data, False: padding
-        """
-
         # enc
-        enc_out = self.enc_embedding(x_enc, None) #  map each element of the input sequence to a continuous vector space
-        enc_out, attns = self.encoder(enc_out, attn_mask=None) # to capture the relationships between the elements in the sequence.
-        
-        # batch size = 16, seq_length = 152, channels = 128
-        print(f'enc_out.shape = {enc_out.shape}, len(attns) = {len(attns)}')
-        # enc_out.shape = torch.Size([16, 152, 128]), len(attns) = 3
+        enc_out = self.enc_embedding(x_enc, None)
+        enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         # Output
-        output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
+        output = self.act(enc_out)
         output = self.dropout(output)
-        print(f'output1.shape = {output.shape}')
-        # torch.Size([16, 152, 128])
-
-        output = output * x_mark_enc.unsqueeze(-1)  # zero-out padding embeddings
-        print(f'output2.shape = {output.shape}')
-        # torch.Size([16, 152, 128])
-
-        output = output.reshape(output.shape[0], -1)  # (batch_size, seq_length * d_model)
-        print(f'output3.shape = {output.shape}')
-        # output3.shape = torch.Size([16, 19456])  , 19456 = 152*128
-
-        output = self.projection(output)  # (batch_size, num_classes)
-        print(f'output4.shape = {output.shape}')
-        # output4.shape = torch.Size([16, 26])
+        output = output * x_mark_enc.unsqueeze(-1)
+        output = output.reshape(output.shape[0], -1)
+        output = self.projection(output)
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

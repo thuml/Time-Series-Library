@@ -103,15 +103,6 @@ class Exp_Classification(Exp_Basic):
                 iter_count += 1
                 model_optim.zero_grad()
 
-                """
-                # padding_mask is a binary matrix of shape (batch_size, sequence_length) 
-                # where 0 denotes a padding element and 1 denotes a non-padding element.
-                """
-                # print(f'train: padding_mask = {padding_mask}') # all True
-                print(f'train: batch_x.shape = {batch_x.shape}, label.shape = {label.shape}') # all True
-                # train: batch_x.shape = torch.Size([16, 152, 3]), label.shape = torch.Size([16, 1])
-                # N refers to the number of features = 3
-
                 batch_x = batch_x.float().to(self.device)
                 padding_mask = padding_mask.float().to(self.device)
                 label = label.to(self.device)
@@ -139,7 +130,7 @@ class Exp_Classification(Exp_Basic):
 
             print(
                 "Epoch: {0}, Steps: {1} | Train Loss: {2:.3f} Vali Loss: {3:.3f} Vali Acc: {4:.3f} Test Loss: {5:.3f} Test Acc: {6:.3f}"
-                    .format(epoch + 1, train_steps, train_loss, vali_loss, val_accuracy, test_loss, test_accuracy))
+                .format(epoch + 1, train_steps, train_loss, vali_loss, val_accuracy, test_loss, test_accuracy))
             early_stopping(-val_accuracy, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
