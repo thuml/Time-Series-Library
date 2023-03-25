@@ -46,6 +46,11 @@ class Exp_Imputation(Exp_Basic):
 
                 # random mask
                 B, T, N = batch_x.shape
+                """
+                B = batch size
+                T = seq len
+                N = number of features
+                """
                 mask = torch.rand((B, T, N)).to(self.device)
                 mask[mask <= self.args.mask_rate] = 0  # masked
                 mask[mask > self.args.mask_rate] = 1  # remained

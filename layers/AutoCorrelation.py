@@ -148,6 +148,9 @@ class AutoCorrelationLayer(nn.Module):
         _, S, _ = keys.shape
         H = self.n_heads
 
+        print(f'AutoCorrelationLayer: B = {B}, L = {L}, S = {S}, H = {H}')
+        # B = 16, L = 152, S = 152, H = 8
+
         queries = self.query_projection(queries).view(B, L, H, -1)
         keys = self.key_projection(keys).view(B, S, H, -1)
         values = self.value_projection(values).view(B, S, H, -1)

@@ -147,18 +147,39 @@ class Model(nn.Module):
         dec_out = self.projection(enc_out)
         return dec_out
 
-    # x_enc is a tensor representing the input sequence of the model. 
     def classification(self, x_enc, x_mark_enc):
+        """
+        Args:
+            x_enc: a tensor representing the input sequence of the model
+            x_mark_enc: padding_mask: This sequence is used to indicate which elements of the input sequence are actual data and which are padding
+                        True: data, False: padding
+        """
+
         # enc
         enc_out = self.enc_embedding(x_enc, None) #  map each element of the input sequence to a continuous vector space
         enc_out, attns = self.encoder(enc_out, attn_mask=None) # to capture the relationships between the elements in the sequence.
         
+        # batch size = 16, seq_length = 152, channels = 128
+        print(f'enc_out.shape = {enc_out.shape}, len(attns) = {len(attns)}')
+        # enc_out.shape = torch.Size([16, 152, 128]), len(attns) = 3
+
         # Output
         output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
         output = self.dropout(output)
+        print(f'output1.shape = {output.shape}')
+        # torch.Size([16, 152, 128])
+
         output = output * x_mark_enc.unsqueeze(-1)  # zero-out padding embeddings
+        print(f'output2.shape = {output.shape}')
+        # torch.Size([16, 152, 128])
+
         output = output.reshape(output.shape[0], -1)  # (batch_size, seq_length * d_model)
+        print(f'output3.shape = {output.shape}')
+        # output3.shape = torch.Size([16, 19456])  , 19456 = 152*128
+
         output = self.projection(output)  # (batch_size, num_classes)
+        print(f'output4.shape = {output.shape}')
+        # output4.shape = torch.Size([16, 26])
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
