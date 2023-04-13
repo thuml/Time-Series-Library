@@ -90,8 +90,7 @@ class SpectralConv1d(nn.Module):
 
 class Model(nn.Module):
     """
-    Autoformer is the first method to achieve the series-wise connection,
-    with inherent O(LlogL) complexity
+    Paper link: https://arxiv.org/abs/2205.08897
     """
     def __init__(self, configs, N=512, N2=32):
         super(Model, self).__init__()
