@@ -98,6 +98,7 @@ class Exp_Classification(Exp_Basic):
 
             self.model.train()
             epoch_time = time.time()
+
             for i, (batch_x, label, padding_mask) in enumerate(train_loader):
                 iter_count += 1
                 model_optim.zero_grad()
@@ -129,7 +130,7 @@ class Exp_Classification(Exp_Basic):
 
             print(
                 "Epoch: {0}, Steps: {1} | Train Loss: {2:.3f} Vali Loss: {3:.3f} Vali Acc: {4:.3f} Test Loss: {5:.3f} Test Acc: {6:.3f}"
-                    .format(epoch + 1, train_steps, train_loss, vali_loss, val_accuracy, test_loss, test_accuracy))
+                .format(epoch + 1, train_steps, train_loss, vali_loss, val_accuracy, test_loss, test_accuracy))
             early_stopping(-val_accuracy, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")

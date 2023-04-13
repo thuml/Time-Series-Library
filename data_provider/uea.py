@@ -28,6 +28,7 @@ def collate_fn(data, max_len=None):
     lengths = [X.shape[0] for X in features]  # original sequence length for each time series
     if max_len is None:
         max_len = max(lengths)
+
     X = torch.zeros(batch_size, max_len, features[0].shape[-1])  # (batch_size, padded_length, feat_dim)
     for i in range(batch_size):
         end = min(lengths[i], max_len)
