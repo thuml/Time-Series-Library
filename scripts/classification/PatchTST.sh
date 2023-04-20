@@ -1,6 +1,6 @@
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=3
 
-model_name=FiLM
+model_name=PatchTST
 
 python -u run.py \
   --task_name classification \
@@ -18,8 +18,6 @@ python -u run.py \
   --itr 1 \
   --learning_rate 0.001 \
   --train_epochs 100 \
-  --seq_len 1751 \
-  --pred_len 1751 \
   --patience 10
 
 python -u run.py \

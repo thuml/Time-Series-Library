@@ -12,6 +12,9 @@ from math import ceil
 
 
 class Model(nn.Module):
+    """
+    Paper link: https://openreview.net/pdf?id=vSVLM2j9eie
+    """
     def __init__(self, configs):
         super(Model, self).__init__()
         self.enc_in = configs.enc_in
@@ -77,6 +80,7 @@ class Model(nn.Module):
 
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+        # embedding
         x_enc, n_vars = self.enc_value_embedding(x_enc.permute(0, 2, 1))
         x_enc = rearrange(x_enc, '(b d) seg_num d_model -> b d seg_num d_model', d = n_vars)
         x_enc += self.enc_pos_embedding
@@ -88,6 +92,7 @@ class Model(nn.Module):
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
+        # embedding
         x_enc, n_vars = self.enc_value_embedding(x_enc.permute(0, 2, 1))
         x_enc = rearrange(x_enc, '(b d) seg_num d_model -> b d seg_num d_model', d=n_vars)
         x_enc += self.enc_pos_embedding
@@ -99,6 +104,7 @@ class Model(nn.Module):
         return dec_out
 
     def anomaly_detection(self, x_enc):
+        # embedding
         x_enc, n_vars = self.enc_value_embedding(x_enc.permute(0, 2, 1))
         x_enc = rearrange(x_enc, '(b d) seg_num d_model -> b d seg_num d_model', d=n_vars)
         x_enc += self.enc_pos_embedding
@@ -109,16 +115,18 @@ class Model(nn.Module):
         return dec_out
 
     def classification(self, x_enc, x_mark_enc):
+        # embedding
         x_enc, n_vars = self.enc_value_embedding(x_enc.permute(0, 2, 1))
+
         x_enc = rearrange(x_enc, '(b d) seg_num d_model -> b d seg_num d_model', d=n_vars)
         x_enc += self.enc_pos_embedding
         x_enc = self.pre_norm(x_enc)
         enc_out, attns = self.encoder(x_enc)
-
+        # Output from Non-stationary Transformer
         output = self.flatten(enc_out[-1].permute(0, 1, 3, 2))
         output = self.dropout(output)
         output = output.reshape(output.shape[0], -1)
-        output = self.projection(output)  # (batch_size, num_classes)
+        output = self.projection(output)
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

@@ -10,7 +10,7 @@ class MIC(nn.Module):
     MIC layer to extract local and global features
     """
 
-    def __init__(self, feature_size=512, n_heads=8, dropout=0.05, decomp_kernel=[32], conv_kernel=[24],
+    def __init__(self, feature_size=512, decomp_kernel=[32], conv_kernel=[24],
                  isometric_kernel=[18, 6], device='cuda'):
         super(MIC, self).__init__()
         self.conv_kernel = conv_kernel
@@ -105,7 +105,13 @@ class SeasonalPrediction(nn.Module):
 
 
 class Model(nn.Module):
+    """
+    Paper link: https://openreview.net/pdf?id=zt53IDUR1U
+    """
     def __init__(self, configs, conv_kernel=[12, 16]):
+        """
+        conv_kernel: downsampling and upsampling convolution kernel_size
+        """
         super(Model, self).__init__()
 
         decomp_kernel = []  # kernel of decomposition operation
@@ -122,7 +128,7 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
         self.seq_len = configs.seq_len
 
-        # Multi-scale Hybrid Decomposition
+        # Multiple Series decomposition block from FEDformer
         self.decomp_multi = series_decomp_multi(decomp_kernel)
 
         # embedding
@@ -150,7 +156,6 @@ class Model(nn.Module):
             self.projection = nn.Linear(configs.c_out * configs.seq_len, configs.num_class)
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
-
         # Multi-scale Hybrid Decomposition
         seasonal_init_enc, trend = self.decomp_multi(x_enc)
         trend = self.regression(trend.permute(0, 2, 1)).permute(0, 2, 1)
@@ -159,7 +164,6 @@ class Model(nn.Module):
         zeros = torch.zeros([x_dec.shape[0], self.pred_len, x_dec.shape[2]], device=x_enc.device)
         seasonal_init_dec = torch.cat([seasonal_init_enc[:, -self.seq_len:, :], zeros], dim=1)
         dec_out = self.dec_embedding(seasonal_init_dec, x_mark_dec)
-
         dec_out = self.conv_trans(dec_out)
         dec_out = dec_out[:, -self.pred_len:, :] + trend[:, -self.pred_len:, :]
         return dec_out
@@ -170,7 +174,6 @@ class Model(nn.Module):
 
         # embedding
         dec_out = self.dec_embedding(seasonal_init_enc, x_mark_dec)
-
         dec_out = self.conv_trans(dec_out)
         dec_out = dec_out + trend
         return dec_out
@@ -181,7 +184,6 @@ class Model(nn.Module):
 
         # embedding
         dec_out = self.dec_embedding(seasonal_init_enc, None)
-
         dec_out = self.conv_trans(dec_out)
         dec_out = dec_out + trend
         return dec_out
@@ -194,7 +196,7 @@ class Model(nn.Module):
         dec_out = self.conv_trans(dec_out)
         dec_out = dec_out + trend
 
-        # Output
+        # Output from Non-stationary Transformer
         output = self.act(dec_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
         output = self.dropout(output)
         output = output * x_mark_enc.unsqueeze(-1)  # zero-out padding embeddings

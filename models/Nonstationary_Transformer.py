@@ -41,7 +41,7 @@ class Projector(nn.Module):
 
 class Model(nn.Module):
     """
-    Non-stationary Transformer
+    Paper link: https://openreview.net/pdf?id=ucNDIDRNjjv
     """
 
     def __init__(self, configs):
@@ -119,9 +119,10 @@ class Model(nn.Module):
         x_enc = x_enc - mean_enc
         std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
-
-        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
-        delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
+        # B x S x E, B x 1 x E -> B x 1, positive scalar
+        tau = self.tau_learner(x_raw, std_enc).exp()
+        # B x S x E, B x 1 x E -> B x S
+        delta = self.delta_learner(x_raw, mean_enc)
 
         x_dec_new = torch.cat([x_enc[:, -self.label_len:, :], torch.zeros_like(x_dec[:, -self.pred_len:, :])],
                               dim=1).to(x_enc.device).clone()
@@ -145,9 +146,10 @@ class Model(nn.Module):
         std_enc = torch.sqrt(torch.sum(x_enc * x_enc, dim=1) / torch.sum(mask == 1, dim=1) + 1e-5)
         std_enc = std_enc.unsqueeze(1).detach()
         x_enc /= std_enc
-
-        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
-        delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
+        # B x S x E, B x 1 x E -> B x 1, positive scalar
+        tau = self.tau_learner(x_raw, std_enc).exp()
+        # B x S x E, B x 1 x E -> B x S
+        delta = self.delta_learner(x_raw, mean_enc)
 
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
@@ -164,9 +166,10 @@ class Model(nn.Module):
         x_enc = x_enc - mean_enc
         std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
-
-        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
-        delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
+        # B x S x E, B x 1 x E -> B x 1, positive scalar
+        tau = self.tau_learner(x_raw, std_enc).exp()
+        # B x S x E, B x 1 x E -> B x S
+        delta = self.delta_learner(x_raw, mean_enc)
         # embedding
         enc_out = self.enc_embedding(x_enc, None)
         enc_out, attns = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
@@ -182,9 +185,10 @@ class Model(nn.Module):
         mean_enc = x_enc.mean(1, keepdim=True).detach()  # B x 1 x E
         std_enc = torch.sqrt(
             torch.var(x_enc - mean_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
-
-        tau = self.tau_learner(x_raw, std_enc).exp()  # B x S x E, B x 1 x E -> B x 1, positive scalar
-        delta = self.delta_learner(x_raw, mean_enc)  # B x S x E, B x 1 x E -> B x S
+        # B x S x E, B x 1 x E -> B x 1, positive scalar
+        tau = self.tau_learner(x_raw, std_enc).exp()
+        # B x S x E, B x 1 x E -> B x S
+        delta = self.delta_learner(x_raw, mean_enc)
         # embedding
         enc_out = self.enc_embedding(x_enc, None)
         enc_out, attns = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
@@ -193,8 +197,10 @@ class Model(nn.Module):
         output = self.act(enc_out)  # the output transformer encoder/decoder embeddings don't include non-linearity
         output = self.dropout(output)
         output = output * x_mark_enc.unsqueeze(-1)  # zero-out padding embeddings
-        output = output.reshape(output.shape[0], -1)  # (batch_size, seq_length * d_model)
-        output = self.projection(output)  # (batch_size, num_classes)
+        # (batch_size, seq_length * d_model)
+        output = output.reshape(output.shape[0], -1)
+        # (batch_size, num_classes)
+        output = self.projection(output)
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

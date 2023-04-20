@@ -20,7 +20,7 @@ class Model(nn.Module):
             self.pred_len = configs.seq_len
         else:
             self.pred_len = configs.pred_len
-
+        # Series decomposition block from Autoformer
         self.decompsition = series_decomp(configs.moving_avg)
         self.individual = individual
         self.channels = configs.enc_in
@@ -75,20 +75,25 @@ class Model(nn.Module):
         return x.permute(0, 2, 1)
 
     def forecast(self, x_enc):
+        # Encoder
         return self.encoder(x_enc)
 
     def imputation(self, x_enc):
+        # Encoder
         return self.encoder(x_enc)
 
     def anomaly_detection(self, x_enc):
+        # Encoder
         return self.encoder(x_enc)
 
     def classification(self, x_enc):
+        # Encoder
         enc_out = self.encoder(x_enc)
         # Output
         # (batch_size, seq_length * d_model)
         output = enc_out.reshape(enc_out.shape[0], -1)
-        output = self.projection(output)  # (batch_size, num_classes)
+        # (batch_size, num_classes)
+        output = self.projection(output)
         return output
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

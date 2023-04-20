@@ -1,6 +1,6 @@
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=4
 
-model_name=FiLM
+model_name=MICN
 
 python -u run.py \
   --task_name short_term_forecast \

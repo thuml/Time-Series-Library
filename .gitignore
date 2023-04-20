@@ -152,3 +152,7 @@ data_loader_all.py
 /scripts/short_term_forecast/tv_script/
 /exp/exp_short_term_forecasting_tv.py
 /exp/exp_long_term_forecasting_tv.py
+/timesnetv2.xlsx
+/scripts/anomaly_detection/tmp/
+/scripts/imputation/tmp/
+/utils/self_tools.py

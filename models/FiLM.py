@@ -38,7 +38,7 @@ class HiPPO_LegT(nn.Module):
         self.register_buffer('eval_matrix', torch.Tensor(
             ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T).to(device))
 
-    def forward(self, inputs):  # torch.Size([128, 1, 1]) -
+    def forward(self, inputs):
         """
         inputs : (length, ...)
         output : (length, ..., N) where N is the order of the HiPPO projection
@@ -92,7 +92,7 @@ class Model(nn.Module):
     """
     Paper link: https://arxiv.org/abs/2205.08897
     """
-    def __init__(self, configs, N=512, N2=32):
+    def __init__(self, configs):
         super(Model, self).__init__()
         self.task_name = configs.task_name
         self.configs = configs
@@ -132,7 +132,7 @@ class Model(nn.Module):
                 configs.enc_in * configs.seq_len, configs.num_class)
 
     def forecast(self, x_enc, x_mark_enc, x_dec_true, x_mark_dec):
-        # Normalization
+        # Normalization from Non-stationary Transformer
         means = x_enc.mean(1, keepdim=True).detach()
         x_enc = x_enc - means
         stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()
@@ -156,7 +156,7 @@ class Model(nn.Module):
         x_dec = torch.stack(x_decs, dim=-1)
         x_dec = self.mlp(x_dec).squeeze(-1).permute(0, 2, 1)
 
-        # De-Normalization
+        # De-Normalization from Non-stationary Transformer
         x_dec = x_dec - self.affine_bias
         x_dec = x_dec / (self.affine_weight + 1e-10)
         x_dec = x_dec * stdev
@@ -164,7 +164,7 @@ class Model(nn.Module):
         return x_dec
 
     def imputation(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask):
-        # Normalization
+        # Normalization from Non-stationary Transformer
         means = x_enc.mean(1, keepdim=True).detach()
         x_enc = x_enc - means
         stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()
@@ -188,7 +188,7 @@ class Model(nn.Module):
         x_dec = torch.stack(x_decs, dim=-1)
         x_dec = self.mlp(x_dec).squeeze(-1).permute(0, 2, 1)
 
-        # De-Normalization
+        # De-Normalization from Non-stationary Transformer
         x_dec = x_dec - self.affine_bias
         x_dec = x_dec / (self.affine_weight + 1e-10)
         x_dec = x_dec * stdev
@@ -196,7 +196,7 @@ class Model(nn.Module):
         return x_dec
 
     def anomaly_detection(self, x_enc):
-        # Normalization
+        # Normalization from Non-stationary Transformer
         means = x_enc.mean(1, keepdim=True).detach()
         x_enc = x_enc - means
         stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()
@@ -220,7 +220,7 @@ class Model(nn.Module):
         x_dec = torch.stack(x_decs, dim=-1)
         x_dec = self.mlp(x_dec).squeeze(-1).permute(0, 2, 1)
 
-        # De-Normalization
+        # De-Normalization from Non-stationary Transformer
         x_dec = x_dec - self.affine_bias
         x_dec = x_dec / (self.affine_weight + 1e-10)
         x_dec = x_dec * stdev
@@ -246,7 +246,7 @@ class Model(nn.Module):
         x_dec = torch.stack(x_decs, dim=-1)
         x_dec = self.mlp(x_dec).squeeze(-1).permute(0, 2, 1)
 
-        # Output
+        # Output from Non-stationary Transformer
         output = self.act(x_dec)
         output = self.dropout(output)
         output = output * x_mark_enc.unsqueeze(-1)
