@@ -10,7 +10,7 @@ class MIC(nn.Module):
     MIC layer to extract local and global features
     """
 
-    def __init__(self, feature_size=512, decomp_kernel=[32], conv_kernel=[24],
+    def __init__(self, feature_size=512, n_heads=8, dropout=0.05, decomp_kernel=[32], conv_kernel=[24],
                  isometric_kernel=[18, 6], device='cuda'):
         super(MIC, self).__init__()
         self.conv_kernel = conv_kernel
