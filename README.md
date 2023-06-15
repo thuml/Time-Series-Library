@@ -96,6 +96,8 @@ or describe it in Issues.
 
 ## Acknowledgement
 
+This project is supported by the National Key R&D Program of China (2021YFB1715200).
+
 This library is constructed based on the following repos:
 
 - Forecasting: https://github.com/thuml/Autoformer
