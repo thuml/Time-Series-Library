@@ -17,9 +17,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 1 \
-  --dec_in 1 \
-  --c_out 1 \
+  --enc_in 321 \
+  --dec_in 321 \
+  --c_out 321 \
   --des 'Exp' \
   --itr 1 \
   --p_hidden_dims 256 256 \
@@ -41,9 +41,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 1 \
-  --dec_in 1 \
-  --c_out 1 \
+  --enc_in 321 \
+  --dec_in 321 \
+  --c_out 321 \
   --des 'Exp' \
   --itr 1 \
   --p_hidden_dims 256 256 \
@@ -65,9 +65,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 1 \
-  --dec_in 1 \
-  --c_out 1 \
+  --enc_in 321 \
+  --dec_in 321 \
+  --c_out 321 \
   --des 'Exp' \
   --itr 1 \
   --p_hidden_dims 256 256 \
@@ -89,9 +89,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 1 \
-  --dec_in 1 \
-  --c_out 1 \
+  --enc_in 321 \
+  --dec_in 321 \
+  --c_out 321 \
   --des 'Exp' \
   --itr 1 \
   --p_hidden_dims 256 256 \
