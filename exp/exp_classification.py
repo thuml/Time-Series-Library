@@ -182,7 +182,8 @@ class Exp_Classification(Exp_Basic):
             os.makedirs(folder_path)
 
         print('accuracy:{}'.format(accuracy))
-        f = open("result_classification.txt", 'a')
+        file_name='result_classification.txt'
+        f = open(os.path.join(folder_path,file_name), 'a')
         f.write(setting + "  \n")
         f.write('accuracy:{}'.format(accuracy))
         f.write('\n')

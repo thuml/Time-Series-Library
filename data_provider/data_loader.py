@@ -654,6 +654,7 @@ class UEAloader(Dataset):
             data_paths = list(filter(lambda x: re.search(flag, x), data_paths))
         input_paths = [p for p in data_paths if os.path.isfile(p) and p.endswith('.ts')]
         if len(input_paths) == 0:
+            pattern='*.ts'
             raise Exception("No .ts files found using pattern: '{}'".format(pattern))
 
         all_df, labels_df = self.load_single(input_paths[0])  # a single file contains dataset
