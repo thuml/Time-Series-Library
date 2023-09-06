@@ -3,6 +3,8 @@ TSlib is an open-source library for deep learning researchers, especially deep t
 
 We provide a neat code base to evaluate advanced deep time series models or develop your own model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
+:triangular_flag_on_post:**News** (2023.09) We add a detailed [tutorial](https://github.com/thuml/Time-Series-Library/blob/main/tutorial/TimesNet_tutorial.ipynb) for [TimesNet](https://openreview.net/pdf?id=ju_Uqw384Oq) and this library, which is quite friendly to beginners of deep time series analysis.
+
 ## Leaderboard for Time Series Analysis
 
 Till February 2023, the top three models for five different tasks are:
@@ -91,8 +93,9 @@ If you have any questions or suggestions, feel free to contact:
 - Haixu Wu (wuhx23@mails.tsinghua.edu.cn)
 - Tengge Hu (htg21@mails.tsinghua.edu.cn)
 - Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
+- Jiawei Guo (guo-jw21@mails.tsinghua.edu.cn)
 
-or describe it in Issues.
+or describe it in Issues. Recently, Jiawei Guo is the main maintainer to this library 😊.
 
 ## Acknowledgement
 
