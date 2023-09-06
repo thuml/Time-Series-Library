@@ -95,7 +95,7 @@ If you have any questions or suggestions, feel free to contact:
 - Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (guo-jw21@mails.tsinghua.edu.cn)
 
-or describe it in Issues.
+or describe it in Issues. Recently, Jiawei Guo is the main maintainer to this library 😊.
 
 ## Acknowledgement
 
