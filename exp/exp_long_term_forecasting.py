@@ -218,6 +218,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                 outputs = outputs.detach().cpu().numpy()
                 batch_y = batch_y.detach().cpu().numpy()
+                if test_data.scale and self.args.inverse:
+                    outputs = test_data.inverse_transform(outputs)
+                    batch_y = test_data.inverse_transform(batch_y)
 
                 pred = outputs
                 true = batch_y
