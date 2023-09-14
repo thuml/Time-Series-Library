@@ -386,7 +386,8 @@ class PSMSegLoader(Dataset):
         test_data = np.nan_to_num(test_data)
         self.test = self.scaler.transform(test_data)
         self.train = data
-        self.val = self.test
+        data_len = len(self.train)
+        self.val = self.train[(int)(data_len * 0.8):]
         self.test_labels = pd.read_csv(os.path.join(root_path, 'test_label.csv')).values[:, 1:]
         print("test:", self.test.shape)
         print("train:", self.train.shape)
@@ -428,7 +429,8 @@ class MSLSegLoader(Dataset):
         test_data = np.load(os.path.join(root_path, "MSL_test.npy"))
         self.test = self.scaler.transform(test_data)
         self.train = data
-        self.val = self.test
+        data_len = len(self.train)
+        self.val = self.train[(int)(data_len * 0.8):]
         self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
         print("test:", self.test.shape)
         print("train:", self.train.shape)
@@ -470,7 +472,8 @@ class SMAPSegLoader(Dataset):
         test_data = np.load(os.path.join(root_path, "SMAP_test.npy"))
         self.test = self.scaler.transform(test_data)
         self.train = data
-        self.val = self.test
+        data_len = len(self.train)
+        self.val = self.train[(int)(data_len * 0.8):]
         self.test_labels = np.load(os.path.join(root_path, "SMAP_test_label.npy"))
         print("test:", self.test.shape)
         print("train:", self.train.shape)
@@ -560,7 +563,8 @@ class SWATSegLoader(Dataset):
         test_data = self.scaler.transform(test_data)
         self.train = train_data
         self.test = test_data
-        self.val = test_data
+        data_len = len(self.train)
+        self.val = self.train[(int)(data_len * 0.8):]
         self.test_labels = labels
         print("test:", self.test.shape)
         print("train:", self.train.shape)
