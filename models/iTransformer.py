@@ -9,11 +9,8 @@ import numpy as np
 
 class Model(nn.Module):
     """
-    Vanilla Transformer
-    with O(L^2) complexity
-    Paper link: https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf
+    Paper link: https://arxiv.org/abs/2310.06625
     """
-
     def __init__(self, configs):
         super(Model, self).__init__()
         self.task_name = configs.task_name
