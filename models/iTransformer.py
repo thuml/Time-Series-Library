@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
-from layers.Embed import DataEmbedding_bnt
+from layers.Embed import DataEmbedding_inverted
 import numpy as np
 
 
@@ -19,8 +19,8 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
         # Embedding
-        self.enc_embedding = DataEmbedding_bnt(configs.seq_len, configs.d_model, configs.embed, configs.freq,
-                                               configs.dropout)
+        self.enc_embedding = DataEmbedding_inverted(configs.seq_len, configs.d_model, configs.embed, configs.freq,
+                                                    configs.dropout)
         # Encoder
         self.encoder = Encoder(
             [
@@ -58,7 +58,7 @@ class Model(nn.Module):
         _, _, N = x_enc.shape
 
         # Embedding
-        enc_out = self.enc_embedding(x_enc.permute(0, 2, 1), x_mark_enc)
+        enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         dec_out = self.projection(enc_out).permute(0, 2, 1)[:, :, :N]
@@ -77,7 +77,7 @@ class Model(nn.Module):
         _, L, N = x_enc.shape
 
         # Embedding
-        enc_out = self.enc_embedding(x_enc.permute(0, 2, 1), x_mark_enc)
+        enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         dec_out = self.projection(enc_out).permute(0, 2, 1)[:, :, :N]
@@ -96,7 +96,7 @@ class Model(nn.Module):
         _, L, N = x_enc.shape
 
         # Embedding
-        enc_out = self.enc_embedding(x_enc.permute(0, 2, 1), None)
+        enc_out = self.enc_embedding(x_enc, None)
         enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         dec_out = self.projection(enc_out).permute(0, 2, 1)[:, :, :N]
@@ -107,7 +107,7 @@ class Model(nn.Module):
 
     def classification(self, x_enc, x_mark_enc):
         # Embedding
-        enc_out = self.enc_embedding(x_enc.permute(0, 2, 1), None)
+        enc_out = self.enc_embedding(x_enc, None)
         enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         # Output

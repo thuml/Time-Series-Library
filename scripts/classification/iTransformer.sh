@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=3S
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=iTransformer
 
