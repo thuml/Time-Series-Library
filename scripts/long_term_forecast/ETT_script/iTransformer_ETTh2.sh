@@ -17,9 +17,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 21 \
-  --dec_in 21 \
-  --c_out 21 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
   --des 'Exp' \
   --d_model 128 \
   --d_ff 128 \
@@ -40,9 +40,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 21 \
-  --dec_in 21 \
-  --c_out 21 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
   --des 'Exp' \
   --d_model 128 \
   --d_ff 128 \
@@ -63,9 +63,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 21 \
-  --dec_in 21 \
-  --c_out 21 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
   --des 'Exp' \
   --d_model 128 \
   --d_ff 128 \
@@ -86,9 +86,9 @@ python -u run.py \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 21 \
-  --dec_in 21 \
-  --c_out 21 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
   --des 'Exp' \
   --d_model 128 \
   --d_ff 128 \
