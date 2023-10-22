@@ -1,11 +1,11 @@
 # Time Series Library (TSlib)
-TSlib is an open-source library for deep learning researchers, especially deep time series analysis.
+TSlib is an open-source library for deep learning researchers, especially for deep time series analysis.
 
 We provide a neat code base to evaluate advanced deep time series models or develop your own model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
-:triangular_flag_on_post:**News** (2023.10) We add an official implementation to [iTransformer](https://arxiv.org/abs/2310.06625), which is the state-of-the-art model in long-term forecasting.
+:triangular_flag_on_post:**News** (2023.10) We add an official implementation to [iTransformer](https://arxiv.org/abs/2310.06625), which is the state-of-the-art model for long-term forecasting.
 
-:triangular_flag_on_post:**News** (2023.09) We add a detailed [tutorial](https://github.com/thuml/Time-Series-Library/blob/main/tutorial/TimesNet_tutorial.ipynb) for [TimesNet](https://openreview.net/pdf?id=ju_Uqw384Oq) and this library, which is quite friendly to beginners of deep time series analysis.
+:triangular_flag_on_post:**News** (2023.09) We added a detailed [tutorial](https://github.com/thuml/Time-Series-Library/blob/main/tutorial/TimesNet_tutorial.ipynb) for [TimesNet](https://openreview.net/pdf?id=ju_Uqw384Oq) and this library, which is quite friendly to beginners of deep time series analysis.
 
 ## Leaderboard for Time Series Analysis
 
@@ -16,6 +16,7 @@ Till October 2023, the top three models for five different tasks are:
 | 🥇 1st            | [iTransformer](https://arxiv.org/abs/2310.06625)  | [TimesNet](https://arxiv.org/abs/2210.02186)                 | [TimesNet](https://arxiv.org/abs/2210.02186)                 | [TimesNet](https://arxiv.org/abs/2210.02186)                 | [TimesNet](https://arxiv.org/abs/2210.02186)       |
 | 🥈 2nd            |   [PatchTST](https://github.com/yuqinie98/PatchTST)    | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [FEDformer](https://github.com/MAZiqing/FEDformer) |
 | 🥉 3rd            | [TimesNet](https://arxiv.org/abs/2210.02186) | [FEDformer](https://github.com/MAZiqing/FEDformer)           | [Autoformer](https://github.com/thuml/Autoformer)            | [Informer](https://github.com/zhouhaoyi/Informer2020)        | [Autoformer](https://github.com/thuml/Autoformer)  |
+
 
 **Note: We will keep updating this leaderboard.** If you have proposed advanced and awesome models, you can send us your paper/code link or raise a pull request. We will add them to this repo and update the leaderboard as soon as possible.
 
@@ -50,13 +51,13 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 pip install -r requirements.txt
 ```
 
-2. Prepare Data. You can obtained the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Tsinghua Cloud]](https://cloud.tsinghua.edu.cn/f/84fbc752d0e94980a610/) or [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy). Then place the downloaded data under the folder `./dataset`. Here is a summary of supported datasets.
+2. Prepare Data. You can obtain the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Tsinghua Cloud]](https://cloud.tsinghua.edu.cn/f/84fbc752d0e94980a610/), or [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy), Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
 
 <p align="center">
 <img src=".\pic\dataset.png" height = "200" alt="" align=center />
 </p>
 
-3. Train and evaluate model. We provide the experiment scripts of all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
+3. Train and evaluate model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
 ```
 # long-term forecast
@@ -98,7 +99,7 @@ If you have any questions or suggestions, feel free to contact:
 - Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (guo-jw21@mails.tsinghua.edu.cn)
 
-Or describe it in Issues. Recently, Jiawei Guo is the main maintainer of this library 😊.
+Or describe it in Issues.
 
 ## Acknowledgement
 
