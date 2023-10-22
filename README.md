@@ -1,11 +1,11 @@
 # Time Series Library (TSlib)
-TSlib is an open-source library for deep learning researchers, especially deep time series analysis.
+TSlib is an open-source library for deep learning researchers, especially for deep time series analysis.
 
 We provide a neat code base to evaluate advanced deep time series models or develop your own model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
-:triangular_flag_on_post:**News** (2023.10) We add an official implementation to [iTransformer](https://arxiv.org/abs/2310.06625), which is the state-of-the-art model in long-term forecasting.
+:triangular_flag_on_post:**News** (2023.10) We add an official implementation to [iTransformer](https://arxiv.org/abs/2310.06625), which is the state-of-the-art model for long-term forecasting.
 
-:triangular_flag_on_post:**News** (2023.09) We add a detailed [tutorial](https://github.com/thuml/Time-Series-Library/blob/main/tutorial/TimesNet_tutorial.ipynb) for [TimesNet](https://openreview.net/pdf?id=ju_Uqw384Oq) and this library, which is quite friendly to beginners of deep time series analysis.
+:triangular_flag_on_post:**News** (2023.09) We added a detailed [tutorial](https://github.com/thuml/Time-Series-Library/blob/main/tutorial/TimesNet_tutorial.ipynb) for [TimesNet](https://openreview.net/pdf?id=ju_Uqw384Oq) and this library, which is quite friendly to beginners of deep time series analysis.
 
 ## Leaderboard for Time Series Analysis
 
@@ -17,7 +17,7 @@ Till October 2023, the top three models for five different tasks are:
 | 🥈 2nd            |   [PatchTST](https://github.com/yuqinie98/PatchTST)    | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [Non-stationary<br/>Transformer](https://github.com/thuml/Nonstationary_Transformers) | [FEDformer](https://github.com/MAZiqing/FEDformer) |
 | 🥉 3rd            | [TimesNet](https://arxiv.org/abs/2210.02186) | [FEDformer](https://github.com/MAZiqing/FEDformer)           | [Autoformer](https://github.com/thuml/Autoformer)            | [Informer](https://github.com/zhouhaoyi/Informer2020)        | [Autoformer](https://github.com/thuml/Autoformer)  |
 
-**Note: We will keep updating this leaderboard.** If you have proposed advanced and awesome models, welcome to send your paper/code link to us or raise a pull request. We will add them to this repo and update the leaderboard as soon as possible.
+**Note: We will keep updating this leaderboard.** If you have proposed advanced and awesome models, you are welcome to send your paper/code link to us or raise a pull request. We will add them to this repo and update the leaderboard as soon as possible.
 
 **Compared models of this leaderboard.** ☑ means that their codes have already been included in this repo.
   - [x] **iTransformer** - iTransformer: Inverted Transformers Are Effective for Time Series Forecasting [[arXiv 2023]](https://arxiv.org/abs/2310.06625) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/iTransformer.py)
@@ -31,13 +31,13 @@ Till October 2023, the top three models for five different tasks are:
   - [x] **FEDformer** - FEDformer: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [[ICML 2022]](https://proceedings.mlr.press/v162/zhou22g.html) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/FEDformer.py)
   - [x] **Pyraformer** - Pyraformer: Low-complexity Pyramidal Attention for Long-range Time Series Modeling and Forecasting [[ICLR 2022]](https://openreview.net/pdf?id=0EXmFzUn5I) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Pyraformer.py)
   - [x] **Autoformer** - Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [[NeurIPS 2021]](https://openreview.net/pdf?id=I55UqU-M11y) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Autoformer.py)
-  - [x] **Informer** - Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting [[AAAI 2021]](https://ojs.aaai.org/index.php/AAAI/article/view/17325/17132) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Informer.py)
+  - [x] **Informer** - Informer: Beyond Efficient Transformers for Long Sequence Time-Series Forecasting [[AAAI 2021]](https://ojs.aaai.org/index.php/AAAI/article/view/17325/17132) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Informer.py)
   - [x] **Reformer** - Reformer: The Efficient Transformer [[ICLR 2020]](https://openreview.net/forum?id=rkgNKkHtvB) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Reformer.py)
   - [x] **Transformer** - Attention is All You Need [[NeurIPS 2017]](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Transformer.py)
 
 See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comprehensive benchmark. We will release a real-time updated online version soon.
 
-**Newly added baselines.** We will add them into the leaderboard after a comprehensive evaluation.
+**Newly added baselines.** We will add them to the leaderboard after a comprehensive evaluation.
   - [x] **FiLM** - FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting [[NeurIPS 2022]](https://openreview.net/forum?id=zTQdHSQUQWc)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/FiLM.py)
   - [x] **MICN** - MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting [[ICLR 2023]](https://openreview.net/pdf?id=zt53IDUR1U)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/MICN.py)
   - [x] **Crossformer** - Crossformer: Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting [[ICLR 2023]](https://openreview.net/pdf?id=vSVLM2j9eie)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Crossformer.py)
@@ -56,7 +56,7 @@ pip install -r requirements.txt
 <img src=".\pic\dataset.png" height = "200" alt="" align=center />
 </p>
 
-3. Train and evaluate model. We provide the experiment scripts of all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
+3. Train and evaluate model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
 ```
 # long-term forecast
@@ -98,7 +98,7 @@ If you have any questions or suggestions, feel free to contact:
 - Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (guo-jw21@mails.tsinghua.edu.cn)
 
-or describe it in Issues. Recently, Jiawei Guo is the main maintainer to this library 😊.
+or describe it in Issues. Recently, Jiawei Guo is the main maintainer of this library 😊.
 
 ## Acknowledgement
 
