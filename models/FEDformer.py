@@ -25,6 +25,7 @@ class Model(nn.Module):
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
+
         self.version = version
         self.mode_select = mode_select
         self.modes = modes
@@ -63,7 +64,8 @@ class Model(nn.Module):
                                                       seq_len_q=self.seq_len // 2 + self.pred_len,
                                                       seq_len_kv=self.seq_len,
                                                       modes=self.modes,
-                                                      mode_select_method=self.mode_select)
+                                                      mode_select_method=self.mode_select,
+                                                      num_heads=configs.n_heads)
         # Encoder
         self.encoder = Encoder(
             [

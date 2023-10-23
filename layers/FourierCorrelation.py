@@ -80,7 +80,7 @@ class FourierBlock(nn.Module):
 # ########## Fourier Cross Former ####################
 class FourierCrossAttention(nn.Module):
     def __init__(self, in_channels, out_channels, seq_len_q, seq_len_kv, modes=64, mode_select_method='random',
-                 activation='tanh', policy=0):
+                 activation='tanh', policy=0, num_heads=8):
         super(FourierCrossAttention, self).__init__()
         print(' fourier enhanced cross attention used!')
         """
@@ -98,9 +98,9 @@ class FourierCrossAttention(nn.Module):
 
         self.scale = (1 / (in_channels * out_channels))
         self.weights1 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index_q), dtype=torch.float))
+            self.scale * torch.rand(num_heads, in_channels // num_heads, out_channels // num_heads, len(self.index_q), dtype=torch.float))
         self.weights2 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index_q), dtype=torch.float))
+            self.scale * torch.rand(num_heads, in_channels // num_heads, out_channels // num_heads, len(self.index_q), dtype=torch.float))
 
     # Complex multiplication
     def compl_mul1d(self, order, x, weights):
