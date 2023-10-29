@@ -123,3 +123,9 @@ All the experiment datasets are public, and we obtain them from the following li
 - Anomaly Detection: https://github.com/thuml/Anomaly-Transformer.
 
 - Classification: https://www.timeseriesclassification.com/.
+
+## All Thanks To Our Contributors
+
+<a href="https://github.com/thuml/Time-Series-Library/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=thuml/Time-Series-Library" />
+</a>
