@@ -1,3 +1,0 @@
-long_term_forecast_ETTh1_96_96_Transformer_ETTh1_ftMS_sl96_ll48_pl96_dm512_nh8_el2_dl1_df2048_fc3_ebtimeF_dtTrue_Exp_0  
-mse:74.45159912109375, mae:8.164493560791016
-
