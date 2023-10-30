@@ -1,18 +1,38 @@
 export CUDA_VISIBLE_DEVICES=2
 
-model_name=TimesNet
+model_name=Koopa
 
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \
-  --data_path ETTh1.csv \
-  --model_id ETTh1_96_96 \
+  --data_path ETTh2.csv \
+  --model_id ETTh2_96_48 \
   --model $model_name \
-  --data ETTh1 \
+  --data ETTh2 \
   --features M \
   --seq_len 96 \
-  --label_len 48 \
+  --pred_len 48 \
+  --e_layers 2 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
+  --des 'Exp' \
+  --learning_rate 0.001 \
+  --itr 1
+
+python -u run.py \
+  --task_name long_term_forecast \
+  --is_training 1 \
+  --root_path ./dataset/ETT-small/ \
+  --data_path ETTh2.csv \
+  --model_id ETTh2_192_96 \
+  --model $model_name \
+  --data ETTh2 \
+  --features M \
+  --seq_len 192 \
   --pred_len 96 \
   --e_layers 2 \
   --d_layers 1 \
@@ -20,24 +40,41 @@ python -u run.py \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
-  --d_model 16 \
-  --d_ff 32 \
   --des 'Exp' \
-  --itr 1 \
-  --top_k 5 
-
+  --learning_rate 0.001 \
+  --itr 1
 
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \
-  --data_path ETTh1.csv \
-  --model_id ETTh1_96_192 \
+  --data_path ETTh2.csv \
+  --model_id ETTh2_288_144 \
   --model $model_name \
-  --data ETTh1 \
+  --data ETTh2 \
   --features M \
-  --seq_len 96 \
-  --label_len 48 \
+  --seq_len 288 \
+  --pred_len 144 \
+  --e_layers 2 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
+  --des 'Exp' \
+  --learning_rate 0.001 \
+  --itr 1
+
+python -u run.py \
+  --task_name long_term_forecast \
+  --is_training 1 \
+  --root_path ./dataset/ETT-small/ \
+  --data_path ETTh2.csv \
+  --model_id ETTh2_384_192 \
+  --model $model_name \
+  --data ETTh2 \
+  --features M \
+  --seq_len 384 \
   --pred_len 192 \
   --e_layers 2 \
   --d_layers 1 \
@@ -45,58 +82,6 @@ python -u run.py \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
-  --d_model 16 \
-  --d_ff 32 \
   --des 'Exp' \
-  --itr 1 \
-  --top_k 5
-
-
-python -u run.py \
-  --task_name long_term_forecast \
-  --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
-  --data_path ETTh1.csv \
-  --model_id ETTh1_96_336 \
-  --model $model_name \
-  --data ETTh1 \
-  --features M \
-  --seq_len 96 \
-  --label_len 48 \
-  --pred_len 336 \
-  --e_layers 2 \
-  --d_layers 1 \
-  --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
-  --c_out 7 \
-  --d_model 16 \
-  --d_ff 32 \
-  --des 'Exp' \
-  --itr 1 \
-  --top_k 5
-
-
-python -u run.py \
-  --task_name long_term_forecast \
-  --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
-  --data_path ETTh1.csv \
-  --model_id ETTh1_96_720 \
-  --model $model_name \
-  --data ETTh1 \
-  --features M \
-  --seq_len 96 \
-  --label_len 48 \
-  --pred_len 720 \
-  --e_layers 2 \
-  --d_layers 1 \
-  --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
-  --c_out 7 \
-  --d_model 16 \
-  --d_ff 32 \
-  --des 'Exp' \
-  --itr 1 \
-  --top_k 5
+  --learning_rate 0.001 \
+  --itr 1
