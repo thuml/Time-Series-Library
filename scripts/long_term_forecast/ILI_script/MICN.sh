@@ -24,7 +24,6 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  --conv_kernel 18 12 \
   --itr 1
 
 python -u run.py \
@@ -49,7 +48,6 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  --conv_kernel 18 12 \
   --itr 1
 
 python -u run.py \
@@ -74,7 +72,6 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  --conv_kernel 18 12 \
   --itr 1
 
 python -u run.py \
@@ -99,5 +96,4 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  --conv_kernel 18 12 \
   --itr 1
