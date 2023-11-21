@@ -40,8 +40,10 @@ class ResBlock(nn.Module):
 
 #TiDE
 class Model(nn.Module):  
-    '''paper: https://arxiv.org/pdf/2304.08424.pdf '''
-    def __init__(self, configs, bias=True,feature_encode_dim=2): 
+    """
+    paper: https://arxiv.org/pdf/2304.08424.pdf 
+    """
+    def __init__(self, configs, bias=True, feature_encode_dim=2): 
         super(Model, self).__init__()
         self.configs = configs
         self.task_name = configs.task_name
@@ -69,27 +71,69 @@ class Model(nn.Module):
 
         self.feature_encoder = ResBlock(self.feature_dim, self.res_hidden, self.feature_encode_dim, dropout, bias)
         self.encoders = nn.Sequential(ResBlock(flatten_dim, self.res_hidden, self.hidden_dim, dropout, bias),*([ ResBlock(self.hidden_dim, self.res_hidden, self.hidden_dim, dropout, bias)]*(self.encoder_num-1)))
-        self.decoders = nn.Sequential(*([ ResBlock(self.hidden_dim, self.res_hidden, self.hidden_dim, dropout, bias)]*(self.decoder_num-1)),ResBlock(self.hidden_dim, self.res_hidden, self.decode_dim * self.pred_len, dropout, bias))
-        self.temporalDecoder = ResBlock(self.decode_dim + self.feature_encode_dim, self.temporalDecoderHidden, 1, dropout, bias)
-        self.residual_proj = nn.Linear(self.seq_len, self.pred_len, bias=bias)
-        
+        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
+            self.decoders = nn.Sequential(*([ ResBlock(self.hidden_dim, self.res_hidden, self.hidden_dim, dropout, bias)]*(self.decoder_num-1)),ResBlock(self.hidden_dim, self.res_hidden, self.decode_dim * self.pred_len, dropout, bias))
+            self.temporalDecoder = ResBlock(self.decode_dim + self.feature_encode_dim, self.temporalDecoderHidden, 1, dropout, bias)
+            self.residual_proj = nn.Linear(self.seq_len, self.pred_len, bias=bias)
+        if self.task_name == 'imputation':
+            self.decoders = nn.Sequential(*([ ResBlock(self.hidden_dim, self.res_hidden, self.hidden_dim, dropout, bias)]*(self.decoder_num-1)),ResBlock(self.hidden_dim, self.res_hidden, self.decode_dim * self.seq_len, dropout, bias))
+            self.temporalDecoder = ResBlock(self.decode_dim + self.feature_encode_dim, self.temporalDecoderHidden, 1, dropout, bias)
+            self.residual_proj = nn.Linear(self.seq_len, self.seq_len, bias=bias)
+        if self.task_name == 'anomaly_detection':
+            self.decoders = nn.Sequential(*([ ResBlock(self.hidden_dim, self.res_hidden, self.hidden_dim, dropout, bias)]*(self.decoder_num-1)),ResBlock(self.hidden_dim, self.res_hidden, self.decode_dim * self.seq_len, dropout, bias))
+            self.temporalDecoder = ResBlock(self.decode_dim + self.feature_encode_dim, self.temporalDecoderHidden, 1, dropout, bias)
+            self.residual_proj = nn.Linear(self.seq_len, self.seq_len, bias=bias)
+            
         
     def forecast(self, x_enc, x_mark_enc, x_dec, batch_y_mark):
-
+        # Normalization
+        means = x_enc.mean(1, keepdim=True).detach()
+        x_enc = x_enc - means
+        stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5)
+        x_enc /= stdev
+        
         feature = self.feature_encoder(batch_y_mark)
         hidden = self.encoders(torch.cat([x_enc, feature.reshape(feature.shape[0], -1)], dim=-1))
         decoded = self.decoders(hidden).reshape(hidden.shape[0], self.pred_len, self.decode_dim)
-        prediction = self.temporalDecoder(torch.cat([feature[:,self.seq_len:], decoded], dim=-1)).squeeze(-1) + self.residual_proj(x_enc)
-        return prediction
+        dec_out = self.temporalDecoder(torch.cat([feature[:,self.seq_len:], decoded], dim=-1)).squeeze(-1) + self.residual_proj(x_enc)
+        
+        
+        # De-Normalization 
+        dec_out = dec_out * (stdev[:, 0].unsqueeze(1).repeat(1, self.pred_len))
+        dec_out = dec_out + (means[:, 0].unsqueeze(1).repeat(1, self.pred_len))
+        return dec_out
     
-    def forward(self, x_enc, x_mark_enc, x_dec, batch_y_mark):
+    def imputation(self, x_enc, x_mark_enc, x_dec, batch_y_mark, mask):
+        # Normalization
+        means = x_enc.mean(1, keepdim=True).detach()
+        x_enc = x_enc - means
+        stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5)
+        x_enc /= stdev
 
+        feature = self.feature_encoder(x_mark_enc)
+        hidden = self.encoders(torch.cat([x_enc, feature.reshape(feature.shape[0], -1)], dim=-1))
+        decoded = self.decoders(hidden).reshape(hidden.shape[0], self.seq_len, self.decode_dim)
+        dec_out = self.temporalDecoder(torch.cat([feature[:,:self.seq_len], decoded], dim=-1)).squeeze(-1) + self.residual_proj(x_enc)
+    
+        # De-Normalization 
+        dec_out = dec_out * (stdev[:, 0].unsqueeze(1).repeat(1, self.seq_len))
+        dec_out = dec_out + (means[:, 0].unsqueeze(1).repeat(1, self.seq_len))
+        return dec_out
+    
+    
+    def forward(self, x_enc, x_mark_enc, x_dec, batch_y_mark, mask=None):
         '''x_mark_enc is the exogenous dynamic feature described in the original paper'''
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-                batch_y_mark=torch.concat([x_mark_enc,batch_y_mark[:,-self.pred_len:,:]],dim=1)
-                dec_out = torch.stack([self.forecast(x_enc[:,:,feature], x_mark_enc, x_dec, batch_y_mark) for feature in range(x_enc.shape[-1])],dim=-1)
-                return dec_out # [B, L, D]
-       
+            batch_y_mark=torch.concat([x_mark_enc,batch_y_mark[:,-self.pred_len:,:]],dim=1)
+            dec_out = torch.stack([self.forecast(x_enc[:,:,feature], x_mark_enc, x_dec, batch_y_mark) for feature in range(x_enc.shape[-1])],dim=-1)
+            return dec_out # [B, L, D]
+        if self.task_name == 'imputation':
+            dec_out = torch.stack([self.imputation(x_enc[:,:,feature], x_mark_enc, x_dec, batch_y_mark, mask) for feature in range(x_enc.shape[-1])],dim=-1)
+            return dec_out  # [B, L, D]
+        if self.task_name == 'anomaly_detection':
+            raise NotImplementedError("Task anomaly_detection for Tide is temporarily not supported")
+        if self.task_name == 'classification':
+            raise NotImplementedError("Task classification for Tide is temporarily not supported")
         return None
     
     
