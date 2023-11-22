@@ -6,6 +6,7 @@ from exp.exp_imputation import Exp_Imputation
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
+from utils.print_args import print_args
 import random
 import numpy as np
 
@@ -105,7 +106,7 @@ if __name__ == '__main__':
         args.gpu = args.device_ids[0]
 
     print('Args in experiment:')
-    print(args)
+    print_args(args)
 
     if args.task_name == 'long_term_forecast':
         Exp = Exp_Long_Term_Forecast
