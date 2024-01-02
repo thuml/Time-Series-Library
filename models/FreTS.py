@@ -9,11 +9,16 @@ class Model(nn.Module):
     """
     def __init__(self, configs):
         super(Model, self).__init__()
+        self.task_name = configs.task_name
+        if self.task_name == 'classification' or self.task_name == 'anomaly_detection' or self.task_name == 'imputation':
+            self.pred_len = configs.seq_len
+        else:
+            self.pred_len = configs.pred_len
         self.embed_size = 128 #embed_size
         self.hidden_size = 256 #hidden_size
-        self.pre_length = configs.pred_len
+        self.pred_len = configs.pred_len
         self.feature_size = configs.enc_in #channels
-        self.seq_length = configs.seq_len
+        self.seq_len = configs.seq_len
         self.channel_independence = configs.channel_independence
         self.sparsity_threshold = 0.01
         self.scale = 0.02
@@ -28,9 +33,9 @@ class Model(nn.Module):
         self.ib2 = nn.Parameter(self.scale * torch.randn(self.embed_size))
 
         self.fc = nn.Sequential(
-            nn.Linear(self.seq_length * self.embed_size, self.hidden_size),
+            nn.Linear(self.seq_len * self.embed_size, self.hidden_size),
             nn.LeakyReLU(),
-            nn.Linear(self.hidden_size, self.pre_length)
+            nn.Linear(self.hidden_size, self.pred_len)
         )
 
     # dimension extension
@@ -47,7 +52,7 @@ class Model(nn.Module):
         # [B, N, T, D]
         x = torch.fft.rfft(x, dim=2, norm='ortho') # FFT on L dimension
         y = self.FreMLP(B, N, L, x, self.r2, self.i2, self.rb2, self.ib2)
-        x = torch.fft.irfft(y, n=self.seq_length, dim=2, norm="ortho")
+        x = torch.fft.irfft(y, n=self.seq_len, dim=2, norm="ortho")
         return x
 
     # frequency channel learner
@@ -88,7 +93,7 @@ class Model(nn.Module):
         y = torch.view_as_complex(y)
         return y
 
-    def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+    def forecast(self, x_enc):
         # x: [Batch, Input length, Channel]
         B, T, N = x_enc.shape
         # embedding x: [B, N, T, D]
@@ -102,3 +107,11 @@ class Model(nn.Module):
         x = x + bias
         x = self.fc(x.reshape(B, N, -1)).permute(0, 2, 1)
         return x
+
+    def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
+            dec_out = self.forecast(x_enc)
+            return dec_out[:, -self.pred_len:, :]  # [B, L, D]
+        else:
+            raise ValueError('Only forecast tasks implemented yet')
+
