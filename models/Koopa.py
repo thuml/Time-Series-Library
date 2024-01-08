@@ -65,7 +65,7 @@ class MLP(nn.Module):
 
 class KPLayer(nn.Module):
     """
-    Find koopman transition of linear system by DMD with one step approximation
+    A demonstration of finding one step transition of linear system by DMD iteratively
     """
     def __init__(self): 
         super(KPLayer, self).__init__()
@@ -91,9 +91,10 @@ class KPLayer(nn.Module):
         return z_pred
     
     def forward(self, z, pred_len=1):
+        assert pred_len >= 1, 'prediction length should not be less than 1'
         z_rec, z_pred= self.one_step_forward(z, return_rec=True)
-        z_preds = []
-        for i in range(pred_len):
+        z_preds = [z_pred]
+        for i in range(1, pred_len):
             z_pred = torch.bmm(z_pred, self.K)
             z_preds.append(z_pred)
         z_preds = torch.cat(z_preds, dim=1)
