@@ -1,5 +1,6 @@
 import argparse
 import json
+import multiprocessing
 import os
 import shlex
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
@@ -141,12 +142,7 @@ def sh2json(path):
 
 if __name__ == '__main__':
     scripts = get_filepath("./scripts")
-    mode = 1
-    if mode:
-        for path in scripts:
-            sh2json(path)
-    else:
-        pool = ThreadPoolExecutor(max_workers=1)
-        all_task = [pool.submit(sh2json, path) for path in scripts]
-        wait(all_task, return_when=ALL_COMPLETED)
-        pool.shutdown()
+    pool = ThreadPoolExecutor(max_workers=multiprocessing.cpu_count())
+    all_task = [pool.submit(sh2json, path) for path in scripts]
+    wait(all_task, return_when=ALL_COMPLETED)
+    pool.shutdown()
