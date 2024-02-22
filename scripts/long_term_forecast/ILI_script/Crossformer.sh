@@ -49,7 +49,7 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  -dropout 0.6 \
+  --dropout 0.6 \
   --itr 1
 
 python -u run.py \
@@ -74,7 +74,7 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  -dropout 0.6 \
+  --dropout 0.6 \
   --itr 1
 
 python -u run.py \
@@ -99,5 +99,5 @@ python -u run.py \
   --d_ff 768 \
   --top_k 5 \
   --des 'Exp' \
-  -dropout 0.6 \
+  --dropout 0.6 \
   --itr 1
