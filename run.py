@@ -51,6 +51,8 @@ if __name__ == '__main__':
     parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%)')
 
     # model define
+    parser.add_argument('--expand', type=int, default=2, help='expansion factor for Mamba')
+    parser.add_argument('--d_conv', type=int, default=4, help='conv kernel size for Mamba')
     parser.add_argument('--top_k', type=int, default=5, help='for TimesBlock')
     parser.add_argument('--num_kernels', type=int, default=6, help='for Inception')
     parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
@@ -98,7 +100,10 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
+    # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
+    args.use_gpu = True if torch.cuda.is_available() else False
+
+    print(torch.cuda.is_available())
 
     if args.use_gpu and args.use_multi_gpu:
         args.devices = args.devices.replace(' ', '')
@@ -126,7 +131,7 @@ if __name__ == '__main__':
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments
-            setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_fc{}_eb{}_dt{}_{}_{}'.format(
+            setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
                 args.task_name,
                 args.model_id,
                 args.model,
@@ -140,6 +145,8 @@ if __name__ == '__main__':
                 args.e_layers,
                 args.d_layers,
                 args.d_ff,
+                args.expand,
+                args.d_conv,
                 args.factor,
                 args.embed,
                 args.distil,
@@ -153,7 +160,7 @@ if __name__ == '__main__':
             torch.cuda.empty_cache()
     else:
         ii = 0
-        setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_fc{}_eb{}_dt{}_{}_{}'.format(
+        setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
             args.task_name,
             args.model_id,
             args.model,
@@ -167,6 +174,8 @@ if __name__ == '__main__':
             args.e_layers,
             args.d_layers,
             args.d_ff,
+            args.expand,
+            args.d_conv,
             args.factor,
             args.embed,
             args.distil,
