@@ -24,6 +24,8 @@ def main(path):
     with open(path, 'r') as f:
         args = f.read()
     args = argparse.Namespace(**json.loads(args))
+    if not args.is_training:
+        return
 
     print('Args in experiment:')
     print_args(args)
@@ -119,12 +121,18 @@ def get_json_path(dir_path):
 
 
 if __name__ == '__main__':
-    json_path = get_json_path("./scripts/short_term_forecast")
-    pool = concurrent.futures.ProcessPoolExecutor(max_workers=4)
-    task = []
-    for path in json_path:
-        task.append(pool.submit(main, path))
-    # 等待任务执行完, 也可以设置一个timeout时间
-    wait(task, return_when=ALL_COMPLETED)
-    #
-    print('main process done')
+    json_path = get_json_path("./scripts/short_term_forecast") + get_json_path("./scripts/long_term_forecast")
+    json_path.sort()
+    multi_process = 0
+    if multi_process:
+        pool = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+        task = []
+        for path in json_path:
+            task.append(pool.submit(main, path))
+        # 等待任务执行完, 也可以设置一个timeout时间
+        wait(task, return_when=ALL_COMPLETED)
+        #
+        print('main process done')
+    else:
+        for path in json_path:
+            main(path)
