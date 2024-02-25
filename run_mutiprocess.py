@@ -119,7 +119,7 @@ def get_json_path(dir_path):
 
 
 if __name__ == '__main__':
-    json_path = get_json_path("./scripts")
+    json_path = get_json_path("./scripts/short_term_forecast")
     pool = concurrent.futures.ProcessPoolExecutor(max_workers=4)
     task = []
     for path in json_path:

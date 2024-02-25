@@ -132,7 +132,7 @@ def sh2json(path):
         try:
             print(path.replace(".sh", f"_{i}.json"))
             args = parser.parse_args(shells[i])
-            args.model_name = model_name
+            args.model = model_name
             with open(path.replace(".sh", f"_{i}.json"), 'w') as f:
                 json.dump(args.__dict__, f)
                 f.close()
