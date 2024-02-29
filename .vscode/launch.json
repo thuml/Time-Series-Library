@@ -14,8 +14,9 @@
             "--e_layers=3", "--d_layers=1", "--factor=3", "--enc_in=7", 
             "--dec_in=7", "--c_out=1", "--des='Exp'", "--d_model=64", 
             "--d_ff=64", "--itr=1"],
+            "env": {"CUDA_VISIBLE_DEVICE": "1"},
             "console": "integratedTerminal",
-            "pythonPath": "/Users/zhangxiangxian/anaconda3/envs/TSLibrary/bin/python"
+            // "pythonPath": "/Users/zhangxiangxian/anaconda3/envs/TSLibrary/bin/python"
         }
     ]
 }
