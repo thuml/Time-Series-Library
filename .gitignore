@@ -157,6 +157,9 @@ data_loader_all.py
 /scripts/imputation/tmp/
 /utils/self_tools.py
 /scripts/exp_scripts/
+/checkpoints
+/results
+result_long_term_forecast.txt
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos
@@ -195,3 +198,4 @@ Temporary Items
 *.icloud
 
 # End of https://www.toptal.com/developers/gitignore/api/macos
+*.json
