@@ -39,6 +39,7 @@ def main(path):
     args = argparse.Namespace(**json.loads(args))
     if not args.is_training:
         return
+    args.num_workers = 4
 
     print('Args in experiment:')
     print_args(args)
