@@ -1,9 +1,11 @@
 import argparse
 import concurrent.futures
 import json
+import logging
 import os
 import random
-from concurrent.futures import wait, ALL_COMPLETED
+import sys
+import time
 
 import numpy as np
 import torch
@@ -16,7 +18,18 @@ from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from utils.print_args import print_args
 
 
+def myprint(*args):
+    sys.stdout.write(' '.join(map(str, args)) + '\n')
+    logging.basicConfig(
+        format='%(asctime)s-%(filename)s[line:%(lineno)d]-%(process)s-%(levelname)s: %(message)s',
+        level=logging.INFO,
+        filename='./log/out.log',
+        filemode='a')
+    logging.info(' '.join(map(str, args)))
+
+
 def main(path):
+    # builtins.print = myprint
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
@@ -76,6 +89,7 @@ def main(path):
         with open(path, 'w') as f:
             json.dump(args.__dict__, f)
             f.close()
+        logging.debug("=" * 10 + f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} COMPLETE" + "=" * 10)
     else:
         ii = 0
         setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_fc{}_eb{}_dt{}_{}_{}'.format(
@@ -121,16 +135,23 @@ def get_json_path(dir_path):
 
 
 if __name__ == '__main__':
-    json_path = get_json_path("./scripts/short_term_forecast") + get_json_path("./scripts/long_term_forecast")
+    with open(r'./log/out.log', 'a+', encoding='utf-8') as f:
+        f.truncate(0)
+    #  builtins.print = myprint
+    json_path = (get_json_path("./scripts/short_term_forecast")
+                 + get_json_path("./scripts/long_term_forecast/ETT_script")
+                 + get_json_path("./scripts/long_term_forecast/Exchange_script")
+                 + get_json_path("./scripts/long_term_forecast/ILI_script"))
     json_path.sort()
     multi_process = 0
-    if multi_process:
-        pool = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+    if multi_process > 1:
+        pool = concurrent.futures.ProcessPoolExecutor(max_workers=multi_process)
         task = []
         for path in json_path:
-            task.append(pool.submit(main, path))
+            pool.submit(main, path)
         # 等待任务执行完, 也可以设置一个timeout时间
-        wait(task, return_when=ALL_COMPLETED)
+        # wait(task, return_when=ALL_COMPLETED)
+        pool.shutdown(wait=True)
         #
         print('main process done')
     else:
