@@ -35,7 +35,8 @@ class TimesBlock(nn.Module):
 
         self.conv = nn.Sequential(
             ResidualBlock(in_channels=configs.d_model, out_channels=configs.d_ff),
-            nn.GELU(),
+            ResidualBlock(in_channels=configs.d_ff, out_channels=configs.d_ff),
+            ResidualBlock(in_channels=configs.d_ff, out_channels=configs.d_ff),
             ResidualBlock(in_channels=configs.d_ff, out_channels=configs.d_model),
         )
 
