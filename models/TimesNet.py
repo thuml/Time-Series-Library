@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.fft
 from layers.Embed import DataEmbedding
-from layers.Conv_Blocks import Inception_Block_V1
+from layers.Conv_Blocks import Inception_Block_V1, Inception_Block_V2
 
 
 def FFT_for_Period(x, k=2):
@@ -26,10 +26,10 @@ class TimesBlock(nn.Module):
         self.k = configs.top_k
         # parameter-efficient design
         self.conv = nn.Sequential(
-            Inception_Block_V1(configs.d_model, configs.d_ff,
+            Inception_Block_V2(configs.d_model, configs.d_ff,
                                num_kernels=configs.num_kernels),
             nn.GELU(),
-            Inception_Block_V1(configs.d_ff, configs.d_model,
+            Inception_Block_V2(configs.d_ff, configs.d_model,
                                num_kernels=configs.num_kernels)
         )
 
