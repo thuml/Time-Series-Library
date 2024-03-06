@@ -142,6 +142,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                     loss = criterion(outputs, batch_y)
+
+                    # wandb.log({"loss": loss.item()})
                     train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
@@ -165,9 +167,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
 
-            wandb.log({"train_loss": train_loss})
-            wandb.log({"vali_loss": vali_loss})
-            wandb.log({"test_loss": test_loss})
+            wandb.log({
+                "train_loss": train_loss, 
+                "vali_loss": vali_loss, 
+                "test_loss": test_loss, 
+            })
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
