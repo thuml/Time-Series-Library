@@ -9,6 +9,7 @@ import os
 import time
 import warnings
 import numpy as np
+import wandb
 
 warnings.filterwarnings('ignore')
 
@@ -96,6 +97,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
+        wandb.init(project="TimesNet", config=self.args)
+        wandb.watch(self.model)
+
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -160,6 +164,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
+
+            wandb.log({"train_loss": train_loss})
+            wandb.log({"vali_loss": vali_loss})
+            wandb.log({"test_loss": test_loss})
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
