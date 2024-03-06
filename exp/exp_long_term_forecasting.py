@@ -182,7 +182,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
-
+        run.log_model(path=best_model_path, name="best_model")
         return self.model
 
     def test(self, setting, test=0):
