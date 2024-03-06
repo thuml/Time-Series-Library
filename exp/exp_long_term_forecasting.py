@@ -142,8 +142,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
                     batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                     loss = criterion(outputs, batch_y)
-
-                    # wandb.log({"loss": loss.item()})
                     train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
@@ -265,6 +263,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
+        wandb.run.summary["mae"] = mae
+        wandb.run.summary["mse"] = mse
+        wandb.run.summary["rmse"] = rmse
+        wandb.run.summary["mape"] = mape
+        wandb.run.summary["mspe"] = mspe
+
         print('mse:{}, mae:{}'.format(mse, mae))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
