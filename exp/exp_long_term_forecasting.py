@@ -97,7 +97,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
-        wandb.init(project="TimesNet", config=self.args)
+        run = wandb.init(project="TimesNet", config=self.args)
         wandb.watch(self.model)
 
         for epoch in range(self.args.train_epochs):
@@ -252,6 +252,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         preds = np.array(preds)
         trues = np.array(trues)
+        wandb.run.summary["preds"] = wandb.Histogram(preds)
+        wandb.run.summary["trues"] = wandb.Histogram(trues)
+
         print('test shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
