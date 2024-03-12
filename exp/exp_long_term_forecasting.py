@@ -9,8 +9,10 @@ import os
 import time
 import warnings
 import numpy as np
+import wandb
 
 warnings.filterwarnings('ignore')
+import matplotlib.pyplot as plt
 
 
 class Exp_Long_Term_Forecast(Exp_Basic):
@@ -19,7 +21,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
-
         if self.args.use_multi_gpu and self.args.use_gpu:
             model = nn.DataParallel(model, device_ids=self.args.device_ids)
         return model
@@ -96,6 +97,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
+        run = wandb.init(project="TimesNet", config=self.args)
+        wandb.watch(self.model)
+        wandb.config.model_architecture = self.model
+
+
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -161,6 +167,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
 
+            wandb.log({
+                "train_loss": train_loss, 
+                "vali_loss": vali_loss, 
+                "test_loss": test_loss, 
+            })
+
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
             early_stopping(vali_loss, self.model, path)
@@ -172,7 +184,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
-
+        # run.log_model(path=best_model_path, name="best_model")
         return self.model
 
     def test(self, setting, test=0):
@@ -243,9 +255,20 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape:', preds.shape, trues.shape)
+
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
+
+        for i in range(self.args.pred_len):
+            pred = preds[:,i,:]
+            true = trues[:,i,:]
+            fig, ax = plt.subplots()
+            ax.plot(pred.flatten(), label=f'lead time: {i+1}')
+            ax.plot(true.flatten(), label=f'trues')
+            ax.legend()
+            wandb.log({"plot": wandb.Image(fig)})
+
 
         # result save
         folder_path = './results/' + setting + '/'
@@ -253,6 +276,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
+        wandb.run.summary["mae"] = mae
+        wandb.run.summary["mse"] = mse
+        wandb.run.summary["rmse"] = rmse
+        wandb.run.summary["mape"] = mape
+        wandb.run.summary["mspe"] = mspe
+
         print('mse:{}, mae:{}'.format(mse, mae))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")

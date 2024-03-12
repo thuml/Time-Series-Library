@@ -12,3 +12,4 @@ torch
 torchvision 
 torchaudio --index-url https://download.pytorch.org/whl/cu121
 tqdm==4.64.1
+wandb
