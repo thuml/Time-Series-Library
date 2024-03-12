@@ -255,17 +255,20 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape:', preds.shape, trues.shape)
-        for i in range(self.args.pred_len):
-            pred = preds[:,:,i,:]
-            fig, ax = plt.subplots()
-            ax.plot(pred.flatten(), label=f'lead time: {i}')
-            ax.plot(trues.flatten(), label=f'trues')
-            ax.legend()
-            wandb.log({"plot": wandb.Image(fig)})
 
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
+
+        for i in range(self.args.pred_len):
+            pred = preds[:,i,:]
+            true = trues[:,i,:]
+            fig, ax = plt.subplots()
+            ax.plot(pred.flatten(), label=f'lead time: {i+1}')
+            ax.plot(true.flatten(), label=f'trues')
+            ax.legend()
+            wandb.log({"plot": wandb.Image(fig)})
+
 
         # result save
         folder_path = './results/' + setting + '/'
