@@ -12,6 +12,7 @@ import numpy as np
 import wandb
 
 warnings.filterwarnings('ignore')
+import matplotlib.pyplot as plt
 
 
 class Exp_Long_Term_Forecast(Exp_Basic):
@@ -182,7 +183,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
-        run.log_model(path=best_model_path, name="best_model")
+        # run.log_model(path=best_model_path, name="best_model")
         return self.model
 
     def test(self, setting, test=0):
@@ -254,6 +255,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         trues = np.array(trues)
         wandb.run.summary["preds"] = wandb.Histogram(preds)
         wandb.run.summary["trues"] = wandb.Histogram(trues)
+
+        fig, ax = plt.subplots()
+        ax.plot(preds, label='preds')
+        ax.plot(trues, label='trues')
+        wandb.log({"plot": wandb.Image(fig)})
 
         print('test shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
