@@ -21,7 +21,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
-
         if self.args.use_multi_gpu and self.args.use_gpu:
             model = nn.DataParallel(model, device_ids=self.args.device_ids)
         return model
@@ -100,7 +99,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         run = wandb.init(project="TimesNet", config=self.args)
         wandb.watch(self.model)
-
+        wandb.config.model_architecture = self.model
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -256,10 +255,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         wandb.run.summary["preds"] = wandb.Histogram(preds)
         wandb.run.summary["trues"] = wandb.Histogram(trues)
 
-        fig, ax = plt.subplots()
-        ax.plot(preds, label='preds')
-        ax.plot(trues, label='trues')
-        wandb.log({"plot": wandb.Image(fig)})
+        for i in range(self.args.pred_len):
+            pred = preds[:,:,i,:].flatten()
+            fig, ax = plt.subplots()
+            ax.plot(pred, label=f'lead time: {i}')
+            ax.plot(trues, label=f'trues')
+            ax.legend()
+            wandb.log({"plot": wandb.Image(fig)})
 
         print('test shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
