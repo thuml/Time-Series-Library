@@ -100,6 +100,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         run = wandb.init(project="TimesNet", config=self.args)
         wandb.watch(self.model)
         wandb.config.model_architecture = self.model
+
+
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -252,18 +254,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         preds = np.array(preds)
         trues = np.array(trues)
-        wandb.run.summary["preds"] = wandb.Histogram(preds)
-        wandb.run.summary["trues"] = wandb.Histogram(trues)
-
+        print('test shape:', preds.shape, trues.shape)
         for i in range(self.args.pred_len):
-            pred = preds[:,:,i,:].flatten()
+            pred = preds[:,:,i,:]
             fig, ax = plt.subplots()
-            ax.plot(pred, label=f'lead time: {i}')
-            ax.plot(trues, label=f'trues')
+            ax.plot(pred.flatten(), label=f'lead time: {i}')
+            ax.plot(trues.flatten(), label=f'trues')
             ax.legend()
             wandb.log({"plot": wandb.Image(fig)})
 
-        print('test shape:', preds.shape, trues.shape)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
