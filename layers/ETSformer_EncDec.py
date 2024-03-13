@@ -1,9 +1,10 @@
+import math
+
 import torch
+import torch.fft as fft
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.fft as fft
 from einops import rearrange, reduce, repeat
-import math, random
 from scipy.fftpack import next_fast_len
 
 
@@ -78,7 +79,7 @@ class ExponentialSmoothing(nn.Module):
         init_weight = self.weight ** (powers + 1)
 
         return rearrange(init_weight, 'h t -> 1 t h 1'), \
-               rearrange(weight, 'h t -> 1 t h 1')
+            rearrange(weight, 'h t -> 1 t h 1')
 
     @property
     def weight(self):
@@ -173,7 +174,7 @@ class FourierLayer(nn.Module):
     def topk_freq(self, x_freq):
         values, indices = torch.topk(x_freq.abs(), self.k, dim=1, largest=True, sorted=True)
         mesh_a, mesh_b = torch.meshgrid(torch.arange(x_freq.size(0)), torch.arange(x_freq.size(2)))
-        index_tuple = (mesh_a.unsqueeze(1), indices, mesh_b.unsqueeze(1))
+        index_tuple = (mesh_a.unsqueeze(1), indices.to('cpu'), mesh_b.unsqueeze(1))
         x_freq = x_freq[index_tuple]
 
         return x_freq, index_tuple

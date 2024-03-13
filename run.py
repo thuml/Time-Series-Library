@@ -1,14 +1,15 @@
 import argparse
-import os
+import random
+
+import numpy as np
 import torch
-from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
-from exp.exp_imputation import Exp_Imputation
-from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
+
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
+from exp.exp_imputation import Exp_Imputation
+from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from utils.print_args import print_args
-import random
-import numpy as np
 
 if __name__ == '__main__':
     fix_seed = 2021
@@ -96,7 +97,6 @@ if __name__ == '__main__':
                         help='hidden layer dimensions of projector (List)')
     parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
-
     args = parser.parse_args()
     args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     else:
         Exp = Exp_Long_Term_Forecast
 
-    if args.is_training:
+    if args.is_training == 1:
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments
