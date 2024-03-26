@@ -260,6 +260,11 @@ class Dataset_Custom(Dataset):
 
         df_stamp = df_raw[['date']][border1:border2]
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
+
+        if self.set_type == 2: # test
+            index = df_stamp[self.seq_len + self.pred_len-1:]
+            index.to_csv('test_index.csv', index=False)
+
         if self.timeenc == 0:
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
             df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
