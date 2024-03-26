@@ -97,7 +97,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
-        run = wandb.init(project="TimesNet", config=self.args)
+        wandb.init(mode='disabled')
+        # run = wandb.init(project="TimesNet", config=self.args)
         wandb.watch(self.model)
         wandb.config.model_architecture = self.model
 
