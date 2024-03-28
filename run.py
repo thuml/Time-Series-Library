@@ -71,8 +71,16 @@ if __name__ == '__main__':
                         help='time features encoding, options:[timeF, fixed, learned]')
     parser.add_argument('--activation', type=str, default='gelu', help='activation')
     parser.add_argument('--output_attention', action='store_true', help='whether to output attention in ecoder')
-    parser.add_argument('--channel_independence', type=int, default=0,
-                        help='1: channel dependence 0: channel independence for FreTS model')
+    parser.add_argument('--channel_independence', type=int, default=1,
+                        help='0: channel dependence 1: channel independence for FreTS model')
+    parser.add_argument('--decomp_method', type=str, default='moving_avg',
+                        help='method of series decompsition, only support moving_avg or dft_decomp')
+    parser.add_argument('--use_norm', type=int, default=1, help='whether to use normalize; True 1 False 0')
+    parser.add_argument('--down_sampling_layers', type=int, default=0, help='num of down sampling layers')
+    parser.add_argument('--down_sampling_window', type=int, default=1, help='down sampling window size')
+    parser.add_argument('--down_sampling_method', type=str, default=None,
+                        help='down sampling method, only support avg, max, conv')
+
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
@@ -95,7 +103,6 @@ if __name__ == '__main__':
     parser.add_argument('--p_hidden_dims', type=int, nargs='+', default=[128, 128],
                         help='hidden layer dimensions of projector (List)')
     parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
-
 
     args = parser.parse_args()
     args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False

@@ -3,10 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+
 class Model(nn.Module):
     """
     Paper link: https://arxiv.org/pdf/2311.06184.pdf
     """
+
     def __init__(self, configs):
         super(Model, self).__init__()
         self.task_name = configs.task_name
@@ -14,10 +16,10 @@ class Model(nn.Module):
             self.pred_len = configs.seq_len
         else:
             self.pred_len = configs.pred_len
-        self.embed_size = 128 #embed_size
-        self.hidden_size = 256 #hidden_size
+        self.embed_size = 128  # embed_size
+        self.hidden_size = 256  # hidden_size
         self.pred_len = configs.pred_len
-        self.feature_size = configs.enc_in #channels
+        self.feature_size = configs.enc_in  # channels
         self.seq_len = configs.seq_len
         self.channel_independence = configs.channel_independence
         self.sparsity_threshold = 0.01
@@ -50,7 +52,7 @@ class Model(nn.Module):
     # frequency temporal learner
     def MLP_temporal(self, x, B, N, L):
         # [B, N, T, D]
-        x = torch.fft.rfft(x, dim=2, norm='ortho') # FFT on L dimension
+        x = torch.fft.rfft(x, dim=2, norm='ortho')  # FFT on L dimension
         y = self.FreMLP(B, N, L, x, self.r2, self.i2, self.rb2, self.ib2)
         x = torch.fft.irfft(y, n=self.seq_len, dim=2, norm="ortho")
         return x
@@ -60,7 +62,7 @@ class Model(nn.Module):
         # [B, N, T, D]
         x = x.permute(0, 2, 1, 3)
         # [B, T, N, D]
-        x = torch.fft.rfft(x, dim=2, norm='ortho') # FFT on N dimension
+        x = torch.fft.rfft(x, dim=2, norm='ortho')  # FFT on N dimension
         y = self.FreMLP(B, L, N, x, self.r1, self.i1, self.rb1, self.ib1)
         x = torch.fft.irfft(y, n=self.feature_size, dim=2, norm="ortho")
         x = x.permute(0, 2, 1, 3)
@@ -100,7 +102,7 @@ class Model(nn.Module):
         x = self.tokenEmb(x_enc)
         bias = x
         # [B, N, T, D]
-        if self.channel_independence == '1':
+        if self.channel_independence == '0':
             x = self.MLP_channel(x, B, N, T)
         # [B, N, T, D]
         x = self.MLP_temporal(x, B, N, T)
@@ -114,4 +116,3 @@ class Model(nn.Module):
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]
         else:
             raise ValueError('Only forecast tasks implemented yet')
-
