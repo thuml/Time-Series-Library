@@ -159,3 +159,4 @@ data_loader_all.py
 /scripts/exp_scripts/
 
 /checkpoints/
+/results/
