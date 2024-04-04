@@ -21,7 +21,7 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
 
         self.d_inner = configs.d_model * configs.expand
-        self.dt_rank = math.ceil(configs.d_model / 16) # TODO implement "auto"
+        self.dt_rank = math.ceil(configs.d_model / 16)
 
         self.embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq, configs.dropout)
 
@@ -89,7 +89,7 @@ class MambaBlock(nn.Module):
             out_channels = self.d_inner,
             bias = True,
             kernel_size = configs.d_conv,
-            padding = configs.d_conv - 1, # TODO dont understand this; come back and do kernel = 3 padding = 1 instead if it doesnt work?
+            padding = configs.d_conv - 1,
             groups = self.d_inner
         )
 
