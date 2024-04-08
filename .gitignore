@@ -160,3 +160,4 @@ data_loader_all.py
 
 /checkpoints/
 /results/
+result_long_term_forecast.txt

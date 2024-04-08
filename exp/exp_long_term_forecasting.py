@@ -254,16 +254,19 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             os.makedirs(folder_path)
         
         # dtw calculation
-        dtw_list = []
-        manhattan_distance = lambda x, y: np.abs(x - y)
-        for i in range(preds.shape[0]):
-            x = preds[i].reshape(-1,1)
-            y = trues[i].reshape(-1,1)
-            if i % 100 == 0:
-                print("calculating dtw iter:", i)
-            d, _, _, _ = accelerated_dtw(x, y, dist=manhattan_distance)
-            dtw_list.append(d)
-        dtw = np.array(dtw_list).mean()
+        if self.args.use_dtw:
+            dtw_list = []
+            manhattan_distance = lambda x, y: np.abs(x - y)
+            for i in range(preds.shape[0]):
+                x = preds[i].reshape(-1,1)
+                y = trues[i].reshape(-1,1)
+                if i % 100 == 0:
+                    print("calculating dtw iter:", i)
+                d, _, _, _ = accelerated_dtw(x, y, dist=manhattan_distance)
+                dtw_list.append(d)
+            dtw = np.array(dtw_list).mean()
+        else:
+            dtw = -999
             
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)

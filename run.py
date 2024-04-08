@@ -108,6 +108,10 @@ if __name__ == '__main__':
                         help='hidden layer dimensions of projector (List)')
     parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
+    # metrics (dtw)
+    parser.add_argument('--use_dtw', type=bool, default=False, 
+                        help='the controller of using dtw metric (dtw is time consuming, not suggested unless necessary)')
+
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False
