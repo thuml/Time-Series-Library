@@ -9,6 +9,7 @@ import os
 import time
 import warnings
 import numpy as np
+from utils.dtw import dtw,accelerated_dtw
 
 warnings.filterwarnings('ignore')
 
@@ -251,12 +252,25 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+        
+        # dtw calculation
+        dtw_list = []
+        manhattan_distance = lambda x, y: np.abs(x - y)
+        for i in range(preds.shape[0]):
+            x = preds[i].reshape(-1,1)
+            y = trues[i].reshape(-1,1)
+            if i % 100 == 0:
+                print("calculating dtw iter:", i)
+            d, _, _, _ = accelerated_dtw(x, y, dist=manhattan_distance)
+            dtw_list.append(d)
+        dtw = np.array(dtw_list).mean()
+            
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
+        print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
-        f.write('mse:{}, mae:{}'.format(mse, mae))
+        f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
         f.write('\n')
         f.write('\n')
         f.close()
