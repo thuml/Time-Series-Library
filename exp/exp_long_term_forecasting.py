@@ -9,7 +9,8 @@ import os
 import time
 import warnings
 import numpy as np
-from utils.dtw import dtw,accelerated_dtw
+from utils.dtw_metric import dtw,accelerated_dtw
+from utils.augmentation import run_augmentation,run_augmentation_single
 
 warnings.filterwarnings('ignore')
 
@@ -106,6 +107,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
                 iter_count += 1
                 model_optim.zero_grad()
+                # import pdb
+                # pdb.set_trace()
+
+                if self.args.augmentation_ratio > 0:
+                    batch_x, batch_y, augmentation_tags = run_augmentation_single(batch_x,batch_y,self.args)
+                    # model_prefix = "%s_%s%s"%(self.args.model, self.args.data, augmentation_tags)
+                    batch_x = torch.Tensor(batch_x)
+                    batch_y = torch.Tensor(batch_y)
+
                 batch_x = batch_x.float().to(self.device)
 
                 batch_y = batch_y.float().to(self.device)

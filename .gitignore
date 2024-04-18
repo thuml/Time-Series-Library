@@ -158,6 +158,7 @@ data_loader_all.py
 /utils/self_tools.py
 /scripts/exp_scripts/
 
-/checkpoints/
-/results/
+checkpoints/
+results/
 result_long_term_forecast.txt
+scripts/augmentation/

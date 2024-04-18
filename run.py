@@ -111,6 +111,26 @@ if __name__ == '__main__':
     # metrics (dtw)
     parser.add_argument('--use_dtw', type=bool, default=False, 
                         help='the controller of using dtw metric (dtw is time consuming, not suggested unless necessary)')
+    
+    # Augmentation
+    parser.add_argument('--augmentation_ratio', type=int, default=0, help="How many times to augment")
+    parser.add_argument('--seed', type=int, default=2, help="Randomization seed")
+    parser.add_argument('--jitter', default=False, action="store_true", help="Jitter preset augmentation")
+    parser.add_argument('--scaling', default=False, action="store_true", help="Scaling preset augmentation")
+    parser.add_argument('--permutation', default=False, action="store_true", help="Equal Length Permutation preset augmentation")
+    parser.add_argument('--randompermutation', default=False, action="store_true", help="Random Length Permutation preset augmentation")
+    parser.add_argument('--magwarp', default=False, action="store_true", help="Magnitude warp preset augmentation")
+    parser.add_argument('--timewarp', default=False, action="store_true", help="Time warp preset augmentation")
+    parser.add_argument('--windowslice', default=False, action="store_true", help="Window slice preset augmentation")
+    parser.add_argument('--windowwarp', default=False, action="store_true", help="Window warp preset augmentation")
+    parser.add_argument('--rotation', default=False, action="store_true", help="Rotation preset augmentation")
+    parser.add_argument('--spawner', default=False, action="store_true", help="SPAWNER preset augmentation")
+    parser.add_argument('--dtwwarp', default=False, action="store_true", help="DTW warp preset augmentation")
+    parser.add_argument('--shapedtwwarp', default=False, action="store_true", help="Shape DTW warp preset augmentation")
+    parser.add_argument('--wdba', default=False, action="store_true", help="Weighted DBA preset augmentation")
+    parser.add_argument('--discdtw', default=False, action="store_true", help="Discrimitive DTW warp preset augmentation")
+    parser.add_argument('--discsdtw', default=False, action="store_true", help="Discrimitive shapeDTW warp preset augmentation")
+    parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
@@ -126,6 +146,8 @@ if __name__ == '__main__':
 
     print('Args in experiment:')
     print_args(args)
+    if args.augmentation_ratio > 0:
+        print("Augmenting %s"%args.data)
 
     if args.task_name == 'long_term_forecast':
         Exp = Exp_Long_Term_Forecast

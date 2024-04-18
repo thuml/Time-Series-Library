@@ -1,156 +1,223 @@
-from numpy import array, zeros, full, argmin, inf, ndim
-from scipy.spatial.distance import cdist
-from math import isinf
+__author__ = 'Brian Iwana'
 
+import numpy as np
+import math
+import sys
 
-def dtw(x, y, dist, warp=1, w=inf, s=1.0):
-    """
-    Computes Dynamic Time Warping (DTW) of two sequences.
+RETURN_VALUE = 0
+RETURN_PATH = 1
+RETURN_ALL = -1
 
-    :param array x: N1*M array
-    :param array y: N2*M array
-    :param func dist: distance used as cost measure
-    :param int warp: how many shifts are computed.
-    :param int w: window size limiting the maximal distance between indices of matched entries |i,j|.
-    :param float s: weight applied on off-diagonal moves of the path. As s gets larger, the warping path is increasingly biased towards the diagonal
-    Returns the minimum distance, the cost matrix, the accumulated cost matrix, and the wrap path.
-    """
-    assert len(x)
-    assert len(y)
-    assert isinf(w) or (w >= abs(len(x) - len(y)))
-    assert s > 0
-    r, c = len(x), len(y)
-    if not isinf(w):
-        D0 = full((r + 1, c + 1), inf)
-        for i in range(1, r + 1):
-            D0[i, max(1, i - w):min(c + 1, i + w + 1)] = 0
-        D0[0, 0] = 0
+# Core DTW
+def _traceback(DTW, slope_constraint):
+    i, j = np.array(DTW.shape) - 1
+    p, q = [i-1], [j-1]
+    
+    if slope_constraint == "asymmetric":
+        while (i > 1):
+            tb = np.argmin((DTW[i-1, j], DTW[i-1, j-1], DTW[i-1, j-2]))
+
+            if (tb == 0):
+                i = i - 1
+            elif (tb == 1):
+                i = i - 1
+                j = j - 1
+            elif (tb == 2):
+                i = i - 1
+                j = j - 2
+
+            p.insert(0, i-1)
+            q.insert(0, j-1)
+    elif slope_constraint == "symmetric":
+        while (i > 1 or j > 1):
+            tb = np.argmin((DTW[i-1, j-1], DTW[i-1, j], DTW[i, j-1]))
+
+            if (tb == 0):
+                i = i - 1
+                j = j - 1
+            elif (tb == 1):
+                i = i - 1
+            elif (tb == 2):
+                j = j - 1
+
+            p.insert(0, i-1)
+            q.insert(0, j-1)
     else:
-        D0 = zeros((r + 1, c + 1))
-        D0[0, 1:] = inf
-        D0[1:, 0] = inf
-    D1 = D0[1:, 1:]  # view
-    for i in range(r):
-        for j in range(c):
-            if (isinf(w) or (max(0, i - w) <= j <= min(c, i + w))):
-                D1[i, j] = dist(x[i], y[j])
-    C = D1.copy()
-    jrange = range(c)
-    for i in range(r):
-        if not isinf(w):
-            jrange = range(max(0, i - w), min(c, i + w + 1))
-        for j in jrange:
-            min_list = [D0[i, j]]
-            for k in range(1, warp + 1):
-                i_k = min(i + k, r)
-                j_k = min(j + k, c)
-                min_list += [D0[i_k, j] * s, D0[i, j_k] * s]
-            D1[i, j] += min(min_list)
-    if len(x) == 1:
-        path = zeros(len(y)), range(len(y))
-    elif len(y) == 1:
-        path = range(len(x)), zeros(len(x))
-    else:
-        path = _traceback(D0)
-    return D1[-1, -1], C, D1, path
+        sys.exit("Unknown slope constraint %s"%slope_constraint)
+        
+    return (np.array(p), np.array(q))
 
-
-def accelerated_dtw(x, y, dist, warp=1):
+def dtw(prototype, sample, return_flag = RETURN_VALUE, slope_constraint="asymmetric", window=None):
+    """ Computes the DTW of two sequences.
+    :param prototype: np array [0..b]
+    :param sample: np array [0..t]
+    :param extended: bool
     """
-    Computes Dynamic Time Warping (DTW) of two sequences in a faster way.
-    Instead of iterating through each element and calculating each distance,
-    this uses the cdist function from scipy (https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html)
+    p = prototype.shape[0]
+    assert p != 0, "Prototype empty!"
+    s = sample.shape[0]
+    assert s != 0, "Sample empty!"
+    
+    if window is None:
+        window = s
+    
+    cost = np.full((p, s), np.inf)
+    for i in range(p):
+        start = max(0, i-window)
+        end = min(s, i+window)+1
+        cost[i,start:end]=np.linalg.norm(sample[start:end] - prototype[i], axis=1)
 
-    :param array x: N1*M array
-    :param array y: N2*M array
-    :param string or func dist: distance parameter for cdist. When string is given, cdist uses optimized functions for the distance metrics.
-    If a string is passed, the distance function can be 'braycurtis', 'canberra', 'chebyshev', 'cityblock', 'correlation', 'cosine', 'dice', 'euclidean', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'matching', 'minkowski', 'rogerstanimoto', 'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean', 'wminkowski', 'yule'.
-    :param int warp: how many shifts are computed.
-    Returns the minimum distance, the cost matrix, the accumulated cost matrix, and the wrap path.
+    DTW = _cummulative_matrix(cost, slope_constraint, window)
+        
+    if return_flag == RETURN_ALL:
+        return DTW[-1,-1], cost, DTW[1:,1:], _traceback(DTW, slope_constraint)
+    elif return_flag == RETURN_PATH:
+        return _traceback(DTW, slope_constraint)
+    else:
+        return DTW[-1,-1]
+
+def _cummulative_matrix(cost, slope_constraint, window):
+    p = cost.shape[0]
+    s = cost.shape[1]
+    
+    # Note: DTW is one larger than cost and the original patterns
+    DTW = np.full((p+1, s+1), np.inf)
+
+    DTW[0, 0] = 0.0
+
+    if slope_constraint == "asymmetric":
+        for i in range(1, p+1):
+            if i <= window+1:
+                DTW[i,1] = cost[i-1,0] + min(DTW[i-1,0], DTW[i-1,1])
+            for j in range(max(2, i-window), min(s, i+window)+1):
+                DTW[i,j] = cost[i-1,j-1] + min(DTW[i-1,j-2], DTW[i-1,j-1], DTW[i-1,j])
+    elif slope_constraint == "symmetric":
+        for i in range(1, p+1):
+            for j in range(max(1, i-window), min(s, i+window)+1):
+                DTW[i,j] = cost[i-1,j-1] + min(DTW[i-1,j-1], DTW[i,j-1], DTW[i-1,j])
+    else:
+        sys.exit("Unknown slope constraint %s"%slope_constraint)
+        
+    return DTW
+
+def shape_dtw(prototype, sample, return_flag = RETURN_VALUE, slope_constraint="asymmetric", window=None, descr_ratio=0.05):
+    """ Computes the shapeDTW of two sequences.
+    :param prototype: np array [0..b]
+    :param sample: np array [0..t]
+    :param extended: bool
     """
-    assert len(x)
-    assert len(y)
-    if ndim(x) == 1:
-        x = x.reshape(-1, 1)
-    if ndim(y) == 1:
-        y = y.reshape(-1, 1)
-    r, c = len(x), len(y)
-    D0 = zeros((r + 1, c + 1))
-    D0[0, 1:] = inf
-    D0[1:, 0] = inf
-    D1 = D0[1:, 1:]
-    D0[1:, 1:] = cdist(x, y, dist)
-    C = D1.copy()
-    for i in range(r):
-        for j in range(c):
-            min_list = [D0[i, j]]
-            for k in range(1, warp + 1):
-                min_list += [D0[min(i + k, r), j],
-                             D0[i, min(j + k, c)]]
-            D1[i, j] += min(min_list)
-    if len(x) == 1:
-        path = zeros(len(y)), range(len(y))
-    elif len(y) == 1:
-        path = range(len(x)), zeros(len(x))
+    # shapeDTW
+    # https://www.sciencedirect.com/science/article/pii/S0031320317303710
+    
+    p = prototype.shape[0]
+    assert p != 0, "Prototype empty!"
+    s = sample.shape[0]
+    assert s != 0, "Sample empty!"
+    
+    if window is None:
+        window = s
+        
+    p_feature_len = np.clip(np.round(p * descr_ratio), 5, 100).astype(int)
+    s_feature_len = np.clip(np.round(s * descr_ratio), 5, 100).astype(int)
+    
+    # padding
+    p_pad_front = (np.ceil(p_feature_len / 2.)).astype(int)
+    p_pad_back = (np.floor(p_feature_len / 2.)).astype(int)
+    s_pad_front = (np.ceil(s_feature_len / 2.)).astype(int)
+    s_pad_back = (np.floor(s_feature_len / 2.)).astype(int)
+    
+    prototype_pad = np.pad(prototype, ((p_pad_front, p_pad_back), (0, 0)), mode="edge") 
+    sample_pad = np.pad(sample, ((s_pad_front, s_pad_back), (0, 0)), mode="edge") 
+    p_p = prototype_pad.shape[0]
+    s_p = sample_pad.shape[0]
+        
+    cost = np.full((p, s), np.inf)
+    for i in range(p):
+        for j in range(max(0, i-window), min(s, i+window)):
+            cost[i, j] = np.linalg.norm(sample_pad[j:j+s_feature_len] - prototype_pad[i:i+p_feature_len])
+            
+    DTW = _cummulative_matrix(cost, slope_constraint=slope_constraint, window=window)
+    
+    if return_flag == RETURN_ALL:
+        return DTW[-1,-1], cost, DTW[1:,1:], _traceback(DTW, slope_constraint)
+    elif return_flag == RETURN_PATH:
+        return _traceback(DTW, slope_constraint)
     else:
-        path = _traceback(D0)
-    return D1[-1, -1], C, D1, path
+        return DTW[-1,-1]
+    
+# Draw helpers
+def draw_graph2d(cost, DTW, path, prototype, sample):
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(12, 8))
+   # plt.subplots_adjust(left=.02, right=.98, bottom=.001, top=.96, wspace=.05, hspace=.01)
 
+    #cost
+    plt.subplot(2, 3, 1)
+    plt.imshow(cost.T, cmap=plt.cm.gray, interpolation='none', origin='lower')
+    plt.plot(path[0], path[1], 'y')
+    plt.xlim((-0.5, cost.shape[0]-0.5))
+    plt.ylim((-0.5, cost.shape[0]-0.5))
 
-def _traceback(D):
-    i, j = array(D.shape) - 2
-    p, q = [i], [j]
-    while (i > 0) or (j > 0):
-        tb = argmin((D[i, j], D[i, j + 1], D[i + 1, j]))
-        if tb == 0:
-            i -= 1
-            j -= 1
-        elif tb == 1:
-            i -= 1
-        else:  # (tb == 2):
-            j -= 1
-        p.insert(0, i)
-        q.insert(0, j)
-    return array(p), array(q)
+    #dtw
+    plt.subplot(2, 3, 2)
+    plt.imshow(DTW.T, cmap=plt.cm.gray, interpolation='none', origin='lower')
+    plt.plot(path[0]+1, path[1]+1, 'y')
+    plt.xlim((-0.5, DTW.shape[0]-0.5))
+    plt.ylim((-0.5, DTW.shape[0]-0.5))
 
+    #prototype
+    plt.subplot(2, 3, 4)
+    plt.plot(prototype[:,0], prototype[:,1], 'b-o')
 
-if __name__ == '__main__':
-    w = inf
-    s = 1.0
-    if 1:  # 1-D numeric
-        from sklearn.metrics.pairwise import manhattan_distances
-        x = [0, 0, 1, 1, 2, 4, 2, 1, 2, 0]
-        y = [1, 1, 1, 2, 2, 2, 2, 3, 2, 0]
-        dist_fun = manhattan_distances
-        w = 1
-        # s = 1.2
-    elif 0:  # 2-D numeric
-        from sklearn.metrics.pairwise import euclidean_distances
-        x = [[0, 0], [0, 1], [1, 1], [1, 2], [2, 2], [4, 3], [2, 3], [1, 1], [2, 2], [0, 1]]
-        y = [[1, 0], [1, 1], [1, 1], [2, 1], [4, 3], [4, 3], [2, 3], [3, 1], [1, 2], [1, 0]]
-        dist_fun = euclidean_distances
-    else:  # 1-D list of strings
-        from nltk.metrics.distance import edit_distance
-        # x = ['we', 'shelled', 'clams', 'for', 'the', 'chowder']
-        # y = ['class', 'too']
-        x = ['i', 'soon', 'found', 'myself', 'muttering', 'to', 'the', 'walls']
-        y = ['see', 'drown', 'himself']
-        # x = 'we talked about the situation'.split()
-        # y = 'we talked about the situation'.split()
-        dist_fun = edit_distance
-    dist, cost, acc, path = dtw(x, y, dist_fun, w=w, s=s)
+    #connection
+    plt.subplot(2, 3, 5)
+    for i in range(0,path[0].shape[0]):
+        plt.plot([prototype[path[0][i],0], sample[path[1][i],0]],[prototype[path[0][i],1], sample[path[1][i],1]], 'y-')
+    plt.plot(sample[:,0], sample[:,1], 'g-o')
+    plt.plot(prototype[:,0], prototype[:,1], 'b-o')
 
-    # Vizualize
-    from matplotlib import pyplot as plt
-    plt.imshow(cost.T, origin='lower', cmap=plt.cm.Reds, interpolation='nearest')
-    plt.plot(path[0], path[1], '-o')  # relation
-    plt.xticks(range(len(x)), x)
-    plt.yticks(range(len(y)), y)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.axis('tight')
-    if isinf(w):
-        plt.title('Minimum distance: {}, slope weight: {}'.format(dist, s))
-    else:
-        plt.title('Minimum distance: {}, window widht: {}, slope weight: {}'.format(dist, w, s))
+    #sample
+    plt.subplot(2, 3, 6)
+    plt.plot(sample[:,0], sample[:,1], 'g-o')
+
+    plt.tight_layout()
+    plt.show()
+
+def draw_graph1d(cost, DTW, path, prototype, sample):
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(12, 8))
+   # plt.subplots_adjust(left=.02, right=.98, bottom=.001, top=.96, wspace=.05, hspace=.01)
+    p_steps = np.arange(prototype.shape[0])
+    s_steps = np.arange(sample.shape[0])
+
+    #cost
+    plt.subplot(2, 3, 1)
+    plt.imshow(cost.T, cmap=plt.cm.gray, interpolation='none', origin='lower')
+    plt.plot(path[0], path[1], 'y')
+    plt.xlim((-0.5, cost.shape[0]-0.5))
+    plt.ylim((-0.5, cost.shape[0]-0.5))
+
+    #dtw
+    plt.subplot(2, 3, 2)
+    plt.imshow(DTW.T, cmap=plt.cm.gray, interpolation='none', origin='lower')
+    plt.plot(path[0]+1, path[1]+1, 'y')
+    plt.xlim((-0.5, DTW.shape[0]-0.5))
+    plt.ylim((-0.5, DTW.shape[0]-0.5))
+
+    #prototype
+    plt.subplot(2, 3, 4)
+    plt.plot(p_steps, prototype[:,0], 'b-o')
+
+    #connection
+    plt.subplot(2, 3, 5)
+    for i in range(0,path[0].shape[0]):
+        plt.plot([path[0][i], path[1][i]],[prototype[path[0][i],0], sample[path[1][i],0]], 'y-')
+    plt.plot(p_steps, sample[:,0], 'g-o')
+    plt.plot(s_steps, prototype[:,0], 'b-o')
+
+    #sample
+    plt.subplot(2, 3, 6)
+    plt.plot(s_steps, sample[:,0], 'g-o')
+
+    plt.tight_layout()
     plt.show()
