@@ -146,8 +146,6 @@ if __name__ == '__main__':
 
     print('Args in experiment:')
     print_args(args)
-    if args.augmentation_ratio > 0:
-        print("Augmenting %s"%args.data)
 
     if args.task_name == 'long_term_forecast':
         Exp = Exp_Long_Term_Forecast

@@ -11,7 +11,7 @@ from data_provider.m4 import M4Dataset, M4Meta
 from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.datasets import load_from_tsfile_to_dataframe
 import warnings
-from utils.augmentation import run_augmentation
+from utils.augmentation import run_augmentation_single
 
 warnings.filterwarnings('ignore')
 
@@ -83,12 +83,10 @@ class Dataset_ETT_hour(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
-        # import pdb
-        # pdb.set_trace()
-        # if self.set_type == 0:
-        #     self.data_x, self.data_y, augmentation_tags = run_augmentation(self.data_x, self.data_y, self.args)
-        #     model_prefix = "%s_%s%s"%(self.args.model, self.args.data, augmentation_tags)
 
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+            
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
@@ -116,6 +114,7 @@ class Dataset_ETT_minute(Dataset):
                  features='S', data_path='ETTm1.csv',
                  target='OT', scale=True, timeenc=0, freq='t', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
+        self.args = args
         # info
         if size == None:
             self.seq_len = 24 * 4 * 4
@@ -179,6 +178,10 @@ class Dataset_ETT_minute(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
@@ -206,6 +209,7 @@ class Dataset_Custom(Dataset):
                  features='S', data_path='ETTh1.csv',
                  target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
+        self.args = args
         # info
         if size == None:
             self.seq_len = 24 * 4 * 4
@@ -277,6 +281,10 @@ class Dataset_Custom(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):

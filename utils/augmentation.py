@@ -16,8 +16,6 @@ def rotation(x):
     flip = np.random.choice([-1, 1], size=(x.shape[0],x.shape[2]))
     rotate_axis = np.arange(x.shape[2])
     np.random.shuffle(rotate_axis)
-    # import pdb
-    # pdb.set_trace()
     return flip[:,np.newaxis,:] * x[:,:,rotate_axis]
 
 def permutation(x, max_segments=5, seg_mode="equal"):
@@ -34,8 +32,6 @@ def permutation(x, max_segments=5, seg_mode="equal"):
                 splits = np.split(orig_steps, split_points)
             else:
                 splits = np.array_split(orig_steps, num_segs[i])
-            # import pdb
-            # pdb.set_trace()
             warp = np.concatenate(np.random.permutation(splits)).ravel()
             # ? Question: What is the point of making segments?
             # for i in range(len(splits)):
@@ -126,8 +122,6 @@ def spawner(x, labels, sigma=0.05, verbose=0):
         choices = np.delete(np.arange(x.shape[0]), i)
         # remove ones of different classes
         choices = np.where(l[choices] == l[i])[0]
-        # import pdb
-        # pdb.set_trace()
         if choices.size > 0:     
             random_sample = x[np.random.choice(choices)]
             # SPAWNER splits the path into two randomly
@@ -146,8 +140,6 @@ def spawner(x, labels, sigma=0.05, verbose=0):
             # if verbose > -1:
             #     print("There is only one pattern of class {}, skipping pattern average".format(l[i]))
             ret[i,:] = pat
-        # import pdb
-        # pdb.set_trace()
     return jitter(ret, sigma=sigma)
 
 def wdba(x, labels, batch_size=6, slope_constraint="symmetric", use_window=True, verbose=0):
@@ -191,8 +183,6 @@ def wdba(x, labels, batch_size=6, slope_constraint="symmetric", use_window=True,
             # start weighted DBA
             average_pattern = np.zeros_like(medoid_pattern)
             weighted_sums = np.zeros((medoid_pattern.shape[0]))
-            # import pdb
-            # pdb.set_trace()
             for nid in nearest_order:
                 if nid == medoid_id or dtw_matrix[medoid_id, nearest_order[1]] == 0.:
                     average_pattern += medoid_pattern
@@ -340,7 +330,7 @@ def discriminative_guided_warp_shape(x, labels, batch_size=6, slope_constraint="
 
 
 def run_augmentation(x, y, args):
-    print("Augmenting %s"%args.dataset)
+    print("Augmenting %s"%args.data)
     np.random.seed(args.seed)
     x_aug = x
     y_aug = y
