@@ -163,3 +163,4 @@ results/
 result_long_term_forecast.txt
 result_anomaly_detection.txt
 scripts/augmentation/
+run_anylearn.py

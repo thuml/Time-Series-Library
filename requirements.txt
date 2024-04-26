@@ -10,4 +10,4 @@ sktime
 sympy
 torch
 tqdm
-# mamba_ssm
+mamba_ssm
