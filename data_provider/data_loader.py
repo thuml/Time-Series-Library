@@ -11,15 +11,17 @@ from data_provider.m4 import M4Dataset, M4Meta
 from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.datasets import load_from_tsfile_to_dataframe
 import warnings
+from utils.augmentation import run_augmentation_single
 
 warnings.filterwarnings('ignore')
 
 
 class Dataset_ETT_hour(Dataset):
-    def __init__(self, root_path, flag='train', size=None,
+    def __init__(self, args, root_path, flag='train', size=None,
                  features='S', data_path='ETTh1.csv',
                  target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
+        self.args = args
         # info
         if size == None:
             self.seq_len = 24 * 4 * 4
@@ -81,6 +83,10 @@ class Dataset_ETT_hour(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+            
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
@@ -104,10 +110,11 @@ class Dataset_ETT_hour(Dataset):
 
 
 class Dataset_ETT_minute(Dataset):
-    def __init__(self, root_path, flag='train', size=None,
+    def __init__(self, args, root_path, flag='train', size=None,
                  features='S', data_path='ETTm1.csv',
                  target='OT', scale=True, timeenc=0, freq='t', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
+        self.args = args
         # info
         if size == None:
             self.seq_len = 24 * 4 * 4
@@ -171,6 +178,10 @@ class Dataset_ETT_minute(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
@@ -194,10 +205,11 @@ class Dataset_ETT_minute(Dataset):
 
 
 class Dataset_Custom(Dataset):
-    def __init__(self, root_path, flag='train', size=None,
+    def __init__(self, args, root_path, flag='train', size=None,
                  features='S', data_path='ETTh1.csv',
                  target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
+        self.args = args
         # info
         if size == None:
             self.seq_len = 24 * 4 * 4
@@ -269,6 +281,10 @@ class Dataset_Custom(Dataset):
 
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
@@ -292,7 +308,7 @@ class Dataset_Custom(Dataset):
 
 
 class Dataset_M4(Dataset):
-    def __init__(self, root_path, flag='pred', size=None,
+    def __init__(self, args, root_path, flag='pred', size=None,
                  features='S', data_path='ETTh1.csv',
                  target='OT', scale=False, inverse=False, timeenc=0, freq='15min',
                  seasonal_patterns='Yearly'):
@@ -371,7 +387,7 @@ class Dataset_M4(Dataset):
 
 
 class PSMSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=1, flag="train"):
+    def __init__(self, args, root_path, win_size, step=1, flag="train"):
         self.flag = flag
         self.step = step
         self.win_size = win_size
@@ -418,7 +434,7 @@ class PSMSegLoader(Dataset):
 
 
 class MSLSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=1, flag="train"):
+    def __init__(self, args, root_path, win_size, step=1, flag="train"):
         self.flag = flag
         self.step = step
         self.win_size = win_size
@@ -461,7 +477,7 @@ class MSLSegLoader(Dataset):
 
 
 class SMAPSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=1, flag="train"):
+    def __init__(self, args, root_path, win_size, step=1, flag="train"):
         self.flag = flag
         self.step = step
         self.win_size = win_size
@@ -505,7 +521,7 @@ class SMAPSegLoader(Dataset):
 
 
 class SMDSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=100, flag="train"):
+    def __init__(self, args, root_path, win_size, step=100, flag="train"):
         self.flag = flag
         self.step = step
         self.win_size = win_size
@@ -546,7 +562,7 @@ class SMDSegLoader(Dataset):
 
 
 class SWATSegLoader(Dataset):
-    def __init__(self, root_path, win_size, step=1, flag="train"):
+    def __init__(self, args, root_path, win_size, step=1, flag="train"):
         self.flag = flag
         self.step = step
         self.win_size = win_size
@@ -614,8 +630,10 @@ class UEAloader(Dataset):
             (Moreover, script argument overrides this attribute)
     """
 
-    def __init__(self, root_path, file_list=None, limit_size=None, flag=None):
+    def __init__(self, args, root_path, file_list=None, limit_size=None, flag=None):
+        self.args = args
         self.root_path = root_path
+        self.flag = flag
         self.all_df, self.labels_df = self.load_all(root_path, file_list=file_list, flag=flag)
         self.all_IDs = self.all_df.index.unique()  # all sample IDs (integer indices 0 ... num_samples-1)
 
@@ -712,8 +730,19 @@ class UEAloader(Dataset):
             return case
 
     def __getitem__(self, ind):
-        return self.instance_norm(torch.from_numpy(self.feature_df.loc[self.all_IDs[ind]].values)), \
-               torch.from_numpy(self.labels_df.loc[self.all_IDs[ind]].values)
+        batch_x = self.feature_df.loc[self.all_IDs[ind]].values
+        labels = self.labels_df.loc[self.all_IDs[ind]].values
+        if self.flag == "TRAIN" and self.args.augmentation_ratio > 0:
+            num_samples = len(self.all_IDs)
+            num_columns = self.feature_df.shape[1]
+            seq_len = int(self.feature_df.shape[0] / num_samples)
+            batch_x = batch_x.reshape((1, seq_len, num_columns))
+            batch_x, labels, augmentation_tags = run_augmentation_single(batch_x, labels, self.args)
+
+            batch_x = batch_x.reshape((1 * seq_len, num_columns))
+
+        return self.instance_norm(torch.from_numpy(batch_x)), \
+               torch.from_numpy(labels)
 
     def __len__(self):
         return len(self.all_IDs)
