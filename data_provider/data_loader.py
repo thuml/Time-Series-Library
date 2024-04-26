@@ -631,7 +631,9 @@ class UEAloader(Dataset):
     """
 
     def __init__(self, args, root_path, file_list=None, limit_size=None, flag=None):
+        self.args = args
         self.root_path = root_path
+        self.flag = flag
         self.all_df, self.labels_df = self.load_all(root_path, file_list=file_list, flag=flag)
         self.all_IDs = self.all_df.index.unique()  # all sample IDs (integer indices 0 ... num_samples-1)
 
@@ -728,8 +730,19 @@ class UEAloader(Dataset):
             return case
 
     def __getitem__(self, ind):
-        return self.instance_norm(torch.from_numpy(self.feature_df.loc[self.all_IDs[ind]].values)), \
-               torch.from_numpy(self.labels_df.loc[self.all_IDs[ind]].values)
+        batch_x = self.feature_df.loc[self.all_IDs[ind]].values
+        labels = self.labels_df.loc[self.all_IDs[ind]].values
+        if self.flag == "TRAIN" and self.args.augmentation_ratio > 0:
+            num_samples = len(self.all_IDs)
+            num_columns = self.feature_df.shape[1]
+            seq_len = int(self.feature_df.shape[0] / num_samples)
+            batch_x = batch_x.reshape((1, seq_len, num_columns))
+            batch_x, labels, augmentation_tags = run_augmentation_single(batch_x, labels, self.args)
+
+            batch_x = batch_x.reshape((1 * seq_len, num_columns))
+
+        return self.instance_norm(torch.from_numpy(batch_x)), \
+               torch.from_numpy(labels)
 
     def __len__(self):
         return len(self.all_IDs)
