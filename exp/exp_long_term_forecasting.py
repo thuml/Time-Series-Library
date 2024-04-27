@@ -169,9 +169,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             test_loss = self.vali(test_data, test_loader, criterion)
 
             wandb.log({
-                "train_loss": train_loss, 
-                "vali_loss": vali_loss, 
-                "test_loss": test_loss, 
+                "train_loss": train_loss,
+                "vali_loss": vali_loss,
+                "test_loss": test_loss,
             })
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
@@ -235,7 +235,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     shape = outputs.shape
                     outputs = test_data.inverse_transform(outputs.squeeze(0)).reshape(shape)
                     batch_y = test_data.inverse_transform(batch_y.squeeze(0)).reshape(shape)
-        
+
                 outputs = outputs[:, :, f_dim:]
                 batch_y = batch_y[:, :, f_dim:]
 
@@ -261,7 +261,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
 
-        idx_lst, rmse_lst, mape_lst = [], []
+        idx_lst, rmse_lst, mape_lst = [], [], []
         for i in range(1, self.args.pred_len+1):
             pred = preds[:,i,:]
             true = trues[:,i,:]
@@ -274,10 +274,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             idx_lst.append(i)
             rmse_lst.append(rmse)
             mape_lst.append(mape)
-        
+
         pd.DataFrame({
-            "leadtime": idx_lst, 
-            'rmse': rmse_lst, 
+            "leadtime": idx_lst,
+            'rmse': rmse_lst,
             'mape': mape_lst}
         ).to_csv('rmse_mape.csv', index=False)
 
