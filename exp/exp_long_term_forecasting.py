@@ -9,6 +9,7 @@ import os
 import time
 import warnings
 import numpy as np
+import pandas
 import wandb
 
 warnings.filterwarnings('ignore')
@@ -275,7 +276,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             rmse_lst.append(rmse)
             mape_lst.append(mape)
 
-        pd.DataFrame({
+        pandas.DataFrame({
             "leadtime": idx_lst,
             'rmse': rmse_lst,
             'mape': mape_lst}
@@ -294,7 +295,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         wandb.run.summary["mspe"] = mspe
 
         print('mse:{}, mae:{}'.format(mse, mae))
-        f = open("result_long_term_forecast.txt", 'wb')
+        f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}'.format(mse, mae))
         f.write('\n')
