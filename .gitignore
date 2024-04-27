@@ -158,3 +158,5 @@ data_loader_all.py
 /utils/self_tools.py
 /scripts/exp_scripts/
 /wandb/
+.DS_Store
+dataset/.DS_Store
