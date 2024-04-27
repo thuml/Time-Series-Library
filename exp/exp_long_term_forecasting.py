@@ -262,11 +262,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         print('test shape:', preds.shape, trues.shape)
 
         idx_lst, rmse_lst, mape_lst = [], [], []
-        for i in range(1, self.args.pred_len+1):
+        for i in range(self.args.pred_len):
             pred = preds[:,i,:]
             true = trues[:,i,:]
             fig, ax = plt.subplots()
-            ax.plot(pred.flatten(), label=f'lead time: {i}')
+            ax.plot(pred.flatten(), label=f'lead time: {i+1}')
             ax.plot(true.flatten(), label=f'trues')
             ax.legend()
             wandb.log({"plot": wandb.Image(fig)})
