@@ -261,15 +261,25 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
 
-        for i in range(self.args.pred_len):
+        idx_lst, rmse_lst, mape_lst = [], []
+        for i in range(1, self.args.pred_len+1):
             pred = preds[:,i,:]
             true = trues[:,i,:]
             fig, ax = plt.subplots()
-            ax.plot(pred.flatten(), label=f'lead time: {i+1}')
+            ax.plot(pred.flatten(), label=f'lead time: {i}')
             ax.plot(true.flatten(), label=f'trues')
             ax.legend()
             wandb.log({"plot": wandb.Image(fig)})
-
+            mae, mse, rmse, mape, mspe = metric(pred, true)
+            idx_lst.append(i)
+            rmse_lst.append(rmse)
+            mape_lst.append(mape)
+        
+        pd.DataFrame({
+            "leadtime": idx_lst, 
+            'rmse': rmse_lst, 
+            'mape': mape_lst}
+        ).to_csv('rmse_mape.csv', index=False)
 
         # result save
         folder_path = './results/' + setting + '/'
@@ -284,7 +294,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         wandb.run.summary["mspe"] = mspe
 
         print('mse:{}, mae:{}'.format(mse, mae))
-        f = open("result_long_term_forecast.txt", 'a')
+        f = open("result_long_term_forecast.txt", 'wb')
         f.write(setting + "  \n")
         f.write('mse:{}, mae:{}'.format(mse, mae))
         f.write('\n')
