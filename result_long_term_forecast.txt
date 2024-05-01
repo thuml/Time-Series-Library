@@ -1,3 +1,6 @@
 long_term_forecast_wind_12_12_TimesNet_custom_ftMS_sl12_ll12_pl96_dm64_nh8_el3_dl1_df64_fc3_ebtimeF_dtTrue_Exp_0  
 mse:1.19302237033844, mae:0.8075152039527893
 
+long_term_forecast_wind_12_12_Transformer_custom_ftMS_sl12_ll12_pl96_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
+mse:0.9460977911949158, mae:0.7859172821044922, dtw:-999
+
