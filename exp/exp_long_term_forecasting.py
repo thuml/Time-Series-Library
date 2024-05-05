@@ -276,6 +276,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             rmse_lst.append(rmse)
             mape_lst.append(mape)
 
+        folder_path = './results/' + setting + '/'
         pandas.DataFrame({
             "leadtime": idx_lst,
             'rmse': rmse_lst,
@@ -283,7 +284,6 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         ).to_csv(folder_path + 'rmse_mape.csv', index=False)
 
         # result save
-        folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
