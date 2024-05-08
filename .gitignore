@@ -160,3 +160,9 @@ data_loader_all.py
 /wandb/
 .DS_Store
 dataset/.DS_Store
+checkpoints/
+result_long_term_forecast.txt
+result_anomaly_detection.txt
+scripts/augmentation/
+run_anylearn.py
+environment.txt
