@@ -6,7 +6,7 @@ python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/wind/ \
-  --data_path formosa.csv \
+  --data_path formosa_wrf.csv \
   --model_id wind_12_12 \
   --model $model_name \
   --data custom \
