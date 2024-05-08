@@ -25,3 +25,9 @@ mse:30.005348205566406, mae:4.0705437660217285, dtw:-999
 long_term_forecast_wind_12_12_TimesNet_custom_ftMS_sl12_ll12_pl96_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
 mse:30.787979125976562, mae:4.102725505828857, dtw:-999
 
+long_term_forecast_wind_12_12_iTransformer_custom_ftMS_sl12_ll12_pl96_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
+mse:32.470149993896484, mae:4.262024402618408, dtw:-999
+
+long_term_forecast_wind_12_12_wrf_iTransformer_custom_ftMS_sl12_ll12_pl96_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
+mse:32.47018814086914, mae:4.262025356292725, dtw:-999
+
