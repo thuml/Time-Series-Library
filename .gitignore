@@ -160,3 +160,5 @@ data_loader_all.py
 
 /checkpoints/
 /results/
+test.ipynb
+plot_data.ipynb

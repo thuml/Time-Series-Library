@@ -1,4 +1,5 @@
-export CUDA_VISIBLE_DEVICES=2
+source /d/anaconda3/etc/profile.d/conda.sh && conda activate autoformer
+export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
   --task_name anomaly_detection \
