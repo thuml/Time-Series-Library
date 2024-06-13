@@ -1,5 +1,5 @@
 
-source /d/anaconda3/etc/profile.d/conda.sh && conda activate autoformer
+# source /d/anaconda3/etc/profile.d/conda.sh && conda activate autoformer
 export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
