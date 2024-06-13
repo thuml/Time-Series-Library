@@ -17,5 +17,5 @@ python -u run.py \
   --enc_in 55 \
   --c_out 55 \
   --anomaly_ratio 1 \
-  --batch_size 64 \
+  --batch_size 128 \
   --train_epochs 10
