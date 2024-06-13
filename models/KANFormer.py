@@ -7,11 +7,19 @@ from layers.kan_feedforward import FeedForward
 
 
 class KANBlock(nn.Module):
-    def __init__(self, hidden_size, num_heads, window_size, d_ff, num_experts, n_experts_per_token, rotation_matrix):
+    def __init__(self, config):
         super(KANBlock, self).__init__()
+        hidden_size = config['hidden_size']
+        num_heads = config['num_heads'] 
+        window_size = config['window_size'] 
+        d_ff = config['d_ff'] 
+        num_experts = config['num_experts'] 
+        n_experts_per_token = config['num_experts_per_token'] 
+        rotation_matrix = config['rotation_matrix']
         self.norm1 = RMSNorm(hidden_size)
         self.norm2 = RMSNorm(hidden_size)
-        self.attention = MultiheadKANAttention(hidden_size, num_heads, window_size, num_experts, n_experts_per_token, rotation_matrix)
+        # self.attention = MultiheadKANAttention(hidden_size, num_heads, window_size, num_experts, n_experts_per_token, rotation_matrix)
+        self.attention = MultiheadKANAttention(hidden_size, num_heads, rotation_matrix)
         self.moe = MoeKANLayer(hidden_size, d_ff, num_experts, n_experts_per_token)
 
     def forward(self, x):
