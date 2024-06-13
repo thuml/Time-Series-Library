@@ -1,0 +1,33 @@
+anomaly_detection_PSM_Autoformer_PSM_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9413, Precision : 1.0000, Recall : 0.7885, F-score : 0.8817 
+
+anomaly_detection_MSL_Autoformer_MSL_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9622, Precision : 0.9003, Recall : 0.7210, F-score : 0.8008 
+
+anomaly_detection_SMAP_Autoformer_SMAP_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9829, Precision : 0.9371, Recall : 0.9288, F-score : 0.9329 
+
+anomaly_detection_SMD_Autoformer_SMD_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9758, Precision : 0.7687, Recall : 0.5973, F-score : 0.6723 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9582, Precision : 0.9996, Recall : 0.6557, F-score : 0.7919 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9582, Precision : 0.9996, Recall : 0.6557, F-score : 0.7919 
+
+anomaly_detection_SMD_Autoformer_SMD_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9758, Precision : 0.7687, Recall : 0.5973, F-score : 0.6723 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9581, Precision : 0.9996, Recall : 0.6556, F-score : 0.7919 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9581, Precision : 0.9996, Recall : 0.6556, F-score : 0.7918 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.8785, Precision : 0.0000, Recall : 0.0000, F-score : 0.0000 
+
+anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9581, Precision : 0.9996, Recall : 0.6555, F-score : 0.7918 
+

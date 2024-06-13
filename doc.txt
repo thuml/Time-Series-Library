@@ -1,0 +1,2 @@
+python transform_data.py -i 'dataset/Vincom/RoyBackup.csv' -o 'D:\DATN\Time-Series-Library\dataset\VincomRoyal_processed1'
+#nho sua file csv va dia chi file output

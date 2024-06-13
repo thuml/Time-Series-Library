@@ -1,8 +1,9 @@
-export CUDA_VISIBLE_DEVICES=1
+source /d/anaconda3/etc/profile.d/conda.sh && conda activate autoformer
+export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
   --task_name anomaly_detection \
-  --is_training 1 \
+  --is_training 0 \
   --root_path ./dataset/SWaT \
   --model_id SWAT \
   --model Autoformer \
@@ -16,6 +17,6 @@ python -u run.py \
   --enc_in 51 \
   --c_out 51 \
   --top_k 3 \
-  --anomaly_ratio 1 \
+  --anomaly_ratio 0.5 \
   --batch_size 128 \
-  --train_epochs 3
+  --train_epochs 5

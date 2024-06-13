@@ -1,12 +1,18 @@
 einops==0.4.0
-matplotlib==3.7.0
-numpy==1.23.5
-pandas==1.5.3
+matplotlib
+# numpy==1.23.5
+# pandas==1.5.3
 patool==1.12
 reformer-pytorch==1.4.4
-scikit-learn==1.2.2
-scipy==1.10.1
+scikit-learn
+scipy
 sktime==0.16.1
+<<<<<<< HEAD
 sympy==1.11.1
 torch==1.7.1
 tqdm==4.64.1
+=======
+sympy==1.10.1
+# torch==1.7.1
+tqdm==4.64.1
+>>>>>>> 1e5d6b8f8fdbef67ebc5640ac325487ad3f58dae

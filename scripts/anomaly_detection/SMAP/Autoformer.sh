@@ -1,4 +1,5 @@
-export CUDA_VISIBLE_DEVICES=7
+source /d/anaconda3/etc/profile.d/conda.sh && conda activate autoformer
+export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
   --task_name anomaly_detection \
@@ -17,4 +18,4 @@ python -u run.py \
   --c_out 25 \
   --anomaly_ratio 1 \
   --batch_size 128 \
-  --train_epochs 3
+  --train_epochs 15

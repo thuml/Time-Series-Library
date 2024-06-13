@@ -158,6 +158,7 @@ data_loader_all.py
 /utils/self_tools.py
 /scripts/exp_scripts/
 
+<<<<<<< HEAD
 checkpoints/
 results/
 result_long_term_forecast.txt
@@ -165,3 +166,9 @@ result_anomaly_detection.txt
 scripts/augmentation/
 run_anylearn.py
 environment.txt
+=======
+/checkpoints/
+/results/
+test.ipynb
+plot_data.ipynb
+>>>>>>> 1e5d6b8f8fdbef67ebc5640ac325487ad3f58dae
