@@ -18,4 +18,5 @@ python -u run.py \
   --c_out 38 \
   --anomaly_ratio 0.5 \
   --batch_size 128 \
-  --train_epochs 10
+  --train_epochs 15 \
+  --patience 10

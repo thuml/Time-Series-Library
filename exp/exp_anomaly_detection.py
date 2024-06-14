@@ -172,7 +172,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
         combined_energy = np.concatenate([train_energy, test_energy], axis=0)
         threshold = np.percentile(combined_energy, 100 - self.args.anomaly_ratio)
         print("Threshold :", threshold)
-        threshold = 76.5
+        # threshold = 76.5
         
 
         # (3) evaluation on the test set
