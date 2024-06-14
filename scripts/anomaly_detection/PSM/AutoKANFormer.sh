@@ -19,4 +19,4 @@ python -u run.py \
   --c_out 25 \
   --anomaly_ratio 1 \
   --batch_size 128 \
-  --train_epochs 10
+  --train_epochs 5
