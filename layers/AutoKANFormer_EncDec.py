@@ -90,7 +90,7 @@ class EncoderLayer(nn.Module):
         self.decomp1 = series_decomp(moving_avg)
         self.decomp2 = series_decomp(moving_avg)
         self.dropout = nn.Dropout(dropout)
-        self.kan_ffw = FeedForward(d_model, d_ff)
+        # self.kan_ffw = FeedForward(d_model, d_ff)
         self.activation = F.relu if activation == "relu" else F.gelu
 
     def forward(self, x, attn_mask=None):
@@ -100,7 +100,7 @@ class EncoderLayer(nn.Module):
         )
         x = x + self.dropout(new_x)
         x, _ = self.decomp1(x)
-        x = x + self.kan_ffw(x)
+        # x = x + self.kan_ffw(x)
         y = x
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
         y = self.dropout(self.conv2(y).transpose(-1, 1))
@@ -154,7 +154,7 @@ class DecoderLayer(nn.Module):
         self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False)
         self.decomp1 = series_decomp(moving_avg)
         self.decomp2 = series_decomp(moving_avg)
-        self.kan_ffw = FeedForward(d_model, d_ff)
+        # self.kan_ffw = FeedForward(d_model, d_ff)
         self.decomp3 = series_decomp(moving_avg)
         self.dropout = nn.Dropout(dropout)
         self.projection = nn.Conv1d(in_channels=d_model, out_channels=c_out, kernel_size=3, stride=1, padding=1,
@@ -172,7 +172,7 @@ class DecoderLayer(nn.Module):
             attn_mask=cross_mask
         )[0])
         x, trend2 = self.decomp2(x)
-        x = x + self.kan_ffw(x)
+        # x = x + self.kan_ffw(x)
         y = x
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
         y = self.dropout(self.conv2(y).transpose(-1, 1))

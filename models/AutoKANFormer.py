@@ -6,7 +6,7 @@ from layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
 from layers.AutoKANFormer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
 import math
 import numpy as np
-
+from layers.kan_feedforward import KANLinear, FeedForward
 
 class Model(nn.Module):
     """
@@ -78,8 +78,9 @@ class Model(nn.Module):
             self.projection = nn.Linear(
                 configs.d_model, configs.c_out, bias=True)
         if self.task_name == 'anomaly_detection':
-            self.projection = nn.Linear(
-                configs.d_model, configs.c_out, bias=True)
+            # self.projection = nn.Linear(
+            #     configs.d_model, configs.c_out, bias=True)
+            self.projection = KANLinear(configs.d_model, configs.c_out)
         if self.task_name == 'classification':
             self.act = F.gelu
             self.dropout = nn.Dropout(configs.dropout)
