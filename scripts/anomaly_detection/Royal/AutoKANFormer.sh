@@ -20,7 +20,9 @@ python -u run.py \
   --c_out 1 \
   --anomaly_ratio 10 \
   --batch_size 64 \
-  --train_epochs 15
+  --train_epochs 15 \
+  --patience 10
+
 
 # python -u run.py \
 #   --task_name anomaly_detection \
