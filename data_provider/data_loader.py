@@ -570,9 +570,10 @@ class SWATSegLoader(Dataset):
 
         train_data = pd.read_csv(os.path.join(root_path, 'swat_train2.csv'))
         test_data = pd.read_csv(os.path.join(root_path, 'swat2.csv'))
-        labels = test_data.values[:, -1:]
+        n_test = len(test_data.values)
+        labels = test_data.values[:n_test//2, -1:]
         train_data = train_data.values[:, :-1]
-        test_data = test_data.values[:, :-1]
+        test_data = test_data.values[:n_test//2, :-1]
 
         self.scaler.fit(train_data)
         train_data = self.scaler.transform(train_data)
