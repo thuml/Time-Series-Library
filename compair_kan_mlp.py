@@ -50,21 +50,22 @@ def argument_parses():
     return args
 
 if __name__ == '__main__': 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # Generate sample data
-    x_train = torch.linspace(0, 2, steps=500).unsqueeze(1)
-    y_train = torch.tensor(target_function(x_train))
+    x_train = torch.linspace(0, 2, steps=500).unsqueeze(1).to(device)
+    y_train = torch.tensor(target_function(x_train)).to(device)
 
     args = argument_parses()
     activation = args.activation
     print("Activation: ", activation)
     # Instantiate models
-    kan_model_16 =  FeedForward(1, 16, activation=activation)
-    kan_model_8 = FeedForward(1, 8, activation=activation)
-    kan_model_24 = FeedForward(1, 24, activation=activation)
+    kan_model_16 =  FeedForward(1, 16, activation=activation).to(device)
+    kan_model_8 = FeedForward(1, 8, activation=activation).to(device)
+    kan_model_24 = FeedForward(1, 24, activation=activation).to(device)
 
-    mlp_model_128 = SimpleMLP(dim=128)
-    mlp_model_64 = SimpleMLP(dim=64)
-    mlp_model_256 = SimpleMLP(dim=256)
+    mlp_model_128 = SimpleMLP(dim=128).to(device)
+    mlp_model_64 = SimpleMLP(dim=64).to(device)
+    mlp_model_256 = SimpleMLP(dim=256).to(device)
 
     # Define loss function and optimizer
     criterion = nn.MSELoss()
