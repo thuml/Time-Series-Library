@@ -52,8 +52,9 @@ def argument_parses():
 if __name__ == '__main__': 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # Generate sample data
-    x_train = torch.linspace(0, 2, steps=500).unsqueeze(1).to(device)
+    x_train = torch.linspace(0, 2, steps=500).unsqueeze(1)
     y_train = torch.tensor(target_function(x_train)).to(device)
+    x_train = x_train.to(device)
 
     args = argument_parses()
     activation = args.activation
@@ -153,7 +154,7 @@ if __name__ == '__main__':
         
 
     # Test the models
-    x_test = torch.linspace(0, 2, steps=400).unsqueeze(1)
+    x_test = torch.linspace(0, 2, steps=400).unsqueeze(1).to(device)
     y_pred_kan_8 = kan_model_8(x_test).detach()
     y_pred_kan_16 = kan_model_16(x_test).detach()
     y_pred_kan_24 = kan_model_24(x_test).detach()
