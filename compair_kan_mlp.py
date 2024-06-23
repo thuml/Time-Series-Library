@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import numpy as np
@@ -37,12 +38,24 @@ class SimpleMLP(nn.Module):
         return self.layers(x-1) # centralize the input
 
 
+def argument_parses():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-e', '--epochs', default=20001, type=int
+    )
+    parser.add_argument(
+        '-a', '--activation', default=None
+    )
+    args = parser.parse_args()
+    return args
+
 if __name__ == '__main__': 
     # Generate sample data
     x_train = torch.linspace(0, 2, steps=500).unsqueeze(1)
     y_train = torch.tensor(target_function(x_train))
 
-    activation = None
+    args = argument_parses()
+    activation = args.activation
     print("Activation: ", activation)
     # Instantiate models
     kan_model_16 =  FeedForward(1, 16, activation=activation)
@@ -74,7 +87,7 @@ if __name__ == '__main__':
 
 
     # Train the models
-    epochs = 201
+    epochs = args.epochs
     for epoch in range(epochs):
         optimizer_kan_8.zero_grad()
         outputs_kan_8 = kan_model_8(x_train)
