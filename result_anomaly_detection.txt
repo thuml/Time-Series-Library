@@ -31,3 +31,78 @@ Accuracy : 0.8785, Precision : 0.0000, Recall : 0.0000, F-score : 0.0000
 anomaly_detection_SWAT_Autoformer_SWAT_ftM_sl100_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
 Accuracy : 0.9581, Precision : 0.9996, Recall : 0.6555, F-score : 0.7918 
 
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl64_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.8277, Precision : 0.0516, Recall : 0.1900, F-score : 0.0812 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl64_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.0663, Precision : 0.0408, Recall : 0.9907, F-score : 0.0784 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.8518, Precision : 0.0558, Recall : 0.1608, F-score : 0.0829 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.1743, Precision : 0.0326, Recall : 0.6573, F-score : 0.0621 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.2425, Precision : 0.0325, Recall : 0.5986, F-score : 0.0617 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9065, Precision : 0.0704, Recall : 0.1021, F-score : 0.0833 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9443, Precision : 0.0737, Recall : 0.0294, F-score : 0.0420 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.8595, Precision : 0.0309, Recall : 0.0783, F-score : 0.0443 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9519, Precision : 0.1595, Recall : 0.0364, F-score : 0.0592 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9578, Precision : 0.3529, Recall : 0.0168, F-score : 0.0320 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9584, Precision : 0.0000, Recall : 0.0000, F-score : 0.0000 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9581, Precision : 0.0000, Recall : 0.0000, F-score : 0.0000 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9578, Precision : 0.0000, Recall : 0.0000, F-score : 0.0000 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9578, Precision : 0.2917, Recall : 0.0098, F-score : 0.0189 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.8483, Precision : 0.0289, Recall : 0.0811, F-score : 0.0426 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.2388, Precision : 0.0339, Recall : 0.6280, F-score : 0.0642 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.3733, Precision : 0.0332, Recall : 0.4993, F-score : 0.0622 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.3426, Precision : 0.0337, Recall : 0.5343, F-score : 0.0633 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.4944, Precision : 0.0337, Recall : 0.4028, F-score : 0.0622 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.2020, Precision : 0.0347, Recall : 0.6769, F-score : 0.0659 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.1643, Precision : 0.0365, Recall : 0.7510, F-score : 0.0696 
+
+anomaly_detection_PSM_AutoKANFormer_PSM_ftM_sl32_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.1251, Precision : 0.0397, Recall : 0.8629, F-score : 0.0759 
+
+anomaly_detection_PSM_Autoformer_PSM_ftM_sl64_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.1071, Precision : 0.0331, Recall : 0.7544, F-score : 0.0634 
+
+anomaly_detection_PSM_Autoformer_PSM_ftM_sl64_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9537, Precision : 0.3501, Recall : 0.1822, F-score : 0.2397 
+
+anomaly_detection_PSM_Autoformer_PSM_ftM_sl64_ll48_pl0_dm128_nh8_el3_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.1071, Precision : 0.0331, Recall : 0.7544, F-score : 0.0634 
+
