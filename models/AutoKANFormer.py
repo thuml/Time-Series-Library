@@ -80,7 +80,8 @@ class Model(nn.Module):
         if self.task_name == 'anomaly_detection':
             # self.projection = nn.Linear(
             #     configs.d_model, configs.c_out, bias=True)
-            self.projection = KANLinear(configs.d_model, configs.c_out, grid_size=48)
+            # self.projection = KANLinear(configs.d_model, configs.c_out, grid_size=48)
+            self.projection = FeedForward(configs.d_model, configs.c_out)
         if self.task_name == 'classification':
             self.act = F.gelu
             self.dropout = nn.Dropout(configs.dropout)
