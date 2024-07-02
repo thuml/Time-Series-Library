@@ -6,8 +6,8 @@ python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/wind/ \
-  --data_path formosa_wrf_short.csv \
-  --model_id wind_12_12_short_wrf \
+  --data_path formosa.csv \
+  --model_id wind_12_12 \
   --model $model_name \
   --data custom \
   --features MS \
@@ -17,8 +17,8 @@ python -u run.py \
   --e_layers 3 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 19 \
-  --dec_in 19 \
+  --enc_in 13 \
+  --dec_in 13 \
   --c_out 1 \
   --des 'Exp' \
   --d_model 64\

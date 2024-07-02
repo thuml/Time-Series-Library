@@ -82,3 +82,6 @@ mse:6.534771919250488, mae:1.7378791570663452, dtw:-999
 long_term_forecast_wind_12_12_short_wrf_TimesNet_custom_ftMS_sl12_ll12_pl12_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
 mse:4.310899257659912, mae:1.2876479625701904, dtw:-999
 
+long_term_forecast_wind_12_12_TimesNet_custom_ftMS_sl12_ll12_pl12_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
+mse:2.220414638519287, mae:0.8832840323448181, dtw:-999
+
