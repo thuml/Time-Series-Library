@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=0
 
-model_name=iTransformer
+model_name=TimesNet
 
 python -u run.py \
   --task_name long_term_forecast \
@@ -17,8 +17,8 @@ python -u run.py \
   --e_layers 3 \
   --d_layers 1 \
   --factor 3 \
-  --enc_in 21 \
-  --dec_in 21 \
+  --enc_in 19 \
+  --dec_in 19 \
   --c_out 1 \
   --des 'Exp' \
   --d_model 64\
