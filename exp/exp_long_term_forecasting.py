@@ -15,7 +15,7 @@ from utils.dtw_metric import dtw,accelerated_dtw
 from utils.augmentation import run_augmentation,run_augmentation_single
 warnings.filterwarnings('ignore')
 import matplotlib.pyplot as plt
-
+import shutil
 
 class Exp_Long_Term_Forecast(Exp_Basic):
     def __init__(self, args):
@@ -285,8 +285,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             'rmse': rmse_lst,
             'mape': mape_lst}
         ).to_csv(folder_path + 'rmse_mape.csv', index=False)
-        
-        os.move('./results/test_index.csv', folder_path + 'test_index.csv')
+
+        shutil.move('./results/test_index.csv', folder_path + 'test_index.csv')
         # dtw calculation
         if self.args.use_dtw:
             dtw_list = []
