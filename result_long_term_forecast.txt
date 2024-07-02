@@ -76,3 +76,6 @@ mse:6.62393045425415, mae:1.7528095245361328, dtw:-999
 long_term_forecast_wind_12_12_short_wrf_iTransformer_custom_ftMS_sl12_ll12_pl12_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
 mse:6.623933792114258, mae:1.752810001373291, dtw:-999
 
+long_term_forecast_wind_12_12_short_wrf_iTransformer_custom_ftMS_sl12_ll12_pl12_dm64_nh8_el3_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0  
+mse:6.534771919250488, mae:1.7378791570663452, dtw:-999
+
