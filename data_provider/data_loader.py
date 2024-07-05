@@ -274,8 +274,8 @@ class Dataset_Custom(Dataset):
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
 
         if self.set_type == 2: # test
-            index = df_stamp[self.seq_len + self.pred_len-1:]
-            index.to_csv('test_index.csv', index=False)
+            df_stamp = df_stamp[self.seq_len-1:]
+            df_stamp.to_csv('results/test_index.csv', index=False)
 
         if self.timeenc == 0:
             df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)

@@ -6,7 +6,7 @@ import plotly.express as px
 from typing import List
 from pathlib import Path
 
-def load_metrics(name: str, leadtime: int=96) -> pd.DataFrame:
+def load_metrics(dir: str, name: str, leadtime: int=12) -> pd.DataFrame:
     """
     Load metrics for a given model name and lead time.
 
@@ -26,11 +26,11 @@ def load_metrics(name: str, leadtime: int=96) -> pd.DataFrame:
     if name == "lstm" or name == "lstm_shuffle" or name == "lstm_wrf":
         for l in range(1, leadtime+1):
             if name == "lstm":
-                data_dir = Path(f"../exp_results/formosa_19_20_LSTM_WS_p{l}")
+                data_dir = Path(f"{dir}/exp_results/formosa_19_20_LSTM_WS_p{l}")
             elif name == "lstm_shuffle":
-                data_dir = Path(f"../exp_results/formosa_19_20_LSTM_WS_p{l}_shffule")
+                data_dir = Path(f"{dir}/exp_results/formosa_19_20_LSTM_WS_p{l}_shffule")
             elif name == "lstm_wrf":
-                data_dir = Path(f"../exp_results/formosa_wrf_19_20_LSTM_WS_p{l}")
+                data_dir = Path(f"{dir}/exp_results/formosa_wrf_19_20_LSTM_WS_p{l}")
             with open(data_dir/"result.json") as f:
                 results = json.load(f)
             idx_lst.append(l)
@@ -40,7 +40,7 @@ def load_metrics(name: str, leadtime: int=96) -> pd.DataFrame:
             "leadtime": idx_lst, "rmse": rmse_lst, "mape": mape_lst
         })
     else:
-        df = pd.read_csv(f"{name}_rmse_mape.csv")
+        df = pd.read_csv(f"../results/{dir}/rmse_mape.csv")
         df.loc[:, "leadtime"] = df["leadtime"] + 1
         df.loc[:, "mape"] = df["mape"] * 100
 
@@ -64,21 +64,19 @@ def plot_metrics(df: pd.DataFrame, metric: str, models: List[str]) -> plt.Figure
     )
     return fig
 
-def load_true(name: str):
-    data_dir = Path("../data_for_model")
-    df = pd.read_csv(data_dir/f"{name}.csv")
-    df = df[["datetime", "WS_90"]]
-    df = df.rename(columns={"WS_90": "true"})
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df = df.set_index("datetime")
-
-    index_df = pd.read_csv('pred_index.csv')
-    df = df[df.index.isin(index_df['date'])]
-    return df
-
-
 '''Read Data'''
-def load_curve(dir: str, npy_name: str, prediction_length: int=96):
+def load_true(dir: str, prediction_length: int=12):
+    index_df = pd.read_csv(f'../results/{dir}/test_index.csv')
+    index_df['date'] = pd.to_datetime(index_df['date'])
+    
+    npy = np.load(f"../results/{dir}/pred.npy").reshape(-1, prediction_length)
+    df = pd.DataFrame(npy).join(index_df)
+    df = df.rename(columns={i: f"true_p{i+1}" for i in range(prediction_length)})
+    df = df.dropna().set_index("date")
+    df["true"] = df["true_p1"].shift(-1)
+    return df[["true"]]
+
+def load_curve(dir: str, columns: str, prediction_length: int=12):
     """
     Load the wind speed curve data from a numpy file and return it as a DataFrame.
 
@@ -89,17 +87,21 @@ def load_curve(dir: str, npy_name: str, prediction_length: int=96):
     Returns:
         pd.DataFrame: The wind speed curve data as a DataFrame.
     """
-    index_df = pd.read_csv('../results/test_index.csv')
+    index_df = pd.read_csv(f'../results/{dir}/test_index.csv')
     index_df['date'] = pd.to_datetime(index_df['date'])
     
-    npy = np.load(f"../results/{dir}/{npy_name}.npy").reshape(-1, prediction_length)
-    df = pd.DataFrame(npy).join(index_df)
-    df = df.rename(columns={i: f"{npy_name}_p{i+1}" for i in range(prediction_length)})
-    df = df.dropna().set_index("date")
+    npy = np.load(f"../results/{dir}/pred.npy").reshape(-1, prediction_length)
+    df = pd.DataFrame(npy).join(index_df).set_index("date")
+    for i in range(prediction_length):
+        df[i] = df[i].shift(-i)
+    
+    df = df.rename(columns={i: f"{columns}_p{i+1}" for i in range(prediction_length)})
+
+    df = df.dropna()
 
     return df
 
-def load_lstm_curve(attr: str="", prediction_length: int=96) -> pd.DataFrame:
+def load_lstm_curve(attr: str="", prediction_length: int=12) -> pd.DataFrame:
     """
     Load LSTM curve data for wind speed prediction.
 
@@ -112,7 +114,7 @@ def load_lstm_curve(attr: str="", prediction_length: int=96) -> pd.DataFrame:
     attr = attr if attr == "" else "_" + attr
     df_lst = []
     for l in range(1, prediction_length+1):
-        data_dir = Path(f"../exp_results/formosa{attr}_19_20_LSTM_WS_p{l}")
+        data_dir = Path(f"/Users/zhangxiangxian/wind_speed_prediction/exp_results/formosa{attr}_19_20_LSTM_WS_p{l}")
         df = pd.read_csv(data_dir/"pred.csv")
         df["date"] = pd.to_datetime(df["date"])
         df = df.set_index("date")
@@ -135,7 +137,7 @@ def plot_curve_by_leadtime(df: pd.DataFrame, leadtime: int, labels: List[str]) -
     Returns:
         plt.Figure: The matplotlib Figure object containing the plotted curves.
     """
-    curves = [f'{l}_p{leadtime}' for l in labels] + ["true"]
+    curves = [f'{l}_p{leadtime}' for l in labels] + [f"true"]
     fig = px.line(
         df, x=df.index, y=curves, 
         title=f"Lead Time {leadtime}", labels={'x': 'Time', 'value': 'Wind Speed'},

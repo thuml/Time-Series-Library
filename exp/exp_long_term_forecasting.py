@@ -15,7 +15,7 @@ from utils.dtw_metric import dtw,accelerated_dtw
 from utils.augmentation import run_augmentation,run_augmentation_single
 warnings.filterwarnings('ignore')
 import matplotlib.pyplot as plt
-
+import shutil
 
 class Exp_Long_Term_Forecast(Exp_Basic):
     def __init__(self, args):
@@ -277,16 +277,16 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             mape_lst.append(mape)
 
         folder_path = './results/' + setting + '/'
+        # result save
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
         pandas.DataFrame({
             "leadtime": idx_lst,
             'rmse': rmse_lst,
             'mape': mape_lst}
         ).to_csv(folder_path + 'rmse_mape.csv', index=False)
 
-        # result save
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
+        shutil.move('./results/test_index.csv', folder_path + 'test_index.csv')
         # dtw calculation
         if self.args.use_dtw:
             dtw_list = []
