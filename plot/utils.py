@@ -69,11 +69,11 @@ def load_true(dir: str, prediction_length: int=12):
     index_df = pd.read_csv(f'../results/{dir}/test_index.csv')
     index_df['date'] = pd.to_datetime(index_df['date'])
     
-    npy = np.load(f"../results/{dir}/pred.npy").reshape(-1, prediction_length)
+    npy = np.load(f"../results/{dir}/true.npy").reshape(-1, prediction_length)
     df = pd.DataFrame(npy).join(index_df)
     df = df.rename(columns={i: f"true_p{i+1}" for i in range(prediction_length)})
     df = df.dropna().set_index("date")
-    df["true"] = df["true_p1"].shift(-1)
+    df["true"] = df["true_p1"].shift(1)
     return df[["true"]]
 
 def load_curve(dir: str, columns: str, prediction_length: int=12):
