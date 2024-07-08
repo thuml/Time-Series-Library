@@ -93,7 +93,7 @@ def load_curve(dir: str, columns: str, prediction_length: int=12):
     npy = np.load(f"../results/{dir}/pred.npy").reshape(-1, prediction_length)
     df = pd.DataFrame(npy).join(index_df).set_index("date")
     for i in range(prediction_length):
-        df[i] = df[i].shift(-i)
+        df[i] = df[i].shift(i)
     
     df = df.rename(columns={i: f"{columns}_p{i+1}" for i in range(prediction_length)})
 
