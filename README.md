@@ -105,13 +105,15 @@ If you find this repo useful, please cite our paper.
 ```
 
 ## Contact
-If you have any questions or suggestions, feel free to contact:
+If you have any questions or suggestions, feel free to contact our maintenance team:
 
 - Haixu Wu (wuhx23@mails.tsinghua.edu.cn)
 - Tengge Hu (htg21@mails.tsinghua.edu.cn)
 - Yong Liu (liuyong21@mails.tsinghua.edu.cn)
 - Haoran Zhang (z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (guo-jw21@mails.tsinghua.edu.cn)
+- Yuxuan Wang (wangyuxu22@mails.tsinghua.edu.cn)
+- Huikun Weng (wenghk22@mails.tsinghua.edu.cn)
 
 Or describe it in Issues.
 
