@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm[toml]>7.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timeserieslib"
+description = "A library for time series analysis"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    
+]
+keywords = ["regression", "python", "sklearn"]
+license = {text = "BSD3 License"} #??? unclear
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "einops>=0.4.0",
+	"matplotlib>=3.7.0",
+	"numpy>=1.23.5",
+	"pandas>=1.5.3",
+	"patool>=1.12",
+	"reformer-pytorch>=1.4.4",
+	"scikit-learn>=1.2.2",
+	"scipy>=1.10.1",
+	"sktime>=0.16.1",
+	"sympy>=1.11.1",
+	"torch>=1.7.1",
+	"tqdm>=4.64.1,"
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+# packages = ["timeserieslib"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["vfdt*"]
+namespaces = true
+
+[tool.setuptools_scm]
+write_to = "src/timeserieslib/_version.py"
+
+[tool.setuptools.dynamic]
+version = {attr = "timeserieslib._version.__version__"}
