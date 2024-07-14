@@ -91,6 +91,8 @@ bash ./scripts/classification/TimesNet.sh
 - Include the newly added model in the `Exp_Basic.model_dict` of  `./exp/exp_basic.py`.
 - Create the corresponding scripts under the folder `./scripts`.
 
+Note: The original code for the classification task can be found [here](https://github.com/thuml/Flowformer/tree/main/Flowformer_TimeSeries). It is hard to fuse all five tasks in one library. We are still working on this task.
+
 ## Citation
 
 If you find this repo useful, please cite our paper.
