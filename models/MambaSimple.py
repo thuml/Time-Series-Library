@@ -30,7 +30,6 @@ class Model(nn.Module):
 
         self.out_layer = nn.Linear(configs.d_model, configs.c_out, bias=False)
 
-    # def short_term_forecast(self, x_enc, x_mark_enc):
     def forecast(self, x_enc, x_mark_enc):
         mean_enc = x_enc.mean(1, keepdim=True).detach()
         x_enc = x_enc - mean_enc
@@ -47,22 +46,10 @@ class Model(nn.Module):
         x_out = x_out * std_enc + mean_enc
         return x_out
 
-    # def long_term_forecast(self, x_enc, x_mark_enc):
-    #     x = self.embedding(x_enc, x_mark_enc)
-    #     for layer in self.layers:
-    #         x = layer(x)
-
-    #     x = self.norm(x)
-    #     x_out = self.out_layer(x)
-    #     return x_out
-
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
         if self.task_name in ['short_term_forecast', 'long_term_forecast']:
             x_out = self.forecast(x_enc, x_mark_enc)
             return x_out[:, -self.pred_len:, :]
-        
-            
-        # other tasks not implemented
 
 
 class ResidualBlock(nn.Module):
