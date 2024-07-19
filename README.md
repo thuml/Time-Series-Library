@@ -107,7 +107,7 @@ If you find this repo useful, please cite our paper.
   year={2023},
 }
 
-@inproceedings{wang2024tssurvey,
+@article{wang2024tssurvey,
   title={Deep Time Series Models: A Comprehensive Survey and Benchmark},
   author={Yuxuan Wang and Haixu Wu and Jiaxiang Dong and Yong Liu and Mingsheng Long and Jianmin Wang},
   booktitle={arXiv preprint arXiv:2407.13278},
