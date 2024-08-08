@@ -133,7 +133,7 @@ class PastDecomposableMixing(nn.Module):
         else:
             raise ValueError('decompsition is error')
 
-        if configs.channel_independence == 0:
+        if not configs.channel_independence:
             self.cross_layer = nn.Sequential(
                 nn.Linear(in_features=configs.d_model, out_features=configs.d_ff),
                 nn.GELU(),
@@ -163,7 +163,7 @@ class PastDecomposableMixing(nn.Module):
         trend_list = []
         for x in x_list:
             season, trend = self.decompsition(x)
-            if self.channel_independence == 0:
+            if not self.channel_independence:
                 season = self.cross_layer(season)
                 trend = self.cross_layer(trend)
             season_list.append(season.permute(0, 2, 1))
@@ -201,7 +201,7 @@ class Model(nn.Module):
         self.preprocess = series_decomp(configs.moving_avg)
         self.enc_in = configs.enc_in
 
-        if self.channel_independence == 1:
+        if self.channel_independence:
             self.enc_embedding = DataEmbedding_wo_pos(1, configs.d_model, configs.embed, configs.freq,
                                                       configs.dropout)
         else:
@@ -228,7 +228,7 @@ class Model(nn.Module):
                 ]
             )
 
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 self.projection_layer = nn.Linear(
                     configs.d_model, 1, bias=True)
             else:
@@ -254,7 +254,7 @@ class Model(nn.Module):
                 )
 
         if self.task_name == 'imputation' or self.task_name == 'anomaly_detection':
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 self.projection_layer = nn.Linear(
                     configs.d_model, 1, bias=True)
             else:
@@ -275,7 +275,7 @@ class Model(nn.Module):
         return dec_out
 
     def pre_enc(self, x_list):
-        if self.channel_independence == 1:
+        if self.channel_independence:
             return (x_list, None)
         else:
             out1_list = []
@@ -336,16 +336,19 @@ class Model(nn.Module):
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
                 x = self.normalize_layers[i](x, 'norm')
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
-                x_list.append(x)
-                x_mark = x_mark.repeat(N, 1, 1)
-                x_mark_list.append(x_mark)
+                    x_list.append(x)
+                    x_mark = x_mark.repeat(N, 1, 1)
+                    x_mark_list.append(x_mark)
+                else:
+                    x_list.append(x)
+                    x_mark_list.append(x_mark)
         else:
             for i, x in zip(range(len(x_enc)), x_enc, ):
                 B, T, N = x.size()
                 x = self.normalize_layers[i](x, 'norm')
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
 
@@ -374,7 +377,7 @@ class Model(nn.Module):
 
     def future_multi_mixing(self, B, enc_out_list, x_list):
         dec_out_list = []
-        if self.channel_independence == 1:
+        if self.channel_independence:
             x_list = x_list[0]
             for i, enc_out in zip(range(len(x_list)), enc_out_list):
                 dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(
@@ -427,7 +430,7 @@ class Model(nn.Module):
         for i, x in zip(range(len(x_enc)), x_enc, ):
             B, T, N = x.size()
             x = self.normalize_layers[i](x, 'norm')
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
             x_list.append(x)
 
@@ -465,7 +468,7 @@ class Model(nn.Module):
         if x_mark_enc is not None:
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
                 x_mark = x_mark.repeat(N, 1, 1)
@@ -473,7 +476,7 @@ class Model(nn.Module):
         else:
             for i, x in zip(range(len(x_enc)), x_enc, ):
                 B, T, N = x.size()
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
 
