@@ -12,6 +12,7 @@ from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.datasets import load_from_tsfile_to_dataframe
 import warnings
 from utils.augmentation import run_augmentation_single
+from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings('ignore')
 
@@ -183,6 +184,124 @@ class Dataset_ETT_minute(Dataset):
             self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
 
         self.data_stamp = data_stamp
+
+    def __getitem__(self, index):
+        s_begin = index
+        s_end = s_begin + self.seq_len
+        r_begin = s_end - self.label_len
+        r_end = r_begin + self.label_len + self.pred_len
+
+        seq_x = self.data_x[s_begin:s_end]
+        seq_y = self.data_y[r_begin:r_end]
+        seq_x_mark = self.data_stamp[s_begin:s_end]
+        seq_y_mark = self.data_stamp[r_begin:r_end]
+
+        return seq_x, seq_y, seq_x_mark, seq_y_mark
+
+    def __len__(self):
+        return len(self.data_x) - self.seq_len - self.pred_len + 1
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
+
+
+class Dataset_Custom_Stock(Dataset):
+    def __init__(self, args, root_path='/home/liyuante/llm4ts/', flag='train', size=None,
+                 features='M', data_path='us_stock.csv',
+                 target='RETX', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
+        self.args = args
+        if size == None:
+            self.seq_len = 15 * 1 * 1
+            self.label_len = 15 * 1
+            self.pred_len = 15 * 1
+        else:
+            self.seq_len = size[0]
+            self.label_len = size[1]
+            self.pred_len = size[2]
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+
+        self.features = features
+        self.target = target
+        self.scale = scale
+        self.timeenc = timeenc
+        self.freq = freq
+
+        self.root_path = root_path
+        self.data_path = data_path
+        self.__read_data__()
+
+    def __read_data__(self):
+        self.scaler = StandardScaler()
+        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
+
+        '''
+        df_raw.columns: ['date', ...(other features), target feature]
+        '''
+
+        cols = list(df_raw.columns)
+        cols.remove(self.target)
+        cols.remove('TICKER')
+        cols.remove('date')
+        # cols.remove('VOL')
+        df_raw = df_raw[['date'] + cols + [self.target]]
+        group = df_raw
+        group = group.sort_values('date')
+        
+        start_date_train = '2000-01-01'
+        end_date_train = '2016-12-31'
+        df_train = group[(group['date'] >= start_date_train) & (group['date'] <= end_date_train)]
+        unique_dates_in_train_data = df_train['date'].nunique()
+
+        start_date_test = '2021-01-01'
+        end_date_test = '2023-12-31'
+        df_test = group[(group['date'] >= start_date_test) & (group['date'] <= end_date_test)]
+        unique_dates_in_test_data = df_test['date'].nunique()
+
+        
+        num_train = unique_dates_in_train_data
+        num_test = unique_dates_in_test_data
+        num_vali = len(group) - num_train - num_test
+        border1s = [0, num_train - self.seq_len, len(group) - num_test - self.seq_len]
+        border2s = [num_train, num_train + num_vali, len(group)]
+        border1 = border1s[self.set_type]
+        border2 = border2s[self.set_type]
+
+        if self.features == 'M' or self.features == 'MS':
+            cols_data = group.columns[2:]  # 去掉 PERMNO 和 date 列
+            df_data = group[cols_data]
+        elif self.features == 'S':
+            df_data = group[[self.target]]
+        
+        if self.scale:
+            train_data = df_data[border1s[0]:border2s[0]]
+            # print("Train data before scaling:\n", train_data.head())
+            self.scaler.fit(train_data.values)
+            data = self.scaler.transform(df_data.values)
+            # TODO VOL --> inf
+            # print("Data after scaling:\n", data[:5])
+        else:
+            data = df_data.values
+
+        df_stamp = group[['date']][border1:border2]
+        df_stamp['date'] = pd.to_datetime(df_stamp.date)
+        if self.timeenc == 0:
+            df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
+            df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
+            df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
+            df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
+            data_stamp = df_stamp.drop(['date'], 1).values
+        elif self.timeenc == 1:
+            data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
+            data_stamp = data_stamp.transpose(1, 0)
+
+        self.data_x = data[border1:border2]
+        self.data_y = data[border1:border2]
+        self.data_stamp = data_stamp
+
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
 
     def __getitem__(self, index):
         s_begin = index
