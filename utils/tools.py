@@ -28,6 +28,14 @@ def adjust_learning_rate(optimizer, epoch, args):
 
 
 class EarlyStopping:
+    """
+    初始化EarlyStopping类。
+
+    参数:
+    patience (int): 如果验证损失不再改善，允许的最大次数。在超过该次数后，训练将停止。
+    verbose (bool): 如果为True，会打印出每次验证损失降低时的消息。
+    delta (float): 验证损失减少的最小值，以此值为界限来判断是否有显著改善。
+    """
     def __init__(self, patience=7, verbose=False, delta=0):
         self.patience = patience
         self.verbose = verbose
@@ -38,21 +46,37 @@ class EarlyStopping:
         self.delta = delta
 
     def __call__(self, val_loss, model, path):
-        score = -val_loss
-        if self.best_score is None:
+        """
+        每次验证结束后调用此方法，以判断是否需要提前停止训练。
+
+        参数:
+        val_loss (float): 当前验证集上的损失值。
+        model (torch.nn.Module): 当前训练的模型。
+        path (str): 保存模型检查点的路径。
+        """
+        score = -val_loss  # 由于希望损失最小化，因此使用负数来比较得分
+        if self.best_score is None:  # 如果尚未保存最佳得分，初始化最佳得分并保存模型
             self.best_score = score
             self.save_checkpoint(val_loss, model, path)
-        elif score < self.best_score + self.delta:
-            self.counter += 1
+        elif score < self.best_score + self.delta:  # 如果当前得分没有显著提高
+            self.counter += 1  # 未显著改善，增加计数器
             print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
             if self.counter >= self.patience:
                 self.early_stop = True
-        else:
-            self.best_score = score
-            self.save_checkpoint(val_loss, model, path)
-            self.counter = 0
+        else:  # 如果当前得分显著提高
+            self.best_score = score  # 更新最佳得分
+            self.save_checkpoint(val_loss, model, path)  # 保存新的最佳模型
+            self.counter = 0  # 重置计数器
 
     def save_checkpoint(self, val_loss, model, path):
+        """
+        保存模型的当前检查点。
+
+        参数:
+        val_loss (float): 当前验证集上的损失值。
+        model (torch.nn.Module): 当前训练的模型。
+        path (str): 保存模型检查点的路径。
+        """
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         torch.save(model.state_dict(), path + '/' + 'checkpoint.pth')

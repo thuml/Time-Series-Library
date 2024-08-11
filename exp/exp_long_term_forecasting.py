@@ -178,6 +178,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
     def test(self, setting, test=0):
         test_data, test_loader = self._get_data(flag='test')
+        import pickle
+        with open('test_data.pkl', 'wb') as f:
+                pickle.dump(test_data, f)
+        
         if test:
             print('loading model')
             self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
