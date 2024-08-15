@@ -1,35 +1,20 @@
-## Getting Started 🚀
+## Instructions for Contributing to TSlib
 
-Ready to embark on your contribution journey? Awesome! Follow these simple steps to get started:
+Sincerely thanks to all the researchers who use or want to contribute to TSlib. 
 
-1. **Fork It!** 🍴
+Since our team may not have enough time to fix all the bugs and catch up with the latest model, your contribution is essential to this project.
 
-   Begin by clicking that "Fork" button in the top right to create your very own playground.
+### (1) Fix Bug
 
-2. **Clone It!** 📥
+You can directly propose a pull request and add detailed descriptions to the comment, such as [this pull request](https://github.com/thuml/Time-Series-Library/pull/498).
 
-   Next up, clone your fork to your local machine. Just use `git clone` along with your fork's URL.
+### (2) Add a new time series model
 
-3. **Branch Out!** 🌱
+Thanks to creative researchers, extensive great TS models are presented, which advance this community significantly. If you want to add your model to TSlib, here are some instructions:
 
-   Creativity time! Give your contribution a unique name by creating a new branch. Be creative, like `my-cool-feature` or `fix-that-sneaky-bug`.
+- Propose an issue to describe your model and give a link to your paper and official code. We will discuss whether your model is suitable for this library.
+- Propose a pull request in a similar style as TSlib, which means adding an additional file to ./models and providing corresponding scripts for reproduction, such as [this pull request](https://github.com/thuml/Time-Series-Library/pull/446).
 
-4. **Code Magic!** 💻
+Note: Given that there are a lot of TS models that have been proposed, we may not have enough time to judge which model can be a remarkable supplement to the current library. Thus, we decide ONLY to add the officially published paper to our library. Peer review can be a reliable criterion.
 
-   It's time to work your coding wizardry! Bring your ideas to life and enjoy the process.
-
-5. **Test It!** 🧪
-
-   Make sure your changes behave as expected. Let's squash those bugs, shall we?
-
-6. **Pull Request!** 🚢
-
-   When you're all set and bursting with excitement, submit a pull request from your branch. We'll be eagerly waiting to review it.
-
-   You can ⭐ the repo as well!
-
-7. **Celebrate!** 🎉
-
-   🥳 Congratulations! Your contribution is one step closer to enriching the Time Series Library. Let's elevate time series analysis together! 📈
-
-Your passion and talent are greatly appreciated! Thanks for being a part of this journey. 🙌
+Thanks again for your valuable contributions.
