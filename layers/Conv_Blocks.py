@@ -54,7 +54,7 @@ class Inception_Block_V2(nn.Module):
 
     def forward(self, x):
         res_list = []
-        for i in range(self.num_kernels + 1):
+        for i in range(self.num_kernels // 2 * 2 + 1):
             res_list.append(self.kernels[i](x))
         res = torch.stack(res_list, dim=-1).mean(-1)
         return res
