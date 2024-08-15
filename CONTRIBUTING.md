@@ -1,6 +1,6 @@
 ## Instructions for Contributing to TSlib
 
-Sincerely thanks to all the researchers who use or want to contribute to TSlib. 
+Sincerely thanks to all the researchers who want to use or contribute to TSlib.
 
 Since our team may not have enough time to fix all the bugs and catch up with the latest model, your contribution is essential to this project.
 
