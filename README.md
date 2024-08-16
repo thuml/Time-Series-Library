@@ -118,13 +118,16 @@ If you find this repo useful, please cite our paper.
 ## Contact
 If you have any questions or suggestions, feel free to contact our maintenance team:
 
+Current:
 - Haixu Wu (Ph.D. student, wuhx23@mails.tsinghua.edu.cn)
 - Yong Liu (Ph.D. student, liuyong21@mails.tsinghua.edu.cn)
 - Yuxuan Wang (Ph.D. student, wangyuxu22@mails.tsinghua.edu.cn)
+- Huikun Weng (Undergraduate, wenghk22@mails.tsinghua.edu.cn)
+
+Previous:
 - Tengge Hu (Master student, htg21@mails.tsinghua.edu.cn)
 - Haoran Zhang (Master student, z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (Undergraduate, guo-jw21@mails.tsinghua.edu.cn)
-- Huikun Weng (Undergraduate, wenghk22@mails.tsinghua.edu.cn)
 
 Or describe it in Issues.
 
