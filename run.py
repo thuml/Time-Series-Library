@@ -132,6 +132,41 @@ if __name__ == '__main__':
     parser.add_argument('--discsdtw', default=False, action="store_true", help="Discrimitive shapeDTW warp preset augmentation")
     parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
 
+    # ModernTCN
+    def str2bool(v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
+    parser.add_argument('--stem_ratio', type=int, default=6, help='stem ratio')
+    parser.add_argument('--downsample_ratio', type=int, default=2, help='downsample_ratio')
+    parser.add_argument('--ffn_ratio', type=int, default=2, help='ffn_ratio')
+    parser.add_argument('--patch_size', type=int, default=16, help='the patch size')
+    parser.add_argument('--patch_stride', type=int, default=8, help='the patch stride')
+
+    parser.add_argument('--num_blocks', nargs='+', type=int, default=[1, 1, 1, 1], help='num_blocks in each stage')
+    parser.add_argument('--large_size', nargs='+', type=int, default=[31, 29, 27, 13], help='big kernel size')
+    parser.add_argument('--small_size', nargs='+', type=int, default=[5, 5, 5, 5],
+                        help='small kernel size for structral reparam')
+    parser.add_argument('--dims', nargs='+', type=int, default=[256, 256, 256, 256], help='dmodels in each stage')
+    parser.add_argument('--dw_dims', nargs='+', type=int, default=[256, 256, 256, 256])
+
+    parser.add_argument('--small_kernel_merged', type=str2bool, default=False,
+                        help='small_kernel has already merged or not')
+    parser.add_argument('--call_structural_reparam', type=bool, default=False, help='structural_reparam after training')
+    parser.add_argument('--use_multi_scale', type=str2bool, default=False, help='use_multi_scale fusion')
+    parser.add_argument('--kernel_size', type=int, default=25, help='decomposition-kernel')
+
+    # PatchMixer
+    parser.add_argument('--patch_len', type=int, default=8, help='patch_len for PatchMixer')
+    parser.add_argument('--stride', type=int, default=8, help='stride for PatchMixer')
+    parser.add_argument('--mixer_kernel_size', type=int, default=8, help='patchmixer-kernel')
+
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False
