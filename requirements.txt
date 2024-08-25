@@ -1,4 +1,4 @@
-einops==0.4.0
+einops==0.8.0
 matplotlib==3.7.0
 numpy==1.23.5
 pandas==1.5.3
