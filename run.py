@@ -1,5 +1,7 @@
 import argparse
 import os
+from datetime import datetime
+
 import torch
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from exp.exp_imputation import Exp_Imputation
@@ -167,6 +169,9 @@ if __name__ == '__main__':
     parser.add_argument('--stride', type=int, default=8, help='stride for PatchMixer')
     parser.add_argument('--mixer_kernel_size', type=int, default=8, help='patchmixer-kernel')
 
+    # 24 96 12 48 32
+    parser.add_argument('--period_list', nargs='+', type=int, default=[24], help='num_blocks in each stage')
+
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False
@@ -219,6 +224,7 @@ if __name__ == '__main__':
                 args.embed,
                 args.distil,
                 args.des, ii)
+            setting += datetime.now().strftime("%y-%m-%d_%H-%M-%S")
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             exp.train(setting)

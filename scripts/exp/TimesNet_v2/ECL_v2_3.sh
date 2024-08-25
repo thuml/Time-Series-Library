@@ -1,0 +1,10 @@
+export CUDA_VISIBLE_DEVICES=0
+
+
+python -u run.py --task_name long_term_forecast --is_training 1 --model_id ECL --model TimesNet_v2_3 --root_path ./dataset/electricity/ --data_path electricity.csv --data custom --features M --seq_len 720 --pred_len 96 --ffn_ratio 8 --patch_size 8 --patch_stride 4 --num_blocks 1 --large_size 51 --small_size 5 --dims 128 --enc_in 321 --dropout 0.9 --itr 1 --train_epochs 100 --batch_size 16 --patience 10 --learning_rate 0.0001 --des Exp --use_multi_scale False --small_kernel_merged False
+
+python -u run.py --task_name long_term_forecast --is_training 1 --model_id ECL --model TimesNet_v2_3 --root_path ./dataset/electricity/ --data_path electricity.csv --data custom --features M --seq_len 720 --pred_len 192 --ffn_ratio 8 --patch_size 8 --patch_stride 4 --num_blocks 1 --large_size 51 --small_size 5 --dims 128 --enc_in 321 --dropout 0.9 --itr 1 --train_epochs 100 --batch_size 16 --patience 10 --learning_rate 0.0001 --des Exp --use_multi_scale False --small_kernel_merged False
+
+python -u run.py --task_name long_term_forecast --is_training 1 --model_id ECL --model TimesNet_v2_3 --root_path ./dataset/electricity/ --data_path electricity.csv --data custom --features M --seq_len 720 --pred_len 336 --ffn_ratio 8 --patch_size 8 --patch_stride 4 --num_blocks 1 --large_size 51 --small_size 5 --dims 128 --enc_in 321 --dropout 0.9 --itr 1 --train_epochs 100 --batch_size 16 --patience 10 --learning_rate 0.0001 --des Exp --use_multi_scale False --small_kernel_merged False
+
+python -u run.py --task_name long_term_forecast --is_training 1 --model_id ECL --model TimesNet_v2_3 --root_path ./dataset/electricity/ --data_path electricity.csv --data custom --features M --seq_len 720 --pred_len 720 --ffn_ratio 8 --patch_size 8 --patch_stride 4 --num_blocks 1 --large_size 51 --small_size 5 --dims 128 --enc_in 321 --dropout 0.9 --itr 1 --train_epochs 100 --batch_size 16 --patience 10 --learning_rate 0.0001 --des Exp --use_multi_scale False --small_kernel_merged False

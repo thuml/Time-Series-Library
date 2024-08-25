@@ -59,6 +59,8 @@ class Model(nn.Module):
 
         # Embedding
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
+        print(enc_out.shape)
+
         enc_out, attns = self.encoder(enc_out, attn_mask=None)
 
         dec_out = self.projection(enc_out).permute(0, 2, 1)[:, :, :N]

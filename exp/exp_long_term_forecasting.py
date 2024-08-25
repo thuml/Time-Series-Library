@@ -4,6 +4,7 @@ from utils.tools import EarlyStopping, adjust_learning_rate, visual
 from utils.metrics import metric
 import torch
 import torch.nn as nn
+import torch.profiler
 from torch import optim
 import os
 import time
@@ -82,7 +83,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         train_data, train_loader = self._get_data(flag='train')
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
-
+        print('Model parameters: ', sum(param.numel() for param in self.model.parameters()))
+        for (name, param) in self.model.named_parameters():
+            print(name, param.numel())
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
             os.makedirs(path)
@@ -133,6 +136,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     if self.args.output_attention:
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
                     else:
+                        # 使用torch.profiler记录模型推理过程中各个模块的速度
+                        # with torch.profiler.profile(use_cuda=True) as prof:
+                        #     outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+
+                        # 打印记录的结果
+                        # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=100))
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
                     f_dim = -1 if self.args.features == 'MS' else 0

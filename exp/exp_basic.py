@@ -3,7 +3,7 @@ import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, TimesNet_Lite_v1, ModernTCN, \
-    PatchMixer, SCINet, TimesNet_v2_1, ModernTCN_clear
+    PatchMixer, SCINet, TimesNet_v2_1, ModernTCN_clear, TimesNet_v2_2, TimesNet_Lite_v2, TimesNet_v2_3
 
 
 class Exp_Basic(object):
@@ -40,6 +40,9 @@ class Exp_Basic(object):
             'SCINet': SCINet,
             'TimesNet_v2_1': TimesNet_v2_1,
             'ModernTCN_clear': ModernTCN_clear,
+            'TimesNet_v2_2': TimesNet_v2_2,
+            'TimesNet_Lite_v2': TimesNet_Lite_v2,
+            'TimesNet_v2_3': TimesNet_v2_3,
         }
         if args.model == 'Mamba':
             print('Please make sure you have successfully installed mamba_ssm')
