@@ -93,7 +93,11 @@ bash ./scripts/classification/TimesNet.sh
 - Include the newly added model in the `Exp_Basic.model_dict` of  `./exp/exp_basic.py`.
 - Create the corresponding scripts under the folder `./scripts`.
 
-Note: (1) We have provided the reproduced checkpoints for the classification task [here](https://github.com/thuml/Time-Series-Library/issues/494). Since we include all five tasks in a unified code base, the accuracy of each subtask may fluctuate but the average performance can be reproduced (even a bit better). (2) Some discussion about the adjustment strategy in anomaly detection can be found [here](https://github.com/thuml/Anomaly-Transformer/issues/14). The key point is that the adjustment strategy corresponds to an event-level metric.
+Note: 
+
+(1) About classification: Since we include all five tasks in a unified code base, the accuracy of each subtask may fluctuate but the average performance can be reproduced (even a bit better). We have provided the reproduced checkpoints [here](https://github.com/thuml/Time-Series-Library/issues/494).
+
+(2) About anomaly detection: Some discussion about the adjustment strategy in anomaly detection can be found [here](https://github.com/thuml/Anomaly-Transformer/issues/14). The key point is that the adjustment strategy corresponds to an event-level metric.
 
 ## Citation
 
