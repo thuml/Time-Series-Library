@@ -8,7 +8,7 @@ in this repo. We are still collecting publicly available
 augmentation algorithms, and we appreciate your valuable
 advice!
 
-```shell
+```
 The Implemented Augmentation Methods
 1. jitter 
 2. scaling 
@@ -21,7 +21,7 @@ The Implemented Augmentation Methods
 9. spawner 
 10. dtwwarp 
 11. shapedtwwarp 
-12. wdba 
+12. wdba (Specially Designed for Classification tasks)
 13. discdtw
 ```
 

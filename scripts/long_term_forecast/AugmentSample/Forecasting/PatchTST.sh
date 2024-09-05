@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 model_name=PatchTST
-for aug in jitter scaling permutation magwarp timewarp windowslice windowwarp rotation spawner dtwwarp shapedtwwarp wdba discdtw discsdtw
+for aug in jitter scaling permutation magwarp timewarp windowslice windowwarp rotation spawner dtwwarp shapedtwwarp discdtw discsdtw
 do
 for pred_len in 96 192 336 720
 do
