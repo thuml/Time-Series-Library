@@ -350,18 +350,36 @@ def run_augmentation(x, y, args):
 def run_augmentation_single(x, y, args):
     # print("Augmenting %s"%args.data)
     np.random.seed(args.seed)
+
     x_aug = x
     y_aug = y
+
+
+    if len(x.shape)<3:
+        # Augmenting on the entire series: using the input data as "One Big Batch"
+        #   Before  -   (sequence_length, num_channels)
+        #   After   -   (1, sequence_length, num_channels)
+        # Note: the 'sequence_length' here is actually the length of the entire series
+        x_input = x[np.newaxis,:]
+    elif len(x.shape)==3:
+        # Augmenting on the batch series: keep current dimension (batch_size, sequence_length, num_channels)
+        x_input = x
+    else:
+        raise ValueError("Input must be (batch_size, sequence_length, num_channels) dimensional")
+
     if args.augmentation_ratio > 0:
         augmentation_tags = "%d"%args.augmentation_ratio
         for n in range(args.augmentation_ratio):
-            x_temp, augmentation_tags = augment(x, y, args)
-            x_aug =x_temp
+            x_aug, augmentation_tags = augment(x_input, y, args)
             # print("Round %d: %s done"%(n, augmentation_tags))
         if args.extra_tag:
             augmentation_tags += "_"+args.extra_tag
     else:
         augmentation_tags = args.extra_tag
+
+    if(len(x.shape)<3):
+        # Reverse to two-dimensional in whole series augmentation scenario
+        x_aug = x_aug.squeeze(0)
     return x_aug, y_aug, augmentation_tags
 
 
