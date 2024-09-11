@@ -59,7 +59,7 @@ class Model(nn.Module):
             self.chunk_size = min(configs.seq_len, chunk_size)
         # assert (self.seq_len % self.chunk_size == 0)
         if self.seq_len % self.chunk_size != 0:
-            self.seq_len += (24 - self.seq_len % self.chunk_size)  # padding in order to ensure complete division
+            self.seq_len += (self.chunk_size - self.seq_len % self.chunk_size)  # padding in order to ensure complete division
         self.num_chunks = self.seq_len // self.chunk_size
 
         self.d_model = configs.d_model
