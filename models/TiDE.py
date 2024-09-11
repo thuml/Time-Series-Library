@@ -124,7 +124,10 @@ class Model(nn.Module):
     def forward(self, x_enc, x_mark_enc, x_dec, batch_y_mark, mask=None):
         '''x_mark_enc is the exogenous dynamic feature described in the original paper'''
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            batch_y_mark=torch.concat([x_mark_enc, batch_y_mark[:, -self.pred_len:, :]],dim=1)
+            if batch_y_mark is None:
+                batch_y_mark = torch.zeros((x_enc.shape[0], self.seq_len+self.pred_len, self.feature_dim)).to(x_enc.device).detach()
+            else:
+                batch_y_mark = torch.concat([x_mark_enc, batch_y_mark[:, -self.pred_len:, :]],dim=1)
             dec_out = torch.stack([self.forecast(x_enc[:, :, feature], x_mark_enc, x_dec, batch_y_mark) for feature in range(x_enc.shape[-1])],dim=-1)
             return dec_out # [B, L, D]
         if self.task_name == 'imputation':
