@@ -128,8 +128,8 @@ class Model(nn.Module):
         min_timescale = 1.0
 
         log_timescale_increment = (
-                math.log(float(max_timescale) / float(min_timescale)) /
-                max(num_timescales - 1, 1))
+            math.log(float(max_timescale) / float(min_timescale)) /
+            max(num_timescales - 1, 1))
         inv_timescales = min_timescale * torch.exp(
             torch.arange(num_timescales, dtype=torch.float32) *
             -log_timescale_increment)
