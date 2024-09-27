@@ -37,7 +37,6 @@ def print_args(args):
     print(f'  {"Moving Avg:":<20}{args.moving_avg:<20}{"Factor:":<20}{args.factor:<20}')
     print(f'  {"Distil:":<20}{args.distil:<20}{"Dropout:":<20}{args.dropout:<20}')
     print(f'  {"Embed:":<20}{args.embed:<20}{"Activation:":<20}{args.activation:<20}')
-    print(f'  {"Output Attention:":<20}{args.output_attention:<20}')
     print()
 
     print("\033[1m" + "Run Parameters" + "\033[0m")
