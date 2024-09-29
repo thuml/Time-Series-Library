@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from layers.Autoformer_EncDec import series_decomp
 from layers.Embed import DataEmbedding_wo_pos
 from layers.StandardNorm import Normalize
@@ -132,7 +133,7 @@ class PastDecomposableMixing(nn.Module):
         else:
             raise ValueError('decompsition is error')
 
-        if configs.channel_independence == 0:
+        if not configs.channel_independence:
             self.cross_layer = nn.Sequential(
                 nn.Linear(in_features=configs.d_model, out_features=configs.d_ff),
                 nn.GELU(),
@@ -162,7 +163,7 @@ class PastDecomposableMixing(nn.Module):
         trend_list = []
         for x in x_list:
             season, trend = self.decompsition(x)
-            if self.channel_independence == 0:
+            if not self.channel_independence:
                 season = self.cross_layer(season)
                 trend = self.cross_layer(trend)
             season_list.append(season.permute(0, 2, 1))
@@ -200,7 +201,7 @@ class Model(nn.Module):
         self.preprocess = series_decomp(configs.moving_avg)
         self.enc_in = configs.enc_in
 
-        if self.channel_independence == 1:
+        if self.channel_independence:
             self.enc_embedding = DataEmbedding_wo_pos(1, configs.d_model, configs.embed, configs.freq,
                                                       configs.dropout)
         else:
@@ -208,6 +209,14 @@ class Model(nn.Module):
                                                       configs.dropout)
 
         self.layer = configs.e_layers
+
+        self.normalize_layers = torch.nn.ModuleList(
+            [
+                Normalize(self.configs.enc_in, affine=True, non_norm=True if configs.use_norm == 0 else False)
+                for i in range(configs.down_sampling_layers + 1)
+            ]
+        )
+
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
             self.predict_layers = torch.nn.ModuleList(
                 [
@@ -219,7 +228,7 @@ class Model(nn.Module):
                 ]
             )
 
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 self.projection_layer = nn.Linear(
                     configs.d_model, 1, bias=True)
             else:
@@ -244,12 +253,18 @@ class Model(nn.Module):
                     ]
                 )
 
-            self.normalize_layers = torch.nn.ModuleList(
-                [
-                    Normalize(self.configs.enc_in, affine=True, non_norm=True if configs.use_norm == 0 else False)
-                    for i in range(configs.down_sampling_layers + 1)
-                ]
-            )
+        if self.task_name == 'imputation' or self.task_name == 'anomaly_detection':
+            if self.channel_independence:
+                self.projection_layer = nn.Linear(
+                    configs.d_model, 1, bias=True)
+            else:
+                self.projection_layer = nn.Linear(
+                    configs.d_model, configs.c_out, bias=True)
+        if self.task_name == 'classification':
+            self.act = F.gelu
+            self.dropout = nn.Dropout(configs.dropout)
+            self.projection = nn.Linear(
+                configs.d_model * configs.seq_len, configs.num_class)
 
     def out_projection(self, dec_out, i, out_res):
         dec_out = self.projection_layer(dec_out)
@@ -260,7 +275,7 @@ class Model(nn.Module):
         return dec_out
 
     def pre_enc(self, x_list):
-        if self.channel_independence == 1:
+        if self.channel_independence:
             return (x_list, None)
         else:
             out1_list = []
@@ -321,16 +336,19 @@ class Model(nn.Module):
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
                 x = self.normalize_layers[i](x, 'norm')
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
-                x_list.append(x)
-                x_mark = x_mark.repeat(N, 1, 1)
-                x_mark_list.append(x_mark)
+                    x_list.append(x)
+                    x_mark = x_mark.repeat(N, 1, 1)
+                    x_mark_list.append(x_mark)
+                else:
+                    x_list.append(x)
+                    x_mark_list.append(x_mark)
         else:
             for i, x in zip(range(len(x_enc)), x_enc, ):
                 B, T, N = x.size()
                 x = self.normalize_layers[i](x, 'norm')
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
 
@@ -359,7 +377,7 @@ class Model(nn.Module):
 
     def future_multi_mixing(self, B, enc_out_list, x_list):
         dec_out_list = []
-        if self.channel_independence == 1:
+        if self.channel_independence:
             x_list = x_list[0]
             for i, enc_out in zip(range(len(x_list)), enc_out_list):
                 dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(
@@ -377,9 +395,122 @@ class Model(nn.Module):
 
         return dec_out_list
 
+    def classification(self, x_enc, x_mark_enc):
+        x_enc, _ = self.__multi_scale_process_inputs(x_enc, None)
+        x_list = x_enc
+
+        # embedding
+        enc_out_list = []
+        for x in x_list:
+            enc_out = self.enc_embedding(x, None)  # [B,T,C]
+            enc_out_list.append(enc_out)
+
+        # MultiScale-CrissCrossAttention  as encoder for past
+        for i in range(self.layer):
+            enc_out_list = self.pdm_blocks[i](enc_out_list)
+
+        enc_out = enc_out_list[0]
+        # Output
+        # the output transformer encoder/decoder embeddings don't include non-linearity
+        output = self.act(enc_out)
+        output = self.dropout(output)
+        # zero-out padding embeddings
+        output = output * x_mark_enc.unsqueeze(-1)
+        # (batch_size, seq_length * d_model)
+        output = output.reshape(output.shape[0], -1)
+        output = self.projection(output)  # (batch_size, num_classes)
+        return output
+
+    def anomaly_detection(self, x_enc):
+        B, T, N = x_enc.size()
+        x_enc, _ = self.__multi_scale_process_inputs(x_enc, None)
+
+        x_list = []
+
+        for i, x in zip(range(len(x_enc)), x_enc, ):
+            B, T, N = x.size()
+            x = self.normalize_layers[i](x, 'norm')
+            if self.channel_independence:
+                x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
+            x_list.append(x)
+
+        # embedding
+        enc_out_list = []
+        for x in x_list:
+            enc_out = self.enc_embedding(x, None)  # [B,T,C]
+            enc_out_list.append(enc_out)
+
+        # MultiScale-CrissCrossAttention  as encoder for past
+        for i in range(self.layer):
+            enc_out_list = self.pdm_blocks[i](enc_out_list)
+
+        dec_out = self.projection_layer(enc_out_list[0])
+        dec_out = dec_out.reshape(B, self.configs.c_out, -1).permute(0, 2, 1).contiguous()
+
+        dec_out = self.normalize_layers[0](dec_out, 'denorm')
+        return dec_out
+
+    def imputation(self, x_enc, x_mark_enc, mask):
+        means = torch.sum(x_enc, dim=1) / torch.sum(mask == 1, dim=1)
+        means = means.unsqueeze(1).detach()
+        x_enc = x_enc - means
+        x_enc = x_enc.masked_fill(mask == 0, 0)
+        stdev = torch.sqrt(torch.sum(x_enc * x_enc, dim=1) /
+                           torch.sum(mask == 1, dim=1) + 1e-5)
+        stdev = stdev.unsqueeze(1).detach()
+        x_enc /= stdev
+
+        B, T, N = x_enc.size()
+        x_enc, x_mark_enc = self.__multi_scale_process_inputs(x_enc, x_mark_enc)
+
+        x_list = []
+        x_mark_list = []
+        if x_mark_enc is not None:
+            for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
+                B, T, N = x.size()
+                if self.channel_independence:
+                    x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
+                x_list.append(x)
+                x_mark = x_mark.repeat(N, 1, 1)
+                x_mark_list.append(x_mark)
+        else:
+            for i, x in zip(range(len(x_enc)), x_enc, ):
+                B, T, N = x.size()
+                if self.channel_independence:
+                    x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
+                x_list.append(x)
+
+        # embedding
+        enc_out_list = []
+        for x in x_list:
+            enc_out = self.enc_embedding(x, None)  # [B,T,C]
+            enc_out_list.append(enc_out)
+
+        # MultiScale-CrissCrossAttention  as encoder for past
+        for i in range(self.layer):
+            enc_out_list = self.pdm_blocks[i](enc_out_list)
+
+        dec_out = self.projection_layer(enc_out_list[0])
+        dec_out = dec_out.reshape(B, self.configs.c_out, -1).permute(0, 2, 1).contiguous()
+
+        dec_out = dec_out * \
+                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+        dec_out = dec_out + \
+                  (means[:, 0, :].unsqueeze(1).repeat(1, self.seq_len, 1))
+        return dec_out
+
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            dec_out_list = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
-            return dec_out_list
+            dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
+            return dec_out
+        if self.task_name == 'imputation':
+            dec_out = self.imputation(x_enc, x_mark_enc, mask)
+            return dec_out  # [B, L, D]
+        if self.task_name == 'anomaly_detection':
+            dec_out = self.anomaly_detection(x_enc)
+            return dec_out  # [B, L, D]
+        if self.task_name == 'classification':
+            dec_out = self.classification(x_enc, x_mark_enc)
+            return dec_out  # [B, N]
         else:
-            raise ValueError('Only forecast tasks implemented yet')
+            raise ValueError('Other tasks implemented yet')

@@ -57,7 +57,9 @@ class Model(nn.Module):
             self.chunk_size = min(configs.pred_len, configs.seq_len, chunk_size)
         else:
             self.chunk_size = min(configs.seq_len, chunk_size)
-        assert (self.seq_len % self.chunk_size == 0)
+        # assert (self.seq_len % self.chunk_size == 0)
+        if self.seq_len % self.chunk_size != 0:
+            self.seq_len += (self.chunk_size - self.seq_len % self.chunk_size)  # padding in order to ensure complete division
         self.num_chunks = self.seq_len // self.chunk_size
 
         self.d_model = configs.d_model
@@ -137,6 +139,9 @@ class Model(nn.Module):
         return self.encoder(x_enc)
 
     def classification(self, x_enc, x_mark_enc):
+        # padding
+        x_enc = torch.cat([x_enc, torch.zeros((x_enc.shape[0], self.seq_len-x_enc.shape[1], x_enc.shape[2])).to(x_enc.device)], dim=1)
+
         enc_out = self.encoder(x_enc)
 
         # Output

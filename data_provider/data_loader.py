@@ -86,7 +86,7 @@ class Dataset_ETT_hour(Dataset):
 
         if self.set_type == 0 and self.args.augmentation_ratio > 0:
             self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
-            
+
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
