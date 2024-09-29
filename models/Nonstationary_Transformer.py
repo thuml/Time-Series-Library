@@ -50,7 +50,6 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
-        self.output_attention = configs.output_attention
 
         # Embedding
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
@@ -62,7 +61,7 @@ class Model(nn.Module):
                 EncoderLayer(
                     AttentionLayer(
                         DSAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                    output_attention=configs.output_attention), configs.d_model, configs.n_heads),
+                                    output_attention=False), configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
                     dropout=configs.dropout,

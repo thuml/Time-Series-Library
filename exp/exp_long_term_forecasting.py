@@ -247,7 +247,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 dtw_list.append(d)
             dtw = np.array(dtw_list).mean()
         else:
-            dtw = -999
+            dtw = 'not calculated'
             
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
