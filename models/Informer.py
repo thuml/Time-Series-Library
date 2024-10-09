@@ -30,7 +30,7 @@ class Model(nn.Module):
                 EncoderLayer(
                     AttentionLayer(
                         ProbAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=configs.output_attention),
+                                      output_attention=False),
                         configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
