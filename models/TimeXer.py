@@ -101,9 +101,10 @@ class EncoderLayer(nn.Module):
         x_glb_attn = torch.reshape(x_glb_attn,
                                    (x_glb_attn.shape[0] * x_glb_attn.shape[1], x_glb_attn.shape[2])).unsqueeze(1)
         x_glb = x_glb_ori + x_glb_attn
-        x = torch.cat([x[:, :-1, :], x_glb], dim=1)
+        x_glb = self.norm2(x_glb)
 
-        y = x = self.norm2(x)
+        y = x = torch.cat([x[:, :-1, :], x_glb], dim=1)
+
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
         y = self.dropout(self.conv2(y).transpose(-1, 1))
 
