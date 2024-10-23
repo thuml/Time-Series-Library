@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
-from layers.Embed import DataEmbedding_inverted,  PositionalEmbedding
+from layers.Embed import DataEmbedding_inverted, PositionalEmbedding
 import numpy as np
+
 
 class FlattenHead(nn.Module):
     def __init__(self, n_vars, nf, target_window, head_dropout=0):
@@ -19,19 +20,17 @@ class FlattenHead(nn.Module):
         x = self.dropout(x)
         return x
 
+
 class EnEmbedding(nn.Module):
     def __init__(self, n_vars, d_model, patch_len, dropout):
         super(EnEmbedding, self).__init__()
         # Patching
         self.patch_len = patch_len
 
-        # Backbone, Input encoding: projection of feature vectors onto a d-dim vector space
         self.value_embedding = nn.Linear(patch_len, d_model, bias=False)
         self.glb_token = nn.Parameter(torch.randn(1, n_vars, 1, d_model))
-        # Positional embedding
         self.position_embedding = PositionalEmbedding(d_model)
 
-        # Residual dropout
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -47,6 +46,7 @@ class EnEmbedding(nn.Module):
         x = torch.cat([x, glb], dim=2)
         x = torch.reshape(x, (x.shape[0] * x.shape[1], x.shape[2], x.shape[3]))
         return self.dropout(x), n_vars
+
 
 class Encoder(nn.Module):
     def __init__(self, layers, norm_layer=None, projection=None):
@@ -109,10 +109,8 @@ class EncoderLayer(nn.Module):
 
         return self.norm3(x + y)
 
+
 class Model(nn.Module):
-    """
-    Paper link: https://arxiv.org/abs/2310.06625
-    """
 
     def __init__(self, configs):
         super(Model, self).__init__()
@@ -121,14 +119,14 @@ class Model(nn.Module):
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
         self.use_norm = configs.use_norm
-        patch_len = configs.patch_len
-        self.patch_num = int(configs.seq_len // patch_len)
+        self.patch_len = configs.patch_len
+        self.patch_num = int(configs.seq_len // configs.patch_len)
         self.n_vars = 1 if configs.features == 'MS' else configs.enc_in
         # Embedding
-        self.en_embedding = EnEmbedding(self.n_vars, configs.d_model, patch_len, configs.dropout)
+        self.en_embedding = EnEmbedding(self.n_vars, configs.d_model, self.patch_len, configs.dropout)
 
         self.ex_embedding = DataEmbedding_inverted(configs.seq_len, configs.d_model, configs.embed, configs.freq,
-                                                    configs.dropout)
+                                                   configs.dropout)
 
         # Encoder-only architecture
         self.encoder = Encoder(
@@ -155,7 +153,6 @@ class Model(nn.Module):
         self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
                                 head_dropout=configs.dropout)
 
-
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         if self.use_norm:
             # Normalization from Non-stationary Transformer
@@ -166,16 +163,16 @@ class Model(nn.Module):
 
         _, _, N = x_enc.shape
 
-        enc_out, n_vars = self.en_embedding(x_enc[:,:,-1].unsqueeze(-1).permute(0,2,1))
-        co_enc_out = self.ex_embedding(x_enc[:,:,:-1], x_mark_enc)
+        en_embed, n_vars = self.en_embedding(x_enc[:, :, -1].unsqueeze(-1).permute(0, 2, 1))
+        ex_embed = self.ex_embedding(x_enc[:, :, :-1], x_mark_enc)
 
-        dec_out = self.encoder(enc_out, co_enc_out)
-        dec_out = torch.reshape(
-            dec_out, (-1, n_vars, dec_out.shape[-2], dec_out.shape[-1]))
+        enc_out = self.encoder(en_embed, ex_embed)
+        enc_out = torch.reshape(
+            enc_out, (-1, n_vars, enc_out.shape[-2], enc_out.shape[-1]))
         # z: [bs x nvars x d_model x patch_num]
-        dec_out = dec_out.permute(0, 1, 3, 2)
-        # Decoder
-        dec_out = self.head(dec_out)  # z: [bs x nvars x target_window]
+        enc_out = enc_out.permute(0, 1, 3, 2)
+
+        dec_out = self.head(enc_out)  # z: [bs x nvars x target_window]
         dec_out = dec_out.permute(0, 2, 1)
 
         if self.use_norm:
@@ -196,16 +193,16 @@ class Model(nn.Module):
 
         _, _, N = x_enc.shape
 
-        enc_out, n_vars = self.en_embedding(x_enc.permute(0,2,1))
-        co_enc_out = self.ex_embedding(x_enc, x_mark_enc)
+        en_embed, n_vars = self.en_embedding(x_enc.permute(0, 2, 1))
+        ex_embed = self.ex_embedding(x_enc, x_mark_enc)
 
-        dec_out = self.encoder(enc_out, co_enc_out)
-        dec_out = torch.reshape(
-            dec_out, (-1, n_vars, dec_out.shape[-2], dec_out.shape[-1]))
+        enc_out = self.encoder(en_embed, ex_embed)
+        enc_out = torch.reshape(
+            enc_out, (-1, n_vars, enc_out.shape[-2], enc_out.shape[-1]))
         # z: [bs x nvars x d_model x patch_num]
-        dec_out = dec_out.permute(0, 1, 3, 2)
-        # Decoder
-        dec_out = self.head(dec_out)  # z: [bs x nvars x target_window]
+        enc_out = enc_out.permute(0, 1, 3, 2)
+
+        dec_out = self.head(enc_out)  # z: [bs x nvars x target_window]
         dec_out = dec_out.permute(0, 2, 1)
 
         if self.use_norm:
