@@ -3,7 +3,7 @@ export CUDA_VISIBLE_DEVICES=1
 model_name=TimeXer
 des='Timexer-MS'
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \
@@ -25,7 +25,7 @@ python3 -u run.py \
   --des $des \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \
@@ -48,7 +48,7 @@ python3 -u run.py \
   --des $des \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \
@@ -71,7 +71,7 @@ python3 -u run.py \
   --des $des \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/ETT-small/ \

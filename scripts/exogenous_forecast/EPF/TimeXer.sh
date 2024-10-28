@@ -5,7 +5,7 @@ des='Timexer-MS'
 patch_len=24
 
 
-python3 -u run.py \
+python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
   --root_path ./dataset/EPF/ \
@@ -27,7 +27,7 @@ python3 -u run.py \
   --batch_size 4 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
   --root_path ./dataset/EPF/ \
@@ -48,7 +48,7 @@ python3 -u run.py \
   --batch_size 16 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
   --root_path ./dataset/EPF/ \
@@ -71,7 +71,7 @@ python3 -u run.py \
   --itr 1
 
 
-python3 -u run.py \
+python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
   --root_path ./dataset/EPF/ \
@@ -92,7 +92,7 @@ python3 -u run.py \
   --d_model 512 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
   --root_path ./dataset/EPF/ \

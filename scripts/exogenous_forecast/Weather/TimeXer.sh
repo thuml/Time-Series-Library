@@ -4,7 +4,7 @@ model_name=TimeXer
 des='Timexer-MS'
 
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/weather/ \
@@ -25,7 +25,7 @@ python3 -u run.py \
   --d_model 128 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/weather/ \
@@ -46,7 +46,7 @@ python3 -u run.py \
   --d_model 128 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/weather/ \
@@ -67,7 +67,7 @@ python3 -u run.py \
   --d_model 128 \
   --itr 1
 
-python3 -u run.py \
+python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path ./dataset/weather/ \
