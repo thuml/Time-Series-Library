@@ -50,7 +50,60 @@ class EncoderLayer(nn.Module):
 
         return self.norm2(x + y), attn
 
+        
+class CyclicEncoderLayer(nn.Module):
+    def __init__(self, attention_var, attention_cycle, d_model, num_cycles, d_ff=None, dropout=0.1, activation="relu"):
+        super(CyclicEncoderLayer, self).__init__()
+        d_ff = d_ff or 4 * d_model
+        self.attention_var = attention_var
+        self.attention_cycle = attention_cycle
+        self.N = num_cycles
+        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
+        self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.activation = F.relu if activation == "relu" else F.gelu
 
+    def forward(self, x, attn_mask=None, tau=None, delta=None):
+        
+        # (batch_size, num_cycles * num_variates, d_model)
+        B, NC, D = x.size()
+        C = int(NC / self.N)
+        
+        # Reshape for attending over variates and move number of cycles to the batch dimension
+        x_var = x.view(B * self.N, C, D)
+        
+        new_x, attn_var = self.attention_var(
+            x_var, x_var, x_var,
+            attn_mask=attn_mask,
+            tau=tau, delta=delta
+        )
+        
+        # Reshape back to the original shape (batch_size, num_cycles * num_variates, d_model)
+        new_x = new_x.view(B, self.N * C, D)
+        
+        # Reshape for attending over num_cycles and move variates to the last dimension 
+        new_x = new_x.view(B, self.N, C * D)
+
+        new_x, attn_cycle = self.attention_cycle(
+            new_x, new_x, new_x,
+            attn_mask=attn_mask,
+            tau=tau, delta=delta
+        )
+        
+        # Reshape back to the original shape (batch_size, num_cycles * num_variates, d_model)
+        new_x = new_x.view(B, self.N * C, D)
+        
+        x = x + self.dropout(new_x)
+
+        y = x = self.norm1(x)
+        y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
+        y = self.dropout(self.conv2(y).transpose(-1, 1))
+
+        return self.norm2(x + y), (attn_var, attn_cycle)
+    
+    
 class Encoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         super(Encoder, self).__init__()
