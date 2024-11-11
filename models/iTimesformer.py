@@ -12,6 +12,8 @@ class Model(nn.Module):
     def __init__(self, configs):
         super(Model, self).__init__()
         self.main_cycle = configs.main_cycle
+        if configs.n_cycles == -1:
+            self.n_cycles = configs.seq_len // self.main_cycle
         self.n_cycles = configs.n_cycles # Number of historic cycles 
         self.n_features = configs.c_out
         self.task_name = configs.task_name
