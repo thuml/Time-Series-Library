@@ -51,11 +51,13 @@ class Model(nn.Module):
         else:
             encoder_self_att = FourierBlock(in_channels=configs.d_model,
                                             out_channels=configs.d_model,
+                                            n_heads=configs.n_heads,
                                             seq_len=self.seq_len,
                                             modes=self.modes,
                                             mode_select_method=self.mode_select)
             decoder_self_att = FourierBlock(in_channels=configs.d_model,
                                             out_channels=configs.d_model,
+                                            n_heads=configs.n_heads,
                                             seq_len=self.seq_len // 2 + self.pred_len,
                                             modes=self.modes,
                                             mode_select_method=self.mode_select)

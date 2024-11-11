@@ -26,7 +26,7 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method='random'):
 
 # ########## fourier layer #############
 class FourierBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method='random'):
+    def __init__(self, in_channels, out_channels, n_heads, seq_len, modes=0, mode_select_method='random'):
         super(FourierBlock, self).__init__()
         print('fourier enhanced block used!')
         """
@@ -37,11 +37,14 @@ class FourierBlock(nn.Module):
         self.index = get_frequency_modes(seq_len, modes=modes, mode_select_method=mode_select_method)
         print('modes={}, index={}'.format(modes, self.index))
 
+        self.n_heads = n_heads
         self.scale = (1 / (in_channels * out_channels))
         self.weights1 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index), dtype=torch.float))
+            self.scale * torch.rand(self.n_heads, in_channels // self.n_heads, out_channels // self.n_heads,
+                                    len(self.index), dtype=torch.float))
         self.weights2 = nn.Parameter(
-            self.scale * torch.rand(8, in_channels // 8, out_channels // 8, len(self.index), dtype=torch.float))
+            self.scale * torch.rand(self.n_heads, in_channels // self.n_heads, out_channels // self.n_heads,
+                                    len(self.index), dtype=torch.float))
 
     # Complex multiplication
     def compl_mul1d(self, order, x, weights):
@@ -75,7 +78,6 @@ class FourierBlock(nn.Module):
         # Return to time domain
         x = torch.fft.irfft(out_ft, n=x.size(-1))
         return (x, None)
-
 
 # ########## Fourier Cross Former ####################
 class FourierCrossAttention(nn.Module):
