@@ -72,7 +72,6 @@ if __name__ == '__main__':
     parser.add_argument('--embed', type=str, default='timeF',
                         help='time features encoding, options:[timeF, fixed, learned]')
     parser.add_argument('--activation', type=str, default='gelu', help='activation')
-    parser.add_argument('--output_attention', action='store_true', help='whether to output attention in ecoder')
     parser.add_argument('--channel_independence', type=int, default=1,
                         help='0: channel dependence 1: channel independence for FreTS model')
     parser.add_argument('--decomp_method', type=str, default='moving_avg',
@@ -131,6 +130,9 @@ if __name__ == '__main__':
     parser.add_argument('--discdtw', default=False, action="store_true", help="Discrimitive DTW warp preset augmentation")
     parser.add_argument('--discsdtw', default=False, action="store_true", help="Discrimitive shapeDTW warp preset augmentation")
     parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
+
+    # TimeXer
+    parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False

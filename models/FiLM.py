@@ -96,14 +96,12 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.task_name = configs.task_name
         self.configs = configs
-        # self.modes = configs.modes
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.seq_len if configs.pred_len == 0 else configs.pred_len
 
         self.seq_len_all = self.seq_len + self.label_len
 
-        self.output_attention = configs.output_attention
         self.layers = configs.e_layers
         self.enc_in = configs.enc_in
         self.e_layers = configs.e_layers
