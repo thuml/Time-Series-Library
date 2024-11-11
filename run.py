@@ -134,6 +134,12 @@ if __name__ == '__main__':
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
+    # iTimesformer
+    parser.add_argument('--main_cycle', type=int, default=24, help='main cycle')
+    args = parser.parse_args()
+    n_cycles = args.seq_len // args.main_cycle
+    parser.add_argument('--n_cycles', type=int, default=n_cycles, help='number of historic cycles')
+
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False
