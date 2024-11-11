@@ -67,6 +67,7 @@ class MIC(nn.Module):
         return x
 
     def forward(self, src):
+        self.device = src.device
         # multi-scale
         multi = []
         for i in range(len(self.conv_kernel)):
@@ -74,10 +75,10 @@ class MIC(nn.Module):
             src_out = self.conv_trans_conv(src_out, self.conv[i], self.conv_trans[i], self.isometric_conv[i])
             multi.append(src_out)
 
-            # merge
+        # merge
         mg = torch.tensor([], device=self.device)
         for i in range(len(self.conv_kernel)):
-            mg = torch.cat((mg, multi[i].unsqueeze(1)), dim=1)
+            mg = torch.cat((mg, multi[i].unsqueeze(1).to(self.device)), dim=1)
         mg = self.merge(mg.permute(0, 3, 1, 2)).squeeze(-2).permute(0, 2, 1)
 
         y = self.norm1(mg)
