@@ -71,8 +71,8 @@ class CyclicEncoderLayer(nn.Module):
         B, NC, D = x.size()
         C = int(NC / self.N)
         
-        # Reshape for attending over variates and move number of cycles to the batch dimension
-        x_var = x.view(B * self.N, C, D)
+        # Reshape for attending over num_cycles independent of variates
+        x_var = x.view(B, C, self.N, D).permute(0, 2, 1, 3).reshape(B * self.N, C, D)
         
         new_x, attn_var = self.attention_var(
             x_var, x_var, x_var,
@@ -80,12 +80,9 @@ class CyclicEncoderLayer(nn.Module):
             tau=tau, delta=delta
         )
         
-        # Reshape back to the original shape (batch_size, num_cycles * num_variates, d_model)
-        new_x = new_x.view(B, self.N * C, D)
-        
         # Reshape for attending over num_cycles and move variates to the last dimension 
-        new_x = new_x.view(B, self.N, C * D)
-
+        new_x = new_x.reshape(B, self.N, C*D)
+        
         new_x, attn_cycle = self.attention_cycle(
             new_x, new_x, new_x,
             attn_mask=attn_mask,
@@ -93,14 +90,14 @@ class CyclicEncoderLayer(nn.Module):
         )
         
         # Reshape back to the original shape (batch_size, num_cycles * num_variates, d_model)
-        new_x = new_x.view(B, self.N * C, D)
+        new_x = new_x.reshape(B, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N*C, D)
         
         x = x + self.dropout(new_x)
-
+    
         y = x = self.norm1(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
         y = self.dropout(self.conv2(y).transpose(-1, 1))
-
+    
         return self.norm2(x + y), (attn_var, attn_cycle)
     
     
