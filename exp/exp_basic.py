@@ -3,7 +3,7 @@ import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, \
-    TimeXer, iTimesformer
+    TimeXer, iTimesformer, iTimesformer_cyclicattn
 
 
 class Exp_Basic(object):
@@ -27,6 +27,7 @@ class Exp_Basic(object):
             'FiLM': FiLM,
             'iTransformer': iTransformer,
             'iTimesformer': iTimesformer,
+            'iTimesformerCyclicAttn': iTimesformer_cyclicattn,
             'Koopa': Koopa,
             'TiDE': TiDE,
             'FreTS': FreTS,

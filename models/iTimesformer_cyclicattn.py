@@ -5,17 +5,15 @@ from layers.Transformer_EncDec import Encoder, CyclicEncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import DataEmbedding_inverted
 from layers.iTimesformer_Periodicity import PeriodicityReshape, PositionalEncoding
-from iTimesformer import Model as iTimesformerModel
+from .iTimesformer import Model as iTimesformerModel
 
 
 class Model(iTimesformerModel):
 
     def __init__(self, configs):
-        super(Model, self).__init__()
+        super(Model, self).__init__(configs)
         self.main_cycle = configs.main_cycle
-        if configs.n_cycles == -1:
-            self.n_cycles = configs.seq_len // self.main_cycle
-        self.n_cycles = configs.n_cycles # Number of historic cycles 
+        self.n_cycles = configs.seq_len // self.main_cycle
         self.n_features = configs.c_out
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
@@ -36,7 +34,7 @@ class Model(iTimesformerModel):
                         FullAttention(False, configs.factor, attention_dropout=configs.dropout,
                                       output_attention=False), configs.d_model * configs.c_out, configs.n_heads),
                     configs.d_model,
-                    configs.n_cycles,
+                    self.n_cycles,
                     configs.d_ff,
                     dropout=configs.dropout,
                     activation=configs.activation
