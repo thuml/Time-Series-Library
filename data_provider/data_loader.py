@@ -851,8 +851,8 @@ class UTSD_Npy(Dataset):
             seq_y = seq_y[:(self.label_len + self.pred_len), :]
 
         # Create mark tensors with matching sequence lengths
-        seq_x_mark = np.zeros((self.seq_len, 1))
-        seq_y_mark = np.zeros((self.label_len + self.pred_len, 1))
+        seq_x_mark = torch.zeros((seq_x.shape[0], 4))
+        seq_y_mark = torch.zeros((seq_x.shape[0], 4))
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
 
