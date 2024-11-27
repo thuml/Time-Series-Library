@@ -69,6 +69,7 @@ def data_provider(args, flag):
             flag=flag,
             size=[args.seq_len, args.label_len, args.pred_len],
             data_path=args.data_path,
+            stride=args.stride,
             #scale=args.scale,
             #nonautoregressive=args.nonautoregressive,
             #stride=args.stride,
