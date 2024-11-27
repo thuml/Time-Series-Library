@@ -749,7 +749,7 @@ class UEAloader(Dataset):
 
 # Download link: https://cloud.tsinghua.edu.cn/f/93868e3a9fb144fe9719/
 class UTSD_Npy(Dataset):
-    def __init__(self, root_path, flag='train', size=None, data_path='ETTh1.csv', scale=True, nonautoregressive=False, stride=100, split=0.9, test_flag='T', subset_rand_ratio=1.0):
+    def __init__(self, root_path, flag='train', size=None, data_path='ETTh1.csv', scale=True, nonautoregressive=False, stride=1, split=0.9, test_flag='T', subset_rand_ratio=1.0):
         self.seq_len = size[0]
         self.label_len = size[1]
         self.pred_len = size[2]
@@ -768,43 +768,61 @@ class UTSD_Npy(Dataset):
         self.__confirm_data__()
 
     def __confirm_data__(self):
+        # Initialize scaler once
+        self.scaler = StandardScaler()
+        min_required_len = self.seq_len + self.label_len + self.pred_len
+
         for root, dirs, files in os.walk(self.root_path):
             for file in files:
                 if file.endswith('.npy'):
                     dataset_path = os.path.join(root, file)
-
-                    self.scaler = StandardScaler()
                     data = np.load(dataset_path)
 
+                    # Validate minimum length
+                    if len(data) < min_required_len:
+                        continue
+
+                    # Calculate splits
                     num_train = int(len(data) * self.split)
                     num_test = int(len(data) * (1 - self.split) / 2)
                     num_vali = len(data) - num_train - num_test
-                    if num_train < self.context_len:
-                        continue
-                    border1s = [0, num_train - self.seq_len, len(data) - num_test - self.seq_len]
+
+                    # Calculate safe borders
+                    border1s = [
+                        0,
+                        num_train - min_required_len,
+                        len(data) - num_test - min_required_len
+                    ]
                     border2s = [num_train, num_train + num_vali, len(data)]
 
-                    border1 = border1s[self.set_type]
-                    border2 = border2s[self.set_type]
+                    # Get current split borders
+                    border1 = max(0, border1s[self.set_type])
+                    border2 = min(len(data), border2s[self.set_type])
 
+                    # Scale if needed
                     if self.scale:
                         train_data = data[border1s[0]:border2s[0]]
                         self.scaler.fit(train_data)
                         data = self.scaler.transform(data)
-                    else:
-                        data = data
 
+                    # Extract relevant portion
                     data = data[border1:border2]
-                    n_timepoint = (
-                        len(data) - self.context_len) // self.stride + 1
-                    n_var = data.shape[1]
+                    
+                    # Calculate windows
+                    n_timepoint = (len(data) - self.context_len - self.pred_len) // self.stride + 1
+                    
+                    # Store data and update window count
                     self.data_list.append(data)
+                    n_window = n_timepoint  # Removed n_var multiplication
+                    self.n_window_list.append(
+                        n_window if not self.n_window_list 
+                        else self.n_window_list[-1] + n_window
+                    )
 
-                    n_window = n_timepoint * n_var
-                    self.n_window_list.append(n_window if len(
-                        self.n_window_list) == 0 else self.n_window_list[-1] + n_window)
-        print("Total number of windows in merged dataset: ",
-              self.n_window_list[-1])
+            if self.data_list:
+                print(f"Total number of windows in merged dataset: {self.n_window_list[-1]}")
+            else:
+                print("No valid datasets found")
 
     def __getitem__(self, index):
         assert index >= 0
@@ -829,39 +847,35 @@ class UTSD_Npy(Dataset):
 
         #This needs to be handled better...
         
-        # Ensure consistent sizes by padding or truncating
-        seq_x = np.array(seq_x)  # Convert to numpy array if not already
-        seq_y = np.array(seq_y)  # Convert to numpy array if not already
-        
-        # Pad or truncate to fixed sizes
-        if seq_x.shape[0] < self.seq_len:
-            # Pad with zeros if sequence is too short
-            pad_x = np.zeros((self.seq_len - seq_x.shape[0], seq_x.shape[1]))
-            seq_x = np.concatenate([seq_x, pad_x], axis=0)
-        elif seq_x.shape[0] > self.seq_len:
-            # Truncate if sequence is too long
-            seq_x = seq_x[:self.seq_len, :]
-            
-        if seq_y.shape[0] < (self.label_len + self.pred_len):
-            # Pad with zeros if sequence is too short
-            pad_y = np.zeros(((self.label_len + self.pred_len) - seq_y.shape[0], seq_y.shape[1]))
-            seq_y = np.concatenate([seq_y, pad_y], axis=0)
-        elif seq_y.shape[0] > (self.label_len + self.pred_len):
-            # Truncate if sequence is too long  
-            seq_y = seq_y[:(self.label_len + self.pred_len), :]
+        ## Ensure consistent sizes by padding or truncating
+        #seq_x = np.array(seq_x)  # Convert to numpy array if not already
+        #seq_y = np.array(seq_y)  # Convert to numpy array if not already
+        #
+        ## Pad or truncate to fixed sizes
+        #if seq_x.shape[0] < self.seq_len:
+        #    # Pad with zeros if sequence is too short
+        #    pad_x = np.zeros((self.seq_len - seq_x.shape[0], seq_x.shape[1]))
+        #    seq_x = np.concatenate([seq_x, pad_x], axis=0)
+        #elif seq_x.shape[0] > self.seq_len:
+        #    # Truncate if sequence is too long
+        #    seq_x = seq_x[:self.seq_len, :]
+        #    
+        #if seq_y.shape[0] < (self.label_len + self.pred_len):
+        #    # Pad with zeros if sequence is too short
+        #    pad_y = np.zeros(((self.label_len + self.pred_len) - seq_y.shape[0], seq_y.shape[1]))
+        #    seq_y = np.concatenate([seq_y, pad_y], axis=0)
+        #elif seq_y.shape[0] > (self.label_len + self.pred_len):
+        #    # Truncate if sequence is too long  
+        #    seq_y = seq_y[:(self.label_len + self.pred_len), :]
 
         # Create mark tensors with matching sequence lengths
         seq_x_mark = torch.zeros((seq_x.shape[0], 4))
         seq_y_mark = torch.zeros((seq_x.shape[0], 4))
-
+        if seq_y.shape[0] != (self.pred_len + self.label_len):
+            print("Error: seq_y shape mismatch") 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
 
     def __len__(self):
-        # Add validation that all sequences can meet minimum length requirements
-        min_seq_len = max(self.seq_len, self.label_len + self.pred_len)
-        valid_windows = 0
-        for data in self.data_list:
-            n_timepoint = (len(data) - min_seq_len) // self.stride + 1
-            if n_timepoint > 0:
-                valid_windows += n_timepoint * data.shape[1]
-        return valid_windows
+        if not self.n_window_list:
+            return 0
+        return self.n_window_list[-1]
