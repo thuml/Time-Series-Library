@@ -201,7 +201,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 outputs = outputs.detach().cpu().numpy()
                 batch_y = batch_y.detach().cpu().numpy()
                 if test_data.scale and self.args.inverse:
-                    shape = outputs.shape
+                    shape = batch_y.shape
+                    if self.args.features == 'MS':
+                        outputs = np.tile(outputs, [1, 1, batch_y.shape[-1]])
                     outputs = test_data.inverse_transform(outputs.reshape(shape[0] * shape[1], -1)).reshape(shape)
                     batch_y = test_data.inverse_transform(batch_y.reshape(shape[0] * shape[1], -1)).reshape(shape)
         
