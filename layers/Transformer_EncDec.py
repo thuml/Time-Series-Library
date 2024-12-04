@@ -52,20 +52,32 @@ class EncoderLayer(nn.Module):
 
         
 class CyclicEncoderLayer(nn.Module):
-    def __init__(self, attention_var, attention_cycle, d_model, num_cycles, n_features, d_ff=None, dropout=0.1, activation="relu"):
+    def __init__(self, attention_var, attention_cycle, d_model, d_temp, num_cycles, n_features, d_ff=None, dropout=0.1, activation="relu", full_mlp=False):
         super(CyclicEncoderLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
         self.attention_var = attention_var
         self.attention_cycle = attention_cycle
         self.N = num_cycles
-        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
-        self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
+        self.full_mlp = full_mlp
+        
+        if full_mlp:
+            
+            self.conv1 = nn.Conv1d(in_channels=d_model*self.N, out_channels=d_ff, kernel_size=1)
+            self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model*self.N, kernel_size=1)
+            self.norm1 = nn.LayerNorm(d_model*self.N)
+            self.norm2 = nn.LayerNorm(d_model*self.N)
+            
+        else:
+            
+            self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1)
+            self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1)
+            self.norm1 = nn.LayerNorm(d_model)
+            self.norm2 = nn.LayerNorm(d_model)
+            
         self.dropout = nn.Dropout(dropout)
         self.activation = F.relu if activation == "relu" else F.gelu
-        self.dim_reduction = nn.Linear(n_features*d_model, 1000)
-        self.post_attention_proj = nn.Linear(1024, n_features*d_model)
+        self.dim_reduction = nn.Linear(n_features*d_model, d_temp)
+        self.post_attention_proj = nn.Linear(d_temp, n_features*d_model)
 
     def forward(self, x, attn_mask=None, tau=None, delta=None):
         
@@ -96,11 +108,25 @@ class CyclicEncoderLayer(nn.Module):
         new_x = new_x.reshape(B, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N*C, D)
         
         x = x + self.dropout(new_x)
-    
-        y = x = self.norm1(x)
-        y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
-        y = self.dropout(self.conv2(y).transpose(-1, 1))
-    
+        y = x = self.norm1(x)        
+        
+        if self.full_mlp:
+            
+            # Reshape to go from (batch_size, num_variates, num_cycles * d_model) to (batch_size, num_variates, num_cycles * d_model)
+            y = y.reshape(B, C, self.N, D).reshape(B, C, D*self.N)
+
+            y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
+            y = self.dropout(self.conv2(y).transpose(-1, 1))
+
+            # Reshape to go from (batch_size, num_variates, num_cycles * d_model) to original (batch_size, num_variates, num_cycles * d_model)
+            y = y.reshape(B, C, self.N, D).permute(0, 2, 1, 3).reshape(B, self.N, C*D).reshape(1, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N * C, D)
+        
+        else:
+            
+            y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
+            y = self.dropout(self.conv2(y).transpose(-1, 1))
+        
+            
         return self.norm2(x + y), (attn_var, attn_cycle)
     
     

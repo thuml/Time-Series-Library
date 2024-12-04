@@ -32,13 +32,15 @@ class Model(iTimesformerModel):
                                       output_attention=False), configs.d_model, configs.n_heads),
                     AttentionLayer(
                         FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=False), 1024, configs.n_heads),
+                                      output_attention=False), configs.d_temp, configs.n_heads),
                     configs.d_model,
                     self.n_cycles,
                     configs.c_out,
                     configs.d_ff,
+                    configs.d_temp,
                     dropout=configs.dropout,
-                    activation=configs.activation
+                    activation=configs.activation,
+                    full_mlp=configs.full_mlp
                 ) for l in range(configs.e_layers)
             ],
             norm_layer=torch.nn.LayerNorm(configs.d_model)
