@@ -64,8 +64,8 @@ class CyclicEncoderLayer(nn.Module):
             
             self.conv1 = nn.Conv1d(in_channels=d_model*self.N, out_channels=d_ff, kernel_size=1)
             self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model*self.N, kernel_size=1)
-            self.norm1 = nn.LayerNorm(d_model*self.N)
-            self.norm2 = nn.LayerNorm(d_model*self.N)
+            self.norm1 = nn.LayerNorm(d_model)
+            self.norm2 = nn.LayerNorm(d_model)
             
         else:
             

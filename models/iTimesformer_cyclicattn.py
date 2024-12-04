@@ -34,10 +34,10 @@ class Model(iTimesformerModel):
                         FullAttention(False, configs.factor, attention_dropout=configs.dropout,
                                       output_attention=False), configs.d_temp, configs.n_heads),
                     configs.d_model,
+                    configs.d_temp,
                     self.n_cycles,
                     configs.c_out,
                     configs.d_ff,
-                    configs.d_temp,
                     dropout=configs.dropout,
                     activation=configs.activation,
                     full_mlp=configs.full_mlp
