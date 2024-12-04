@@ -119,7 +119,7 @@ class CyclicEncoderLayer(nn.Module):
             y = self.dropout(self.conv2(y).transpose(-1, 1))
 
             # Reshape to go from (batch_size, num_variates, num_cycles * d_model) to original (batch_size, num_variates, num_cycles * d_model)
-            y = y.reshape(B, C, self.N, D).permute(0, 2, 1, 3).reshape(B, self.N, C*D).reshape(1, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N * C, D)
+            y = y.reshape(B, C, self.N, D).permute(0, 2, 1, 3).reshape(B, self.N, C*D).reshape(B, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N * C, D)
         
         else:
             
