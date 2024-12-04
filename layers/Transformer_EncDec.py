@@ -52,7 +52,7 @@ class EncoderLayer(nn.Module):
 
         
 class CyclicEncoderLayer(nn.Module):
-    def __init__(self, attention_var, attention_cycle, d_model, num_cycles, d_ff=None, dropout=0.1, activation="relu"):
+    def __init__(self, attention_var, attention_cycle, d_model, num_cycles, n_features, d_ff=None, dropout=0.1, activation="relu"):
         super(CyclicEncoderLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
         self.attention_var = attention_var
@@ -64,6 +64,8 @@ class CyclicEncoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
         self.activation = F.relu if activation == "relu" else F.gelu
+        self.dim_reduction = nn.Linear(n_features*d_model, 1000)
+        self.post_attention_proj = nn.Linear(1024, n_features*d_model)
 
     def forward(self, x, attn_mask=None, tau=None, delta=None):
         
@@ -82,13 +84,14 @@ class CyclicEncoderLayer(nn.Module):
         
         # Reshape for attending over num_cycles and move variates to the last dimension 
         new_x = new_x.reshape(B, self.N, C*D)
+        new_x = self.dim_reduction(new_x.reshape(B, self.N, C*D))
         
         new_x, attn_cycle = self.attention_cycle(
             new_x, new_x, new_x,
             attn_mask=attn_mask,
             tau=tau, delta=delta
         )
-        
+        new_x = self.post_attention_proj(new_x)
         # Reshape back to the original shape (batch_size, num_cycles * num_variates, d_model)
         new_x = new_x.reshape(B, self.N, C, D).permute(0, 2, 1, 3).reshape(B, self.N*C, D)
         
