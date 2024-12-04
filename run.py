@@ -136,7 +136,6 @@ if __name__ == '__main__':
 
     # iTimesformer
     parser.add_argument('--main_cycle', type=int, default=24, help='main cycle')
-    parser.add_argument('--n_cycles', type=int, default=-1, help='number of historic cycles')
     parser.add_argument('--d_temp', type=int, default=1024, help='bottleneck for dimensionality of time attention')
     parser.add_argument('--full_mlp', type=bool, default=False, help='whether to use MLP layers in iTransformer style')
 
