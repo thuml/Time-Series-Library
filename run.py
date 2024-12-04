@@ -140,6 +140,7 @@ if __name__ == '__main__':
 
     # UTSD dataset
     parser.add_argument('--stride', type=int, default=1, help='stride of the sliding window (just for UTSD dataset)')
+    parser.add_argument('--split', type=float, default=0.9, help='training set ratio')
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
