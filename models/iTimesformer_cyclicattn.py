@@ -32,9 +32,10 @@ class Model(iTimesformerModel):
                                       output_attention=False), configs.d_model, configs.n_heads),
                     AttentionLayer(
                         FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=False), configs.d_model * configs.c_out, configs.n_heads),
+                                      output_attention=False), 1024, configs.n_heads),
                     configs.d_model,
                     self.n_cycles,
+                    configs.c_out,
                     configs.d_ff,
                     dropout=configs.dropout,
                     activation=configs.activation
@@ -44,7 +45,7 @@ class Model(iTimesformerModel):
         )
         # Decoder
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            self.projection = nn.Linear(configs.d_model, configs.pred_len, bias=True)
+            self.projection = nn.Linear(configs.d_model*self.n_cycles, configs.pred_len, bias=True)
         if self.task_name == 'imputation':
             self.projection = nn.Linear(configs.d_model, configs.seq_len//self.n_cycles, bias=True) # divide by n_cycles to match the shaping strategy by main_cycle
         if self.task_name == 'anomaly_detection':
