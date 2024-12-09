@@ -82,10 +82,10 @@ def visual(col_name, pred_len, true, preds=None, name='./pic/test.pdf'):
     """
     Results visualization for all columns
     """
-    plt.figure(figsize=(15, 10))
     n_columns = len(col_name)
     start_idx = len(true) - pred_len
-
+    plt.figure(figsize=(15, 2*n_columns))
+    
     for idx, col in enumerate(col_name):
         plt.subplot(n_columns, 1, idx+1)
         if len(true.shape) > 1:
