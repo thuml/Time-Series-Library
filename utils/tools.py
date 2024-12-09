@@ -78,15 +78,30 @@ class StandardScaler():
         return (data * self.std) + self.mean
 
 
-def visual(true, preds=None, name='./pic/test.pdf'):
+def visual(col_name, pred_len, true, preds=None, name='./pic/test.pdf'):
     """
-    Results visualization
+    Results visualization for all columns
     """
-    plt.figure()
-    plt.plot(true, label='GroundTruth', linewidth=2)
-    if preds is not None:
-        plt.plot(preds, label='Prediction', linewidth=2)
-    plt.legend()
+    plt.figure(figsize=(15, 10))
+    n_columns = len(col_name)
+    start_idx = len(true) - pred_len
+
+    for idx, col in enumerate(col_name):
+        plt.subplot(n_columns, 1, idx+1)
+        if len(true.shape) > 1:
+            plt.plot(true[:, idx], label='GroundTruth', linewidth=2)
+            if preds is not None:
+                plt.plot(range(start_idx, len(true)), preds[-pred_len:, idx], label='Prediction', linewidth=2)
+        else:
+            plt.plot(true, label='GroundTruth', linewidth=2, zorder=2)
+            if preds is not None:
+                plt.plot(range(start_idx, len(true)), preds[-pred_len:], label='Prediction', linewidth=2, zorder=1)
+
+        plt.legend()
+        plt.title(col)
+        plt.grid(True)
+    
+    plt.tight_layout()
     plt.savefig(name, bbox_inches='tight')
 
 
