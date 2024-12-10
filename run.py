@@ -1,6 +1,7 @@
 import argparse
 import os
 import torch
+import torch.backends
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from exp.exp_imputation import Exp_Imputation
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
@@ -99,6 +100,7 @@ if __name__ == '__main__':
     # GPU
     parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
+    parser.add_argument('--gpu_type', type=str, default='cuda', help='gpu type') # cuda or mps
     parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
     parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids of multile gpus')
 
@@ -136,9 +138,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
-    args.use_gpu = True if torch.cuda.is_available() else False
+    args.use_gpu = True if args.use_gpu else False
+    if torch.cuda.is_available() and args.use_gpu:
+        args.device = torch.device('cuda:{}'.format(args.gpu))
+    elif args.use_gpu and torch.backends.mps.is_available():
+        args.device = torch.device('mps')
+    else:
+        args.use_gpu = False
+        args.device = torch.device('cpu')
 
-    print(torch.cuda.is_available())
+    print('GPU is available: ')
+    print("cuda", torch.cuda.is_available())
+    print("mps", torch.backends.mps.is_available())
 
     if args.use_gpu and args.use_multi_gpu:
         args.devices = args.devices.replace(' ', '')
@@ -192,7 +203,10 @@ if __name__ == '__main__':
 
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
             exp.test(setting)
-            torch.cuda.empty_cache()
+            if args.gpu_type == 'mps':
+                torch.backends.mps.empty_cache()
+            elif args.gpu_type == 'cuda':
+                torch.cuda.empty_cache()
     else:
         ii = 0
         setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
@@ -219,4 +233,7 @@ if __name__ == '__main__':
         exp = Exp(args)  # set experiments
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)
-        torch.cuda.empty_cache()
+        if args.gpu_type == 'mps':
+            torch.backends.mps.empty_cache()
+        elif args.gpu_type == 'cuda':
+            torch.cuda.empty_cache()
