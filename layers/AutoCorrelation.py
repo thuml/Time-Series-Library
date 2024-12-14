@@ -58,7 +58,7 @@ class AutoCorrelation(nn.Module):
         channel = values.shape[2]
         length = values.shape[3]
         # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).cuda()
+        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).to(values.device)
         # find top k
         top_k = int(self.factor * math.log(length))
         mean_value = torch.mean(torch.mean(corr, dim=1), dim=1)
@@ -84,7 +84,7 @@ class AutoCorrelation(nn.Module):
         channel = values.shape[2]
         length = values.shape[3]
         # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).cuda()
+        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).to(values.device)
         # find top k
         top_k = int(self.factor * math.log(length))
         weights, delay = torch.topk(corr, top_k, dim=-1)
