@@ -7,7 +7,7 @@ python -u run.py \
   --root_path ./dataset/exchange_rate/ \
   --data_path exchange_rate.csv \
   --model_id Exchange_96_96 \
-  --model Mibrahim \
+  --model $model_name \
   --data custom \
   --features M \
   --seq_len 96 \
