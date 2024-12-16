@@ -165,6 +165,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return self.model
 
     def test(self, setting, test=0):
+        import pandas as pd
+        df_raw = pd.read_csv(os.path.join(self.args.root_path,
+                                          self.args.data_path))
+        feature_names = df_raw.columns[1:6] 
+        
         test_data, test_loader = self._get_data(flag='test')
         if test:
             print('loading model')
@@ -220,9 +225,27 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     if test_data.scale and self.args.inverse:
                         shape = input.shape
                         input = test_data.inverse_transform(input.reshape(shape[0] * shape[1], -1)).reshape(shape)
-                    gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
-                    pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
-                    visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
+                    gt = np.concatenate((input[0, :], true[0, :]), axis=0)
+                    pd = np.concatenate((input[0, :], pred[0, :]), axis=0)
+                    np.save(folder_path + 'core_true.npy', gt)
+                    np.save(folder_path + 'core_pred.npy', pd)
+                    
+                    
+                    
+                    for idx, col in enumerate(feature_names):
+                        mae, mse, rmse, mape, mspe = metric(pd[:, idx], gt[:, idx])
+                        print(f'Column: {col}')
+                        print('mse:{}, rmse:{}, mae:{} '.format(mse, rmse, mae))
+                        f = open("result_long_term_forecast.txt", 'a')
+                        f.write(setting + "  \n")
+                        f.write(f'Column: {col}')
+                        f.write('mse:{}, rmse:{}, mae:{} '.format(mse, rmse, mae))
+                        f.write('\n')
+                        f.write('\n')
+                    f.close()     
+                    np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))               
+                    
+                    visual(feature_names, self.args.pred_len, gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
 
         preds = np.concatenate(preds, axis=0)
         trues = np.concatenate(trues, axis=0)
@@ -252,16 +275,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             dtw = 'not calculated'
             
 
-        mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
-        f = open("result_long_term_forecast.txt", 'a')
-        f.write(setting + "  \n")
-        f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
-        f.write('\n')
-        f.write('\n')
-        f.close()
 
-        np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+
+        
         np.save(folder_path + 'pred.npy', preds)
         np.save(folder_path + 'true.npy', trues)
 
