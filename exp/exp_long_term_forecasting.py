@@ -9,8 +9,8 @@ import os
 import time
 import warnings
 import numpy as np
-from utils.dtw_metric import dtw,accelerated_dtw
-from utils.augmentation import run_augmentation,run_augmentation_single
+from utils.dtw_metric import dtw, accelerated_dtw
+from utils.augmentation import run_augmentation, run_augmentation_single
 
 warnings.filterwarnings('ignore')
 
@@ -202,11 +202,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 batch_y = batch_y.detach().cpu().numpy()
                 if test_data.scale and self.args.inverse:
                     shape = batch_y.shape
-                    if self.args.features == 'MS':
-                        outputs = np.tile(outputs, [1, 1, batch_y.shape[-1]])
+                    if outputs.shape[-1] != batch_y.shape[-1]:
+                        outputs = np.tile(outputs, [1, 1, int(batch_y.shape[-1] / outputs.shape[-1])])
                     outputs = test_data.inverse_transform(outputs.reshape(shape[0] * shape[1], -1)).reshape(shape)
                     batch_y = test_data.inverse_transform(batch_y.reshape(shape[0] * shape[1], -1)).reshape(shape)
-        
+
                 outputs = outputs[:, :, f_dim:]
                 batch_y = batch_y[:, :, f_dim:]
 
@@ -235,22 +235,21 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        
+
         # dtw calculation
         if self.args.use_dtw:
             dtw_list = []
             manhattan_distance = lambda x, y: np.abs(x - y)
             for i in range(preds.shape[0]):
-                x = preds[i].reshape(-1,1)
-                y = trues[i].reshape(-1,1)
+                x = preds[i].reshape(-1, 1)
+                y = trues[i].reshape(-1, 1)
                 if i % 100 == 0:
                     print("calculating dtw iter:", i)
                 d, _, _, _ = accelerated_dtw(x, y, dist=manhattan_distance)
                 dtw_list.append(d)
             dtw = np.array(dtw_list).mean()
         else:
-            dtw = 'not calculated'
-            
+            dtw = 'Not calculated'
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
