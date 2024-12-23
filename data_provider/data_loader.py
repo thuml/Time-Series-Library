@@ -656,9 +656,9 @@ class UEAloader(Dataset):
 
     def load_all(self, root_path, file_list=None, flag=None):
         """
-        Loads datasets from csv files contained in `root_path` into a dataframe, optionally choosing from `pattern`
+        Loads datasets from ts files contained in `root_path` into a dataframe, optionally choosing from `pattern`
         Args:
-            root_path: directory containing all individual .csv files
+            root_path: directory containing all individual .ts files
             file_list: optionally, provide a list of file paths within `root_path` to consider.
                 Otherwise, entire `root_path` contents will be used.
         Returns:
