@@ -208,6 +208,7 @@ if __name__ == '__main__':
             elif args.gpu_type == 'cuda':
                 torch.cuda.empty_cache()
     else:
+        exp = Exp(args)  # set experiments
         ii = 0
         setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
             args.task_name,
@@ -230,7 +231,6 @@ if __name__ == '__main__':
             args.distil,
             args.des, ii)
 
-        exp = Exp(args)  # set experiments
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)
         if args.gpu_type == 'mps':
