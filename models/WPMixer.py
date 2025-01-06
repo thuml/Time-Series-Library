@@ -4,6 +4,7 @@ Created on Sun Jan  5 16:10:01 2025
 @author: Murad
 SISLab, USF
 mmurad@usf.edu
+https://github.com/Secure-and-Intelligent-Systems-Lab/WPMixer
 """
 
 import torch.nn as nn

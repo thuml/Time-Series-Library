@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan  5
+@author: Murad
+SISLab, USF
+mmurad@usf.edu
+https://github.com/Secure-and-Intelligent-Systems-Lab/WPMixer
+"""
+
 import torch
 import torch.nn as nn
 import pywt
