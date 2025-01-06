@@ -35,7 +35,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        return torch.nn.MSELoss()
+        criterion = nn.MSELoss()
+        return criterion
  
 
     def vali(self, vali_data, vali_loader, criterion):

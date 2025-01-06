@@ -26,12 +26,17 @@ patiences=(12 12 12 12)
 
 # Loop over datasets and prediction lengths
 for i in "${!pred_lens[@]}"; do
-	python -u run_LTF.py \
+	python -u run.py \
+		--is_training 1 \
+		--root_path ./data/ETT/ \
+		--data_path ETTh2.csv \
+		--model_id wpmixer \
 		--model $model_name \
 		--task_name long_term_forecast \
 		--data $dataset \
 		--seq_len ${seq_lens[$i]} \
 		--pred_len ${pred_lens[$i]} \
+		--label_len 0 \
 		--d_model ${d_models[$i]} \
 		--tfactor ${tfactors[$i]} \
 		--dfactor ${dfactors[$i]} \

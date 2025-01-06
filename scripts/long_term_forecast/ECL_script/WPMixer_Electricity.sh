@@ -5,7 +5,7 @@ export CUDA_VISIBLE_DEVICES=0
 model_name=WPMixer
 
 # Datasets and prediction lengths
-dataset=Electricity
+dataset=electricity
 seq_lens=(512 512 512 512)
 pred_lens=(96 192 336 720)
 learning_rates=(0.00328086 0.000493286 0.002505375 0.001977516)
@@ -26,12 +26,17 @@ patiences=(12 12 12 12)
 
 # Loop over datasets and prediction lengths
 for i in "${!pred_lens[@]}"; do
-	python -u run_LTF.py \
+	python -u run.py \
+		--is_training 1 \
+		--root_path ./data/electricity/ \
+		--data_path electricity.csv \
+		--model_id wpmixer \
 		--model $model_name \
 		--task_name long_term_forecast \
 		--data $dataset \
 		--seq_len ${seq_lens[$i]} \
 		--pred_len ${pred_lens[$i]} \
+		--label_len 0 \
 		--d_model ${d_models[$i]} \
 		--tfactor ${tfactors[$i]} \
 		--dfactor ${dfactors[$i]} \
