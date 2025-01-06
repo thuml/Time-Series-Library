@@ -20,15 +20,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='TimesNet')
 
     # basic config
-    parser.add_argument('--task_name', type=str, required=True, default='long_term_forecast',
+    parser.add_argument('--task_name', type=str, required=False, default='long_term_forecast',
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
-    parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
-    parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='Autoformer',
+    parser.add_argument('--is_training', type=int, required=False, default=1, help='status')
+    parser.add_argument('--model_id', type=str, required=False, default='test', help='model id')
+    parser.add_argument('--model', type=str, required=False, default='WPMixer',
                         help='model name, options: [Autoformer, Transformer, TimesNet]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
+    parser.add_argument('--data', type=str, required=False, default='ETTh1', help='dataset type')
     parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
     parser.add_argument('--features', type=str, default='M',
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # forecasting task
     parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
-    parser.add_argument('--label_len', type=int, default=48, help='start token length')
+    parser.add_argument('--label_len', type=int, default=0, help='start token length')
     parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
     parser.add_argument('--seasonal_patterns', type=str, default='Monthly', help='subset for M4')
     parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)
@@ -82,14 +82,25 @@ if __name__ == '__main__':
     parser.add_argument('--down_sampling_window', type=int, default=1, help='down sampling window size')
     parser.add_argument('--down_sampling_method', type=str, default=None,
                         help='down sampling method, only support avg, max, conv')
-    parser.add_argument('--seg_len', type=int, default=48,
+    parser.add_argument('--seg_len', type=int, default=96,
                         help='the length of segmen-wise iteration of SegRNN')
-
+    # Additional Model params for WPMixer
+    parser.add_argument('--tfactor', type = int, default = 5, help = 'expansion factor in the patch mixer')
+    parser.add_argument('--dfactor', type = int, default = 5, help = 'expansion factor in the embedding mixer')
+    parser.add_argument('--c_in', type=int, default=7, help='output size')
+    parser.add_argument('--wavelet', type = str, default = 'db2', help = 'wavelet type for wavelet transform')
+    parser.add_argument('--level', type = int, default = 1, help = 'level for multi-level wavelet decomposition')
+    parser.add_argument('--patch_len', type = int, default = 16, help = 'Patch size')
+    parser.add_argument('--stride', type = int, default = 8, help = 'Stride')    
+    parser.add_argument('--embedding_dropout', type = float, default = 0.05, help = 'dropout for embedding layer')
+    parser.add_argument('--weight_decay', type = float, default = 0.00, help = 'pytorch weight decay factor')
+    parser.add_argument('--no_decomposition', type = bool, default = False, help = 'flag to decide whether to use decomposition block')
+    
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
     parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
+    parser.add_argument('--batch_size', type=int, default=16, help='batch size of train input data')
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
@@ -138,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
 
     # TimeXer
-    parser.add_argument('--patch_len', type=int, default=16, help='patch length')
+    # parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:

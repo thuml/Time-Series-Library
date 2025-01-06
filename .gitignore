@@ -147,6 +147,7 @@ dmypy.json
 
 /scripts/long_term_forecast/ETT_tv_script/
 /dataset/
+/data/
 data_factory_all.py
 data_loader_all.py
 /scripts/short_term_forecast/tv_script/
