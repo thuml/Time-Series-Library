@@ -10,19 +10,19 @@ seq_lens=(512 512 512 512)
 pred_lens=(96 192 336 720)
 learning_rates=(0.000466278 0.000294929 0.000617476 0.000810205)
 batches=(256 256 256 256)
-wavelets=(db2 db2 db2 db2)
-levels=(2 3 5 5)
-tfactors=(5 3 5 5)
-dfactors=(5 8 3 5)
 epochs=(30 30 30 30)
 dropouts=(0.0 0.0 0.1 0.4)
-embedding_dropouts=(0.1 0.0 0.1 0.0)
 patch_lens=(16 16 16 16)
-strides=(8 8 8 8)
 lradjs=(type3 type3 type3 type3)
 d_models=(256 256 128 128)
 patiences=(12 12 12 12)
 
+# Model params below need to be set in WPMixer.py Line 15, instead of this script
+wavelets=(db2 db2 db2 db2)
+levels=(2 3 5 5)
+tfactors=(5 3 5 5)
+dfactors=(5 8 3 5)
+strides=(8 8 8 8)
 
 # Loop over datasets and prediction lengths
 for i in "${!pred_lens[@]}"; do
@@ -38,17 +38,11 @@ for i in "${!pred_lens[@]}"; do
 		--pred_len ${pred_lens[$i]} \
 		--label_len 0 \
 		--d_model ${d_models[$i]} \
-		--tfactor ${tfactors[$i]} \
-		--dfactor ${dfactors[$i]} \
-		--wavelet ${wavelets[$i]} \
-		--level ${levels[$i]} \
 		--patch_len ${patch_lens[$i]} \
-		--stride ${strides[$i]} \
 		--batch_size ${batches[$i]} \
 		--learning_rate ${learning_rates[$i]} \
 		--lradj ${lradjs[$i]} \
 		--dropout ${dropouts[$i]} \
-		--embedding_dropout ${embedding_dropouts[$i]} \
 		--patience ${patiences[$i]} \
 		--train_epochs ${epochs[$i]} \
 		--use_amp

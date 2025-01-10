@@ -12,24 +12,24 @@ import torch
 from layers.WPMixer_misc import Decomposition, RevIN
 
 class Model(nn.Module):
-    def __init__(self, args):
+    def __init__(self, args, tfactor=5, dfactor=5, wavelet='db2', level=1, stride=8, no_decomposition=False):
         super(Model, self).__init__()
         self.args = args
         self.wpmixerCore = WPMixerCore(input_length = self.args.seq_len,
                                                       pred_length = self.args.pred_len,
-                                                      wavelet_name = self.args.wavelet,
-                                                      level = self.args.level,
+                                                      wavelet_name = wavelet,
+                                                      level = level,
                                                       batch_size = self.args.batch_size,
-                                                      channel = self.args.c_in, 
+                                                      channel = self.args.c_out,
                                                       d_model = self.args.d_model, 
                                                       dropout = self.args.dropout, 
-                                                      embedding_dropout = self.args.embedding_dropout,
-                                                      tfactor = self.args.tfactor, 
-                                                      dfactor = self.args.dfactor, 
+                                                      embedding_dropout = self.args.dropout,
+                                                      tfactor = tfactor,
+                                                      dfactor = dfactor,
                                                       device = self.args.device,
                                                       patch_len = self.args.patch_len, 
-                                                      patch_stride = self.args.stride,
-                                                      no_decomposition = self.args.no_decomposition,
+                                                      patch_stride = stride,
+                                                      no_decomposition = no_decomposition,
                                                       use_amp = self.args.use_amp)
         
         
