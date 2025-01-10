@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--mask_rate', type=float, default=0.25, help='mask ratio')
 
     # anomaly detection task
-    parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%)')
+    parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%%)')
 
     # model define
     parser.add_argument('--expand', type=int, default=2, help='expansion factor for Mamba')
