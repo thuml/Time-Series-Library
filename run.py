@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         help='model name, options: [Autoformer, Transformer, TimesNet]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
+    parser.add_argument('--data', type=str, required=True, default='ETTh1', help='dataset type')
     parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
     parser.add_argument('--features', type=str, default='M',
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('--down_sampling_window', type=int, default=1, help='down sampling window size')
     parser.add_argument('--down_sampling_method', type=str, default=None,
                         help='down sampling method, only support avg, max, conv')
-    parser.add_argument('--seg_len', type=int, default=48,
+    parser.add_argument('--seg_len', type=int, default=96,
                         help='the length of segmen-wise iteration of SegRNN')
 
     # optimization

@@ -37,6 +37,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
     def _select_criterion(self):
         criterion = nn.MSELoss()
         return criterion
+ 
 
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = []
