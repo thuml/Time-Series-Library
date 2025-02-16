@@ -359,7 +359,7 @@ class Dataset_M4(Dataset):
         insample[-len(insample_window):, 0] = insample_window
         insample_mask[-len(insample_window):, 0] = 1.0
         outsample_window = sampled_timeseries[
-                           cut_point - self.label_len:min(len(sampled_timeseries), cut_point + self.pred_len)]
+                           max(0, cut_point - self.label_len):min(len(sampled_timeseries), cut_point + self.pred_len)]
         outsample[:len(outsample_window), 0] = outsample_window
         outsample_mask[:len(outsample_window), 0] = 1.0
         return insample, outsample, insample_mask, outsample_mask
