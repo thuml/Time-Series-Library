@@ -38,7 +38,7 @@ class Exp_Basic(object):
             'PAttn': PAttn,
             'TimeXer': TimeXer,
             'WPMixer': WPMixer,
-            'MultiPatchFormer': MultiPatchFormer
+            'MultiPatchFormer': MultiPatchFormer,
             'PPDformer': PPDformer
         }
         if args.model == 'Mamba':
