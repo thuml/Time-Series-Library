@@ -44,9 +44,6 @@ class Preprocessor(nn.Module):
         return denoised_signal.real
 
     def forward(self, original_signal):
-        # ma_signal = self.moving_average(original_signal)
-        # ma_signal = torch.nn.functional.pad(ma_signal, (0, 0, self.window_size - 1, 0), mode='reflect')[:,
-        #             :original_signal.size(1)]
         ma_signal = self.apply_fft_denoising(original_signal)
         reference_noise = original_signal - ma_signal
         return reference_noise
@@ -183,8 +180,6 @@ class ComplexTensorProcessor(nn.Module):
         self.point = nn.Conv1d(d_model*2, d_model, kernel_size=1)
         self.mlp = nn.Sequential(
             nn.Linear(d_model, d_model),
-            # nn.ReLU(),
-            # nn.Linear(d_model*2, d_model*2),
             nn.ReLU(),
             nn.Linear(d_model, d_model)
 
@@ -213,7 +208,6 @@ class ComplexTensorProcessor(nn.Module):
         x = x.reshape(B,C,P)
         return x
 def STFT_for_Period(x, k=3, n_fft=16, hop_length=8, win_length=16, window='hann'):
-    # Window setup based on user selection
     if window == 'hann':
         window_tensor = torch.hann_window(win_length, periodic=True).to(x.device)
     elif window == 'hamming':
@@ -249,7 +243,7 @@ def STFT_for_Period(x, k=3, n_fft=16, hop_length=8, win_length=16, window='hann'
               chosen_index = top_list[0]       
             top_values.append(chosen_index)
         top_values = torch.tensor(top_values)
-        k_amplitude, k_index = torch.topk(top_values.flatten(), 1)  # Flatten to get top k values across all time bins
+        k_amplitude, k_index = torch.topk(top_values.flatten(), 1) 
         k_amplitude_all.append(k_amplitude)
         k_index_all.append(k_index)
 
