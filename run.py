@@ -10,8 +10,21 @@ from exp.exp_classification import Exp_Classification
 from utils.print_args import print_args
 import random
 import numpy as np
+import mlflow
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 if __name__ == '__main__':
+    mlflow.set_tracking_uri("http://ubinetlab.iptime.org:15000")
+    tracking_uri = mlflow.get_tracking_uri()
+    print(f"Current tracking uri: {tracking_uri}")
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
@@ -98,7 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 
     # GPU
-    parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
+    parser.add_argument('--use_gpu', type=str2bool, nargs='?', default=True, help='use gpu')
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
     parser.add_argument('--gpu_type', type=str, default='cuda', help='gpu type')  # cuda or mps
     parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
@@ -139,44 +152,102 @@ if __name__ == '__main__':
 
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
-
     args = parser.parse_args()
-    if torch.cuda.is_available() and args.use_gpu:
-        args.device = torch.device('cuda:{}'.format(args.gpu))
-        print('Using GPU')
-    else:
-        if hasattr(torch.backends, "mps"):
-            args.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+    
+    params = {k:str(v) for k, v in vars(args).items()}
+    # 실험 이름 생성
+    experiment_name = f"{args.task_name}_{args.data}_{args.seq_len}_{args.label_len}_{args.pred_len}"
+    #print(params)
+    #exit()
+    # 실험 생성 (artifact_location은 데이터셋 이름으로 설정)
+    try:
+        experiment_id = mlflow.create_experiment(
+            name=experiment_name,
+            artifact_location=f"{args.data}",  # 데이터셋 이름으로 artifact_location 설정
+            tags=params  # 입력받은 하이퍼파라미터를 tags로 설정
+        )
+    except Exception as e:
+        # 이미 존재하는 실험일 경우, 해당 실험 ID를 가져옴
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+        experiment_id = experiment.experiment_id
+
+    # 실험 가져오기
+    experiment = mlflow.get_experiment(experiment_id)
+    print(f"Experiment ID: {experiment.experiment_id}, Name: {experiment.name}")
+    #exit()
+    with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
+        # MLflow로 하이퍼파라미터 로깅
+        mlflow.log_params(params)  # 하이퍼파라미터 로깅
+        
+        if torch.cuda.is_available() and args.use_gpu:
+            args.device = torch.device('cuda:{}'.format(args.gpu))
+            print('Using GPU')
         else:
-            args.device = torch.device("cpu")
-        print('Using cpu or mps')
+            if hasattr(torch.backends, "mps"):
+                args.device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+            else:
+                args.device = torch.device("cpu")
+            print('Using cpu or mps')
 
-    if args.use_gpu and args.use_multi_gpu:
-        args.devices = args.devices.replace(' ', '')
-        device_ids = args.devices.split(',')
-        args.device_ids = [int(id_) for id_ in device_ids]
-        args.gpu = args.device_ids[0]
+        if args.use_gpu and args.use_multi_gpu:
+            args.devices = args.devices.replace(' ', '')
+            device_ids = args.devices.split(',')
+            args.device_ids = [int(id_) for id_ in device_ids]
+            args.gpu = args.device_ids[0]
 
-    print('Args in experiment:')
-    print_args(args)
+        print('Args in experiment:')
+        print_args(args)
 
-    if args.task_name == 'long_term_forecast':
-        Exp = Exp_Long_Term_Forecast
-    elif args.task_name == 'short_term_forecast':
-        Exp = Exp_Short_Term_Forecast
-    elif args.task_name == 'imputation':
-        Exp = Exp_Imputation
-    elif args.task_name == 'anomaly_detection':
-        Exp = Exp_Anomaly_Detection
-    elif args.task_name == 'classification':
-        Exp = Exp_Classification
-    else:
-        Exp = Exp_Long_Term_Forecast
+        if args.task_name == 'long_term_forecast':
+            Exp = Exp_Long_Term_Forecast
+        elif args.task_name == 'short_term_forecast':
+            Exp = Exp_Short_Term_Forecast
+        elif args.task_name == 'imputation':
+            Exp = Exp_Imputation
+        elif args.task_name == 'anomaly_detection':
+            Exp = Exp_Anomaly_Detection
+        elif args.task_name == 'classification':
+            Exp = Exp_Classification
+        else:
+            Exp = Exp_Long_Term_Forecast
 
-    if args.is_training:
-        for ii in range(args.itr):
-            # setting record of experiments
+        if args.is_training:
+            for ii in range(args.itr):
+                # setting record of experiments
+                exp = Exp(args)  # set experiments
+                setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
+                    args.task_name,
+                    args.model_id,
+                    args.model,
+                    args.data,
+                    args.features,
+                    args.seq_len,
+                    args.label_len,
+                    args.pred_len,
+                    args.d_model,
+                    args.n_heads,
+                    args.e_layers,
+                    args.d_layers,
+                    args.d_ff,
+                    args.expand,
+                    args.d_conv,
+                    args.factor,
+                    args.embed,
+                    args.distil,
+                    args.des, ii)
+
+                print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
+                exp.train(setting)
+
+                print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+                exp.test(setting)
+                if args.gpu_type == 'mps':
+                    torch.backends.mps.empty_cache()
+                elif args.gpu_type == 'cuda':
+                    torch.cuda.empty_cache()
+        else:
             exp = Exp(args)  # set experiments
+            ii = 0
             setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
                 args.task_name,
                 args.model_id,
@@ -198,42 +269,9 @@ if __name__ == '__main__':
                 args.distil,
                 args.des, ii)
 
-            print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-            exp.train(setting)
-
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-            exp.test(setting)
+            exp.test(setting, test=1)
             if args.gpu_type == 'mps':
                 torch.backends.mps.empty_cache()
             elif args.gpu_type == 'cuda':
                 torch.cuda.empty_cache()
-    else:
-        exp = Exp(args)  # set experiments
-        ii = 0
-        setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
-            args.task_name,
-            args.model_id,
-            args.model,
-            args.data,
-            args.features,
-            args.seq_len,
-            args.label_len,
-            args.pred_len,
-            args.d_model,
-            args.n_heads,
-            args.e_layers,
-            args.d_layers,
-            args.d_ff,
-            args.expand,
-            args.d_conv,
-            args.factor,
-            args.embed,
-            args.distil,
-            args.des, ii)
-
-        print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        exp.test(setting, test=1)
-        if args.gpu_type == 'mps':
-            torch.backends.mps.empty_cache()
-        elif args.gpu_type == 'cuda':
-            torch.cuda.empty_cache()

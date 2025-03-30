@@ -12,6 +12,7 @@ import time
 import warnings
 import numpy as np
 import pandas
+import mlflow
 
 warnings.filterwarnings('ignore')
 
@@ -110,7 +111,9 @@ class Exp_Short_Term_Forecast(Exp_Basic):
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
+            mlflow.log_metric("train_loss", train_loss, step=epoch)
             vali_loss = self.vali(train_loader, vali_loader, criterion)
+            mlflow.log_metric("vali_loss", vali_loss, step=epoch)
             test_loss = vali_loss
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
@@ -153,7 +156,7 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             batch_y_mark = torch.ones(true.shape)
 
             loss = criterion(x.detach().cpu()[:, :, 0], self.args.frequency_map, pred[:, :, 0], true, batch_y_mark)
-
+            
         self.model.train()
         return loss
 

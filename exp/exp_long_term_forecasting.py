@@ -11,6 +11,7 @@ import warnings
 import numpy as np
 from utils.dtw_metric import dtw, accelerated_dtw
 from utils.augmentation import run_augmentation, run_augmentation_single
+import mlflow
 
 warnings.filterwarnings('ignore')
 
@@ -148,8 +149,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
+            mlflow.log_metric("train_loss", train_loss, step=epoch)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
+            mlflow.log_metric("vali_loss", vali_loss, step=epoch)
             test_loss = self.vali(test_data, test_loader, criterion)
+            mlflow.log_metric("test_loss", test_loss, step=epoch)
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
                 epoch + 1, train_steps, train_loss, vali_loss, test_loss))
