@@ -203,7 +203,9 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             for i in range(0, preds.shape[0], preds.shape[0] // 10):
                 gt = np.concatenate((x[i, :, 0], trues[i]), axis=0)
                 pd = np.concatenate((x[i, :, 0], preds[i, :, 0]), axis=0)
-                visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
+                visual(gt, pd, os.path.join(folder_path, str(i) + '.png'))
+                # MLflow에 artifact로 저장
+                #mlflow.log_artifact(os.path.join(folder_path, str(i) + '.png'))
 
         print('test shape:', preds.shape)
 

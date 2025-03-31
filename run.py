@@ -163,7 +163,7 @@ if __name__ == '__main__':
     try:
         experiment_id = mlflow.create_experiment(
             name=experiment_name,
-            artifact_location=f"{args.data}",  # 데이터셋 이름으로 artifact_location 설정
+            #artifact_location=f"mlflow/mlruns/{args.data}",  # 데이터셋 이름으로 artifact_location 설정
             tags=params  # 입력받은 하이퍼파라미터를 tags로 설정
         )
     except Exception as e:
@@ -176,9 +176,12 @@ if __name__ == '__main__':
     print(f"Experiment ID: {experiment.experiment_id}, Name: {experiment.name}")
     #exit()
     with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
+        print(f"Current artifact uri: {mlflow.get_artifact_uri()}")
+        
         # MLflow로 하이퍼파라미터 로깅
         mlflow.log_params(params)  # 하이퍼파라미터 로깅
-        
+        mlflow.log_artifact("/root/workspace/Time-Series-Library/test_results/short_term_forecast_m4_Monthly_DLinear_m4_ftM_sl36_ll18_pl18_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0/0.png")
+        exit()
         if torch.cuda.is_available() and args.use_gpu:
             args.device = torch.device('cuda:{}'.format(args.gpu))
             print('Using GPU')
