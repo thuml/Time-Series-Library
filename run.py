@@ -11,6 +11,8 @@ from utils.print_args import print_args
 import random
 import numpy as np
 import mlflow
+from mlflow.tracking import MlflowClient
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -41,20 +43,20 @@ if __name__ == '__main__':
                         help='model name, options: [Autoformer, Transformer, TimesNet]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTh1', help='dataset type')
-    parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
-    parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
+    parser.add_argument('--data', type=str, required=True, default='SNP500', help='dataset type')
+    parser.add_argument('--root_path', type=str, default='/data/pcw_workspace/Quant_snp/dataset/DAN_Dataset_11_07/Input', help='root path of the data file')
+    parser.add_argument('--data_path', type=str, default='electricity.csv', help='data file')
     parser.add_argument('--features', type=str, default='M',
                         help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
-    parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-    parser.add_argument('--freq', type=str, default='h',
+    parser.add_argument('--target', type=str, default='Close', help='target feature in S or MS task')
+    parser.add_argument('--freq', type=str, default='d',
                         help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
-    parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
+    parser.add_argument('--checkpoints', type=str, default='/data/pcw_workspace/Time-Series-Library/checkpoints', help='location of model checkpoints')
 
     # forecasting task
     parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
     parser.add_argument('--label_len', type=int, default=48, help='start token length')
-    parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
+    parser.add_argument('--pred_len', type=int, default=24, help='prediction sequence length')
     parser.add_argument('--seasonal_patterns', type=str, default='Monthly', help='subset for M4')
     parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)
 
@@ -99,15 +101,15 @@ if __name__ == '__main__':
                         help='the length of segmen-wise iteration of SegRNN')
 
     # optimization
-    parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
+    parser.add_argument('--num_workers', type=int, default=8, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
-    parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
+    parser.add_argument('--train_epochs', type=int, default=300, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
-    parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
+    parser.add_argument('--patience', type=int, default=150, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
-    parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
+    parser.add_argument('--lradj', type=str, default='None', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 
     # GPU
@@ -152,11 +154,18 @@ if __name__ == '__main__':
 
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
+
+    # iTransformer에 STFT적용했을 때
+    # parser.add_argument("--hop_length", type=int, default=1)
+    # parser.add_argument("--n_fft", type=int, default=4)
+
+    # store_true : 해당 인자가 존재하면 T/ 아니면 F
+
     args = parser.parse_args()
     
     params = {k:str(v) for k, v in vars(args).items()}
     # 실험 이름 생성
-    experiment_name = f"{args.task_name}_{args.data}_{args.seq_len}_{args.label_len}_{args.pred_len}"
+    experiment_name = f"{args.model}_{args.data}_{args.seq_len}_{args.pred_len}_{args.label_len}"
     #print(params)
     #exit()
     # 실험 생성 (artifact_location은 데이터셋 이름으로 설정)
@@ -170,18 +179,24 @@ if __name__ == '__main__':
         # 이미 존재하는 실험일 경우, 해당 실험 ID를 가져옴
         experiment = mlflow.get_experiment_by_name(experiment_name)
         experiment_id = experiment.experiment_id
+        # 실험 복구
+        # if experiment.lifecycle_stage == "deleted":
+        #     client = MlflowClient()
+        #     client.restore_experiment(experiment_id)
 
     # 실험 가져오기
     experiment = mlflow.get_experiment(experiment_id)
     print(f"Experiment ID: {experiment.experiment_id}, Name: {experiment.name}")
-    #exit()
+    # exit()
+    
     with mlflow.start_run(experiment_id=experiment.experiment_id) as run:
         print(f"Current artifact uri: {mlflow.get_artifact_uri()}")
         
         # MLflow로 하이퍼파라미터 로깅
         mlflow.log_params(params)  # 하이퍼파라미터 로깅
-        mlflow.log_artifact("/root/workspace/Time-Series-Library/test_results/short_term_forecast_m4_Monthly_DLinear_m4_ftM_sl36_ll18_pl18_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0/0.png")
-        exit()
+        # mlflow.log_artifact("/root/workspace/Time-Series-Library/test_results/short_term_forecast_m4_Monthly_DLinear_m4_ftM_sl36_ll18_pl18_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc3_ebtimeF_dtTrue_Exp_0/0.png")
+        # exit()
+        
         if torch.cuda.is_available() and args.use_gpu:
             args.device = torch.device('cuda:{}'.format(args.gpu))
             print('Using GPU')
@@ -212,7 +227,7 @@ if __name__ == '__main__':
         elif args.task_name == 'classification':
             Exp = Exp_Classification
         else:
-            Exp = Exp_Long_Term_Forecast
+            Exp = Exp_Reproduction
 
         if args.is_training:
             for ii in range(args.itr):
