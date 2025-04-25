@@ -12,8 +12,270 @@ from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.datasets import load_from_tsfile_to_dataframe
 import warnings
 from utils.augmentation import run_augmentation_single
+from tqdm import tqdm
 
 warnings.filterwarnings('ignore')
+
+class Dataset_SNP500(Dataset):
+    def __init__(self, args, root_path, flag='train', size=None,
+                 features='M', target='Close', scale=True, timeenc=0, freq='D', seasonal_patterns=None):
+        # size [seq_len, label_len, pred_len]
+        
+        self.args = args
+        # info
+        if size == None:
+            self.seq_len = 24 * 4 * 4
+            self.label_len = 24 * 4
+            self.pred_len = 24 * 4
+        else:
+            # size를 list 형태로 전달 받음
+            self.seq_len = size[0]
+            self.label_len = size[1]
+            self.pred_len = size[2]
+
+        # init
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+
+        self.features = features
+        self.target = target
+        self.scale = scale
+        self.timeenc = timeenc
+        self.freq = freq
+
+        self.root_path = root_path
+
+        self.start_date = "2009-01-01"
+        self.end_date = "2023-12-31"
+
+        self.input_dir_list = sorted(glob.glob(os.path.join(self.root_path, "*.csv")))
+
+        self.__read_data__()
+
+    def __read_data__(self):
+        self.scaler = StandardScaler()
+
+        selected_columns = [
+            "Date",
+            "Open",
+            "High",
+            "Low",
+            "Close",
+            "Volume",
+            "Vwap",
+            "snp_index_vwap",
+            "snp_index_open",
+            "snp_index_high",
+            "snp_index_low",
+            "snp_index_close",
+            "snp_index_volume",
+        ]
+
+        self.stock_data = {}  # 각 종목별 데이터 저장
+        self.all_data = []  # sampler에 넘겨줄 데이터 저장
+        self.cnt = 0  # 사용되는 종목 개수
+
+
+        # 종목 데이터 하나씩 불러옴
+        for input_file in tqdm(self.input_dir_list):
+            df_raw = pd.read_csv(input_file, usecols=selected_columns)
+            file_name = os.path.splitext(os.path.basename(input_file))[0]
+
+            # 결측치 제거
+            df_raw.replace([np.Inf, -np.inf], np.nan, inplace=True)
+            df_raw.dropna(inplace=True, axis=0)
+
+            # 데이터 기간(start ~ end) 설정
+            df_raw["Date"] = pd.to_datetime(df_raw["Date"])
+
+            df_raw = df_raw[
+                (df_raw["Date"] >= self.start_date) & (df_raw["Date"] <= self.end_date)
+            ]
+
+            # train(7), valid(1), test(2) 분할
+            num_train = int(len(df_raw) * 0.7)
+            num_test = int(len(df_raw) * 0.2)
+            num_vali = len(df_raw) - num_train - num_test
+
+            # valid 데이터가 충분히 긴지 확인
+            if num_vali < self.seq_len + self.pred_len:
+                print(f"skipping1 {file_name}")
+                continue
+
+            if len(df_raw) >= self.seq_len + self.pred_len + 1:
+
+                # 종목명과 데이터 stock_data에 저장
+                self.stock_data[file_name] = df_raw
+
+                self.cnt += 1
+
+                # df_raw.columns: ['date', ...(other features), target feature]
+                # df_raw의 columns 형태로 만들기 위해서
+                cols = list(df_raw.columns)
+                cols.remove(self.target)
+                cols.remove("Date")
+                df_raw = df_raw[["Date"] + cols + [self.target]]
+
+                # 시작 index
+                border1s = [
+                    0,
+                    num_train - self.seq_len,  # train 시퀀스 마지막 끝
+                    len(df_raw) - num_test - self.seq_len,  # valid 시퀀스 마지막 끝
+                ]
+
+                # 끝 index
+                border2s = [num_train, num_train + num_vali, len(df_raw)]
+
+                # type(train, valid, test)에 따라서 borader 결정
+                # border 1 ~ border2
+                border1 = border1s[self.set_type]
+                border2 = border2s[self.set_type]
+
+                # M, MS, S : forecasting task type
+                # 모델 input이 다변량이면
+                if self.features == "M" or self.features == "MS":
+                    # Date columns를 제외해서 df_data로 설정
+                    cols_data = df_raw.columns[1:]
+                    df_data = df_raw[cols_data]
+                # 모델 input이 단변량이면
+                elif self.features == "S":
+                    # target을 df_data로 설정
+                    df_data = df_raw[[self.target]]
+
+                # StandardScaler 사용
+                if self.scale:
+                    # 학습 데이터에서만 스케일링 적용
+                    train_data = df_data[
+                        border1s[0] : border2s[0]
+                    ]  # train data 전부 지정
+                    # 학습 데이터에서만 스케일러 학습
+                    self.scaler.fit(train_data.values)
+                    # valid, test에서는 학습된 스케일러 사용
+                    data = self.scaler.transform(df_data.values)
+                else:
+                    data = df_data.values
+
+                # df_stamp에 Date 정보 저장
+                df_stamp = df_raw[["Date"]][border1:border2]
+                # date 배열 저장시, str로 변환
+                date_array = df_stamp["Date"].dt.strftime("%Y-%m-%d").values
+                df_stamp["Date"] = pd.to_datetime(df_stamp.Date)
+
+                # 년, 월, 일 숫자 그대로 사용
+                if self.timeenc == 0:
+                    # 마지막 1 axis = 1 의미
+                    df_stamp["year"] = df_stamp.Date.apply(lambda row: row.year, 1)
+                    df_stamp["month"] = df_stamp.Date.apply(lambda row: row.month, 1)
+                    df_stamp["day"] = df_stamp.Date.apply(lambda row: row.day, 1)
+                    df_stamp["weekday"] = df_stamp.Date.apply(
+                        lambda row: row.weekday(), 1
+                    )  # 요일 정보를 숫자로 가져옴 (월요일 0부터 시작)
+                    data_stamp = df_stamp.drop(["Date"], 1).values  # Date columns 삭제
+
+                # 년, 월, 일 따로 받아서 [-0.5, 0.5] 범위 맞춰줌
+                elif self.timeenc == 1:
+                    # freq에 따라서 data_stamp의 shape도 달라짐
+                    # offsets.Day : 3 / offsets.Week : 2
+                    data_stamp = time_features(
+                        pd.to_datetime(df_stamp["Date"].values), freq=self.freq
+                    )
+                    # 행열 transpose
+                    data_stamp = data_stamp.transpose(1, 0)
+            else:
+                print(f"skipping2 {file_name}")
+                continue
+
+            # 종목별 데이터를 저장
+            self.stock_data[file_name] = (data[border1:border2], data_stamp)
+
+            # all_data에 모든 정보 저장 (단 train, valid, test 나눠져있음)
+            # test visual 할때 사용할 date 정보까지 저장
+            if self.set_type == 2 and self.timeenc == 1:
+                self.all_data.append((data[border1:border2], data_stamp, date_array))
+            else:
+                self.all_data.append((data[border1:border2], data_stamp))
+
+        # 모든 종목 데이터 합침
+        self.data_x = np.concatenate([item[0] for item in self.all_data], axis=0)
+        self.data_stamp = np.concatenate([item[1] for item in self.all_data], axis=0)
+        if self.set_type == 2 and self.timeenc == 1:
+            self.date_array = np.concatenate([item[2] for item in self.all_data], axis=0)
+        self.data_y = self.data_x
+
+        ####
+        if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
+
+    def __getitem__(self, index):
+        stock_name, s_begin = index
+        s_end = s_begin + self.seq_len
+        r_begin = s_end - self.label_len
+        r_end = r_begin + self.label_len + self.pred_len
+
+        seq_x = torch.from_numpy(self.data_x[s_begin:s_end])  # 90
+        seq_y = torch.from_numpy(self.data_y[r_begin:r_end])  # 135
+        seq_x_mark = torch.from_numpy(self.data_stamp[s_begin:s_end])
+        seq_y_mark = torch.from_numpy(self.data_stamp[r_begin:r_end])
+
+        if self.set_type == 2 and self.timeenc == 1:
+        # test할때 사용할 date 정보
+            seq_x_dates = self.date_array[s_begin:s_end]
+            seq_y_dates = self.date_array[r_begin:r_end]
+            return seq_x, seq_y, seq_x_mark, seq_y_mark, stock_name, list(seq_x_dates), list(seq_y_dates)
+        
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, stock_name
+
+        # # stft
+        # # S, C -> S, 3C로 변경
+
+        # # time_to_timefreq
+        # seq_x_stft = torch.stft(seq_x.T, self.n_fft, hop_length=self.hop_length, return_complex=True,
+        #                         window=torch.hann_window(window_length=self.n_fft))
+        # seq_y_stft = torch.stft(seq_y.T, self.n_fft, hop_length=self.hop_length, return_complex=True,
+        #                         window=torch.hann_window(window_length=self.n_fft))
+        # # seq_x_stft.shape : torch.Size([12, 3, 97])
+
+        # # 복소수 텐서 -> 실수
+        # seq_x_stft = torch.view_as_real(seq_x_stft)
+        # seq_y_stft = torch.view_as_real(seq_y_stft)
+
+        # # seq_x_stft와 동일한 크기의 텐서를 zero로 초기화
+        # # 주파수 high, low로 분리
+        # seq_high_x_freq = torch.zeros(seq_x_stft.shape).to(seq_x_stft.device)
+        # seq_high_x_freq[:, 1:, :] = seq_x_stft[:, 1:, :]  # 1부터 끝까지가 고주파수
+        # seq_high_y_freq = torch.zeros(seq_y_stft.shape).to(seq_y_stft.device)
+        # seq_high_y_freq[:, 1:, :] = seq_y_stft[:, 1:, :]
+
+        # seq_low_x_freq = torch.zeros(seq_x_stft.shape).to(seq_x_stft.device)
+        # seq_low_x_freq[:, :1, :] = seq_x_stft[:, :1, :]  # 0부터 1까지가 저주파수
+        # seq_low_y_freq = torch.zeros(seq_y_stft.shape).to(seq_y_stft.device)
+        # seq_low_y_freq[:, :1, :] = seq_y_stft[:, :1, :]
+
+        # # 실수 텐서 -> 복소수
+        # seq_high_x_freq = torch.view_as_complex(seq_high_x_freq)
+        # seq_low_x_freq = torch.view_as_complex(seq_low_x_freq)
+        # seq_high_y_freq = torch.view_as_complex(seq_high_y_freq)
+        # seq_low_y_freq = torch.view_as_complex(seq_low_y_freq)
+
+        # # timefreq_to_time
+        # seq_x_high = torch.istft(seq_high_x_freq, self.n_fft, window=torch.hann_window(window_length=self.n_fft))
+        # seq_x_low = torch.istft(seq_low_x_freq, self.n_fft, window=torch.hann_window(window_length=self.n_fft))
+        # seq_y_high = torch.istft(seq_high_y_freq, self.n_fft, window=torch.hann_window(window_length=self.n_fft))
+        # seq_y_low = torch.istft(seq_low_y_freq, self.n_fft, window=torch.hann_window(window_length=self.n_fft))
+        # # seq_high, seq_low shape 12, 96
+
+        # # 기존 data_seq 와 합치기
+        # seq_x = torch.cat([seq_x.T, seq_x_high, seq_x_low], dim=0) # torch.Size([36, 96])
+        # seq_y = torch.cat([seq_y.T, seq_y_high, seq_y_low], dim=0)
+        # seq_x = seq_x.T # torch.Size([96, 36])
+        # seq_y = seq_y.T
+
+    def __len__(self):
+        return len(self.data_x) - (self.seq_len + self.pred_len - 1) * self.cnt
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
 
 
 class Dataset_ETT_hour(Dataset):
@@ -206,7 +468,7 @@ class Dataset_ETT_minute(Dataset):
 
 class Dataset_Custom(Dataset):
     def __init__(self, args, root_path, flag='train', size=None,
-                 features='S', data_path='ETTh1.csv',
+                 features='S', data_path='electricity.csv',
                  target='OT', scale=True, timeenc=0, freq='h', seasonal_patterns=None):
         # size [seq_len, label_len, pred_len]
         self.args = args

@@ -5,6 +5,7 @@ import torch
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+from utils.metrics import MSE, MAE
 
 plt.switch_backend('agg')
 
@@ -22,6 +23,8 @@ def adjust_learning_rate(optimizer, epoch, args):
         lr_adjust = {epoch: args.learning_rate if epoch < 3 else args.learning_rate * (0.9 ** ((epoch - 3) // 1))}
     elif args.lradj == "cosine":
         lr_adjust = {epoch: args.learning_rate /2 * (1 + math.cos(epoch / args.train_epochs * math.pi))}
+    elif args.lradj == "None":
+        lr_adjust = {}
     if epoch in lr_adjust.keys():
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:
@@ -39,11 +42,11 @@ class EarlyStopping:
         self.val_loss_min = np.Inf
         self.delta = delta
 
-    def __call__(self, val_loss, model, path):
+    def __call__(self, val_loss, model, path, epoch):
         score = -val_loss
         if self.best_score is None:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, path)
+            self.save_checkpoint(val_loss, model, path, epoch)
         elif score < self.best_score + self.delta:
             self.counter += 1
             print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
@@ -51,13 +54,13 @@ class EarlyStopping:
                 self.early_stop = True
         else:
             self.best_score = score
-            self.save_checkpoint(val_loss, model, path)
+            self.save_checkpoint(val_loss, model, path, epoch)
             self.counter = 0
 
-    def save_checkpoint(self, val_loss, model, path):
+    def save_checkpoint(self, val_loss, model, path, epoch):
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), path + '/' + 'checkpoint.pth')
+        torch.save(model.state_dict(), path + '/' + f"checkpoint_{epoch+1}_{val_loss:.6f}.pth")
         self.val_loss_min = val_loss
 
 
@@ -80,16 +83,42 @@ class StandardScaler():
         return (data * self.std) + self.mean
 
 
-def visual(true, preds=None, name='./pic/test.pdf'):
+def visual(true, preds=None, name='./pic/test.png', stock_str=None, date_labels=None):
     """
     Results visualization
     """
+    mse = MSE(preds, true)
+    mae = MAE(preds, true)
+
     plt.figure()
+    ax = plt.gca()
+
+    plt.plot(true, label="GroundTruth", linewidth=2)
     if preds is not None:
-        plt.plot(preds, label='Prediction', linewidth=2)
-    plt.plot(true, label='GroundTruth', linewidth=2)
-    plt.legend()
-    plt.savefig(name, bbox_inches='tight')
+        plt.plot(preds, label="Prediction", linewidth=2)
+
+    if stock_str is not None and date_labels is not None:
+        # title 설정
+        plt.title(f"< {stock_str} >   MSE: {mse:.4f}, MAE: {mae:.4f}")
+        plt.legend()
+
+        # X축 날짜 표시
+        step = max(1, len(date_labels)//10)
+        tick_pos = list(range(0, len(date_labels), step))
+        # tick_labels = [f"({i}) {date_labels[i]}" for i in tick_pos]
+        tick_labels = [date_labels[i] if i < len(date_labels) else '' for i in tick_pos]
+
+        ax.set_xticks(tick_pos)
+        ax.set_xticklabels(tick_labels, rotation=45, ha='right', fontsize=10)
+
+    # x축 끝까지 보이게 설정
+    ax.set_xlim(-1, max(len(true), len(preds)) + 2)
+
+    plt.tight_layout()               
+    plt.savefig(name, bbox_inches="tight")
+    plt.show()
+
+    return mse
 
 
 def adjustment(gt, pred):
