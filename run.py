@@ -226,8 +226,6 @@ if __name__ == '__main__':
             Exp = Exp_Anomaly_Detection
         elif args.task_name == 'classification':
             Exp = Exp_Classification
-        else:
-            Exp = Exp_Reproduction
 
         if args.is_training:
             for ii in range(args.itr):
