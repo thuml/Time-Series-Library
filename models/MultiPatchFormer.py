@@ -77,7 +77,6 @@ class Model(nn.Module):
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
-        self.output_attention = configs.output_attention
         self.d_channel = configs.enc_in
         self.N = configs.e_layers
         # Embedding
