@@ -119,7 +119,10 @@ class Model(nn.Module):
         std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
         # B x S x E, B x 1 x E -> B x 1, positive scalar
-        tau = self.tau_learner(x_raw, std_enc).exp()
+        tau = self.tau_learner(x_raw, std_enc)
+        threshold = 80.0
+        tau_clamped = torch.clamp(tau, max=threshold)  # avoid numerical overflow
+        tau = tau_clamped.exp()
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
 
@@ -146,7 +149,10 @@ class Model(nn.Module):
         std_enc = std_enc.unsqueeze(1).detach()
         x_enc /= std_enc
         # B x S x E, B x 1 x E -> B x 1, positive scalar
-        tau = self.tau_learner(x_raw, std_enc).exp()
+        tau = self.tau_learner(x_raw, std_enc)
+        threshold = 80.0
+        tau_clamped = torch.clamp(tau, max=threshold)  # avoid numerical overflow
+        tau = tau_clamped.exp()
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
 
@@ -166,7 +172,10 @@ class Model(nn.Module):
         std_enc = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
         # B x S x E, B x 1 x E -> B x 1, positive scalar
-        tau = self.tau_learner(x_raw, std_enc).exp()
+        tau = self.tau_learner(x_raw, std_enc)
+        threshold = 80.0
+        tau_clamped = torch.clamp(tau, max=threshold)  # avoid numerical overflow
+        tau = tau_clamped.exp()
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
         # embedding
@@ -185,7 +194,10 @@ class Model(nn.Module):
         std_enc = torch.sqrt(
             torch.var(x_enc - mean_enc, dim=1, keepdim=True, unbiased=False) + 1e-5).detach()  # B x 1 x E
         # B x S x E, B x 1 x E -> B x 1, positive scalar
-        tau = self.tau_learner(x_raw, std_enc).exp()
+        tau = self.tau_learner(x_raw, std_enc)
+        threshold = 80.0
+        tau_clamped = torch.clamp(tau, max=threshold)  # avoid numerical overflow
+        tau = tau_clamped.exp()
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
         # embedding

@@ -40,9 +40,9 @@ class Model(nn.Module):
         # Encoder
         self.encoder = Encoder(
             [
-                scale_block(configs, 1 if l is 0 else self.win_size, configs.d_model, configs.n_heads, configs.d_ff,
+                scale_block(configs, 1 if l == 0 else self.win_size, configs.d_model, configs.n_heads, configs.d_ff,
                             1, configs.dropout,
-                            self.in_seg_num if l is 0 else ceil(self.in_seg_num / self.win_size ** l), configs.factor
+                            self.in_seg_num if l == 0 else ceil(self.in_seg_num / self.win_size ** l), configs.factor
                             ) for l in range(configs.e_layers)
             ]
         )
