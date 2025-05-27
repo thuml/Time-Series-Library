@@ -8,10 +8,11 @@ import os
 warnings.filterwarnings('ignore')
 
 def load_and_process_data(root_path, features, target):
-    """Centralized data loading function to avoid code duplication"""
     all_data = []
+    companies = []  # Track unique companies
     
     # Limit the number of files to process (adjust as needed)
+    # you can change the number of files to process per sector. I have limited it to run this on my machine
     max_files_per_sector = 2  # Process only 2 companies per sector
     
     for sector_dir in os.listdir(root_path):
@@ -19,6 +20,7 @@ def load_and_process_data(root_path, features, target):
         if not os.path.isdir(sector_path):
             continue
             
+        # There are two folders in the sector folder. One is csv and the other is JSON. I only want to process the csv files
         csv_dir = os.path.join(sector_path, 'csv')
         if not os.path.exists(csv_dir):
             continue
@@ -32,14 +34,17 @@ def load_and_process_data(root_path, features, target):
             try:
                 # Read only necessary columns
                 if features == 'MS':
-                    usecols = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume']
+                    usecols = ['Date', 'Open', 'High', 'Low', 'Close', 'Adjusted Close', 'Volume']
                 else:
                     usecols = ['Date', target]
                     
                 df = pd.read_csv(file_path, usecols=usecols)
-                df['Date'] = pd.to_datetime(df['Date'])
-                df['sector'] = sector_dir
-                df['company'] = os.path.basename(file).replace('.csv', '')
+                # Explicitly specify the date format . The date is in the format of dd-mm-yyyy in the csv files
+                df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y')
+                # I have added a company column to the dataframe. This is the name of the company
+                company_name = os.path.basename(file).replace('.csv', '')
+                df['company'] = company_name
+                companies.append(company_name)
                 all_data.append(df)
                 
             except Exception as e:
@@ -50,18 +55,22 @@ def load_and_process_data(root_path, features, target):
     
     df_raw = pd.concat(all_data, axis=0)
     df_raw = df_raw.sort_values('Date')
-    df_raw.set_index('Date', inplace=True)
     
-    return df_raw
+    # Create company encoding
+    company_to_idx = {comp: idx for idx, comp in enumerate(sorted(set(companies)))}
+    df_raw['company_code'] = df_raw['company'].map(company_to_idx)
+    
+    df_raw.set_index('Date', inplace=True)
+    return df_raw, company_to_idx
 
 class StockMarketDataset(Dataset):
     def __init__(self, root_path, flag='train', size=None, features='MS', 
                  target='Close', scale=True, timeenc=0, freq='d'):
         # size [seq_len, label_len, pred_len]
         if size == None:
-            self.seq_len = 32  # Changed from 60 to 32
-            self.label_len = 16  # Changed from 30 to 16
-            self.pred_len = 16  # Changed from 30 to 16
+            self.seq_len = 32  # adjust  accordingly to your machine
+            self.label_len = 16  # adjust  accordingly to your machine
+            self.pred_len = 16  # adjust  accordingly to your machine
         else:
             self.seq_len = size[0]
             self.label_len = size[1]
@@ -81,35 +90,42 @@ class StockMarketDataset(Dataset):
         self.__read_data__()
         
     def __read_data__(self):
-        df_raw = load_and_process_data(self.root_path, self.features, self.target)
+        df_raw, self.company_to_idx = load_and_process_data(self.root_path, self.features, self.target)
         
         # Select features
         if self.features == 'S':
-            cols_data = [self.target]
+            cols_data = [self.target, 'company_code']
         elif self.features == 'MS':
-            cols_data = ['Open', 'High', 'Low', 'Close', 'Volume']
+            cols_data = ['Open', 'High', 'Low', 'Close', 'Adjusted Close', 'Volume', 'company_code']
             
         df_data = df_raw[cols_data]
         df_data = df_data.fillna(method='ffill').fillna(method='bfill')
         
-        # Split dataset
+        # I have split the dataset into 70% train, 20% test and 10% val. You can change the split ratio as needed
         num_train = int(len(df_data) * 0.7)
         num_test = int(len(df_data) * 0.2)
         num_val = len(df_data) - num_train - num_test
         
+        # define starts and ends of the train, val and test sets
         border1s = [0, num_train - self.seq_len, len(df_data) - num_test - self.seq_len]
         border2s = [num_train, num_train + num_val, len(df_data)]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
         
-        # Feature scaling
+        # Separate company codes from numerical features
+        company_codes = df_data['company_code'].values.reshape(-1, 1)
+        numerical_data = df_data.drop('company_code', axis=1).values
+        
+        # Scale only numerical features
         if self.scale:
             self.scaler = StandardScaler()
-            train_data = df_data[border1s[0]:border2s[0]]
-            self.scaler.fit(train_data.values)
-            data = self.scaler.transform(df_data.values)
+            train_data = numerical_data[border1s[0]:border2s[0]]
+            self.scaler.fit(train_data)
+            scaled_data = self.scaler.transform(numerical_data)
+            # Combine scaled numerical data with company codes
+            data = np.hstack([scaled_data, company_codes])
         else:
-            data = df_data.values
+            data = np.hstack([numerical_data, company_codes])
             
         # Add time features
         df_stamp = df_data.index
@@ -123,6 +139,7 @@ class StockMarketDataset(Dataset):
             data_stamp = time_features(pd.to_datetime(df_stamp), freq=self.freq)
             data_stamp = data_stamp.transpose(1, 0)
             
+        # select the data for the train, val and test sets
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
         self.data_stamp = data_stamp[border1:border2]
@@ -144,7 +161,15 @@ class StockMarketDataset(Dataset):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
     
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data)
+        # Separate company codes from scaled data
+        scaled_data = data[:, :-1]  # All columns except the last one
+        company_codes = data[:, -1:]  # Last column
+        
+        # Inverse transform only the scaled numerical data
+        inv_scaled_data = self.scaler.inverse_transform(scaled_data)
+        
+        # Recombine with company codes
+        return np.hstack([inv_scaled_data, company_codes])
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, features='MS',
@@ -172,24 +197,30 @@ class Dataset_Pred(Dataset):
         self.__read_data__()
 
     def __read_data__(self):
-        df_raw = load_and_process_data(self.root_path, self.features, self.target)
+        df_raw, self.company_to_idx = load_and_process_data(self.root_path, self.features, self.target)
         
         # Select features
         if self.features == 'S':
-            cols_data = [self.target]
+            cols_data = [self.target, 'company_code']
         elif self.features == 'MS':
-            cols_data = ['Open', 'High', 'Low', 'Close', 'Volume']
+            cols_data = ['Open', 'High', 'Low', 'Close', 'Volume', 'Adjusted Close', 'company_code']
             
         df_data = df_raw[cols_data]
         df_data = df_data.fillna(method='ffill').fillna(method='bfill')
         
-        # Feature scaling
+        # Separate company codes from numerical features
+        company_codes = df_data['company_code'].values.reshape(-1, 1)
+        numerical_data = df_data.drop('company_code', axis=1).values
+        
+        # Scale only numerical features
         if self.scale:
             self.scaler = StandardScaler()
-            self.scaler.fit(df_data.values)
-            data = self.scaler.transform(df_data.values)
+            self.scaler.fit(numerical_data)
+            scaled_data = self.scaler.transform(numerical_data)
+            # Combine scaled numerical data with company codes
+            data = np.hstack([scaled_data, company_codes])
         else:
-            data = df_data.values
+            data = np.hstack([numerical_data, company_codes])
             
         # Add time features
         df_stamp = df_data.index
@@ -224,4 +255,12 @@ class Dataset_Pred(Dataset):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
     
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data) 
+        # Separate company codes from scaled data
+        scaled_data = data[:, :-1]  # All columns except the last one
+        company_codes = data[:, -1:]  # Last column
+        
+        # Inverse transform only the scaled numerical data
+        inv_scaled_data = self.scaler.inverse_transform(scaled_data)
+        
+        # Recombine with company codes
+        return np.hstack([inv_scaled_data, company_codes]) 

@@ -17,7 +17,7 @@ data_dict = {
     'SMD': SMDSegLoader,
     'SWAT': SWATSegLoader,
     'UEA': UEAloader,
-    'stock_market': StockMarketDataset
+    'stock_market': StockMarketDataset,
 }
 
 
