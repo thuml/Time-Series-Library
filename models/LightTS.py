@@ -102,6 +102,9 @@ class Model(nn.Module):
     def encoder(self, x):
         B, T, N = x.size()
 
+        # padding
+        x = torch.cat([x, torch.zeros((B, self.seq_len - T, N)).to(x.device)], dim=1)
+
         highway = self.ar(x.permute(0, 2, 1))
         highway = highway.permute(0, 2, 1)
 
@@ -139,9 +142,6 @@ class Model(nn.Module):
         return self.encoder(x_enc)
 
     def classification(self, x_enc, x_mark_enc):
-        # padding
-        x_enc = torch.cat([x_enc, torch.zeros((x_enc.shape[0], self.seq_len-x_enc.shape[1], x_enc.shape[2])).to(x_enc.device)], dim=1)
-
         enc_out = self.encoder(x_enc)
 
         # Output
