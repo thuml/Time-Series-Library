@@ -115,7 +115,7 @@ class Model(nn.Module):
         # TimesNet
         for i in range(self.layer):
             enc_out = self.layer_norm(self.model[i](enc_out))
-        # porject back
+        # project back
         dec_out = self.projection(enc_out)
 
         # De-Normalization from Non-stationary Transformer
@@ -143,7 +143,7 @@ class Model(nn.Module):
         # TimesNet
         for i in range(self.layer):
             enc_out = self.layer_norm(self.model[i](enc_out))
-        # porject back
+        # project back
         dec_out = self.projection(enc_out)
 
         # De-Normalization from Non-stationary Transformer
@@ -168,7 +168,7 @@ class Model(nn.Module):
         # TimesNet
         for i in range(self.layer):
             enc_out = self.layer_norm(self.model[i](enc_out))
-        # porject back
+        # project back
         dec_out = self.projection(enc_out)
 
         # De-Normalization from Non-stationary Transformer
