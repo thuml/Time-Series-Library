@@ -31,5 +31,5 @@ def preview_parquet_file(file_path, n_rows=5):
 
 if __name__ == "__main__":
     # Hardcoded file path
-    file_path = "dataset/data_preprocess/minute_sampled_Contacting_cleaned.parquet"
+    file_path = "dataset/supervised/lable/train_labeled.parquet"
     preview_parquet_file(file_path, 5) 
