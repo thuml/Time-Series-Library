@@ -1,0 +1,10 @@
+
+==================================================
+Setting: supervised_anomaly_detection_SupervisedContact_TimesNet_SupervisedContact_ftM_sl40_ll48_pl0_dm64_nh8_el2_dl1_df64_expand2_dc4_fc1_ebtimeF_dtTrue_TimesNet_Supervised_Contact_Anomaly_Detection_0
+Accuracy: 0.8722, Precision: 0.1673, Recall: 0.3726, F1-Score: 0.2309, PRAUC: 0.1837
+Best Threshold: 0.7
+
+==================================================
+Setting: supervised_anomaly_detection_SupervisedContact_TimesNet_SupervisedContact_ftM_sl40_ll48_pl0_dm128_nh8_el2_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_TimesNet_Supervised_Contact_Anomaly_Detection_0
+Accuracy: 0.8565, Precision: 0.1186, Recall: 0.2780, F1-Score: 0.1663, PRAUC: 0.0852
+Best Threshold: 0.7

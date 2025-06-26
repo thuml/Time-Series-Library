@@ -811,3 +811,115 @@ class UEAloader(Dataset):
 
     def __len__(self):
         return len(self.all_IDs)
+
+
+class SupervisedContactLoader(Dataset):
+    """
+    Data loader for supervised Contact anomaly detection
+    Loads labeled train/test data from parquet files
+    """
+    def __init__(self, args, root_path, win_size, step=1, flag="train"):
+        self.flag = flag
+        self.step = step
+        self.win_size = win_size
+        self.scaler = StandardScaler()
+        self.args = args
+        
+        from utils.logger import logger
+        logger.info(f"🔄 初始化监督Contact数据加载器，flag={flag}, win_size={win_size}")
+        
+        if flag.lower() in ['train', 'training']:
+            # 加载训练数据
+            train_path = os.path.join(root_path, 'supervised/lable/train_labeled.parquet')
+            logger.info(f"📂 加载训练数据: {train_path}")
+            
+            train_df = pd.read_parquet(train_path)
+            logger.info(f"训练数据shape: {train_df.shape}")
+            
+            # 提取特征和标签
+            feature_columns = [col for col in train_df.columns if col not in ['TimeStamp', 'label']]
+            self.data = train_df[feature_columns].values.astype(np.float32)
+            self.labels = train_df['label'].values.astype(np.int32)
+            
+            # 数据标准化
+            self.data = np.nan_to_num(self.data)
+            self.scaler.fit(self.data)
+            self.data = self.scaler.transform(self.data)
+            
+            # 训练验证分割 (80/20)
+            data_len = len(self.data)
+            split_idx = int(data_len * 0.8)
+            self.train_data = self.data[:split_idx]
+            self.train_labels = self.labels[:split_idx]
+            self.val_data = self.data[split_idx:]
+            self.val_labels = self.labels[split_idx:]
+            
+            logger.info(f"训练集: {self.train_data.shape}, 正常样本: {np.sum(self.train_labels==0)}, 异常样本: {np.sum(self.train_labels==1)}")
+            logger.info(f"验证集: {self.val_data.shape}, 正常样本: {np.sum(self.val_labels==0)}, 异常样本: {np.sum(self.val_labels==1)}")
+            
+        elif flag.lower() in ['val', 'validation']:
+            # 验证数据从训练集分割得到，需要先初始化训练模式
+            temp_loader = SupervisedContactLoader(args, root_path, win_size, step, 'train')
+            self.scaler = temp_loader.scaler
+            self.data = temp_loader.val_data
+            self.labels = temp_loader.val_labels
+            logger.info(f"使用验证数据: {self.data.shape}")
+            
+        elif flag.lower() in ['test', 'testing']:
+            # 加载测试数据
+            test_path = os.path.join(root_path, 'supervised/lable/test_labeled.parquet')
+            train_path = os.path.join(root_path, 'supervised/lable/train_labeled.parquet')
+            
+            logger.info(f"📂 加载测试数据: {test_path}")
+            
+            # 先加载训练数据来拟合标准化器
+            train_df = pd.read_parquet(train_path)
+            feature_columns = [col for col in train_df.columns if col not in ['TimeStamp', 'label']]
+            train_data = train_df[feature_columns].values.astype(np.float32)
+            train_data = np.nan_to_num(train_data)
+            self.scaler.fit(train_data)
+            
+            # 加载并处理测试数据
+            test_df = pd.read_parquet(test_path)
+            logger.info(f"测试数据shape: {test_df.shape}")
+            
+            self.data = test_df[feature_columns].values.astype(np.float32)
+            self.labels = test_df['label'].values.astype(np.int32)
+            
+            # 使用训练集的标准化器
+            self.data = np.nan_to_num(self.data)
+            self.data = self.scaler.transform(self.data)
+            
+            logger.info(f"测试集: {self.data.shape}, 正常样本: {np.sum(self.labels==0)}, 异常样本: {np.sum(self.labels==1)}")
+            
+        self.num_features = self.data.shape[1]
+        logger.info(f"特征维度: {self.num_features}")
+
+    def __len__(self):
+        if self.flag.lower() in ['train', 'training']:
+            return max(0, (self.train_data.shape[0] - self.win_size) // self.step + 1)
+        elif self.flag.lower() in ['val', 'validation']:
+            return max(0, (self.data.shape[0] - self.win_size) // self.step + 1)
+        else:  # test
+            return max(0, (self.data.shape[0] - self.win_size) // self.step + 1)
+
+    def __getitem__(self, index):
+        index = index * self.step
+        
+        if self.flag.lower() in ['train', 'training']:
+            # 训练数据
+            seq = self.train_data[index:index + self.win_size]
+            # 逐点标签：返回每个时间点的标签
+            window_labels = self.train_labels[index:index + self.win_size]
+            
+        elif self.flag.lower() in ['val', 'validation']:
+            # 验证数据
+            seq = self.data[index:index + self.win_size]
+            window_labels = self.labels[index:index + self.win_size]
+            
+        else:  # test
+            # 测试数据
+            seq = self.data[index:index + self.win_size]
+            window_labels = self.labels[index:index + self.win_size]
+            
+        return np.float32(seq), np.int64(window_labels)  # 返回每个时间点的标签
