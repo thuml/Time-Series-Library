@@ -441,7 +441,7 @@ class ContactLoader(Dataset):
         self.scaler = StandardScaler()
         
         # Load training data
-        data = pd.read_parquet(os.path.join(root_path, 'anomaly_filtered_Traindata/train_normal.parquet'))
+        data = pd.read_parquet(os.path.join(root_path, 'feature_filtered_data/train_normal_filtered.parquet'))
         # Check if you need to skip first column - adjust this based on your data structure
         # If your data doesn't have an index column to skip, remove the slicing
         data = data.values[:, 1:] if data.shape[1] > 1 else data.values
@@ -452,7 +452,7 @@ class ContactLoader(Dataset):
         data = self.scaler.transform(data)
         
         # Load test data
-        test_data = pd.read_parquet(os.path.join(root_path, 'split_data/test.parquet'))
+        test_data = pd.read_parquet(os.path.join(root_path, 'feature_filtered_data/test_filtered.parquet'))
         # Adjust slicing based on your data structure
         test_data = test_data.values[:, 1:] 
         test_data = np.nan_to_num(test_data)

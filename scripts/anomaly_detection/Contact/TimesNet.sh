@@ -8,14 +8,14 @@ python -u run.py \
   --model TimesNet \
   --data Contact \
   --features M \
-  --seq_len 100 \
+  --seq_len 40 \
   --pred_len 0 \
   --d_model 64 \
   --d_ff 64 \
   --e_layers 2 \
-  --enc_in 27 \
-  --c_out 27 \
+  --enc_in 17 \
+  --c_out 17 \
   --top_k 3 \
   --anomaly_ratio 5.2 \
-  --batch_size 128 \
-  --train_epochs 3 
+  --batch_size 64 \
+  --train_epochs 20 
