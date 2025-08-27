@@ -12,3 +12,4 @@ sympy==1.11.1
 torch==1.7.1
 tqdm==4.64.1
 PyWavelets
+pyarrow

@@ -3,6 +3,7 @@ from exp.exp_basic import Exp_Basic
 from utils.tools import EarlyStopping, adjust_learning_rate, adjustment
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_recall_curve, auc
 import torch.multiprocessing
 
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -192,15 +193,20 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
         accuracy = accuracy_score(gt, pred)
         precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary')
-        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+        
+        # Calculate PRAUC using continuous anomaly scores (test_energy)
+        precision_curve, recall_curve, _ = precision_recall_curve(gt, test_energy)
+        prauc = auc(recall_curve, precision_curve)
+        
+        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f}, PRAUC : {:0.4f} ".format(
             accuracy, precision,
-            recall, f_score))
+            recall, f_score, prauc))
 
         f = open("result_anomaly_detection.txt", 'a')
         f.write(setting + "  \n")
-        f.write("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
+        f.write("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f}, PRAUC : {:0.4f} ".format(
             accuracy, precision,
-            recall, f_score))
+            recall, f_score, prauc))
         f.write('\n')
         f.write('\n')
         f.close()

@@ -3,19 +3,19 @@ export CUDA_VISIBLE_DEVICES=0
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/PSM \
-  --model_id PSM \
+  --root_path ./dataset \
+  --model_id Contact \
   --model TimesNet \
-  --data PSM \
+  --data Contact \
   --features M \
-  --seq_len 100 \
+  --seq_len 40 \
   --pred_len 0 \
   --d_model 64 \
   --d_ff 64 \
   --e_layers 2 \
-  --enc_in 25 \
-  --c_out 25 \
+  --enc_in 17 \
+  --c_out 17 \
   --top_k 3 \
-  --anomaly_ratio 1 \
-  --batch_size 128 \
-  --train_epochs 3
+  --anomaly_ratio 5.2 \
+  --batch_size 64 \
+  --train_epochs 20 
