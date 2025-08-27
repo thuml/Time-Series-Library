@@ -72,6 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', type=float, default=0.1, help='dropout')
     parser.add_argument('--embed', type=str, default='timeF',
                         help='time features encoding, options:[timeF, fixed, learned]')
+    
     parser.add_argument('--activation', type=str, default='gelu', help='activation')
     parser.add_argument('--channel_independence', type=int, default=1,
                         help='0: channel dependence 1: channel independence for FreTS model')
@@ -140,6 +141,13 @@ if __name__ == '__main__':
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
+    # PPDformer
+    parser.add_argument('--patchH', type=int, default=2, help='patch length of H')
+    parser.add_argument('--patchW', type=int, default=8, help='patch length of W')
+    parser.add_argument('--strideH', type=int, default=2, help='stride length of H')
+    parser.add_argument('--strideW', type=int, default=8, help='stride length of W')
+    parser.add_argument('--normal', type=int,  default=1, help='use normal for patches')
+    parser.add_argument('--attention', type=int, default=0, help='use attention for patches')
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
