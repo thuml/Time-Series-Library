@@ -53,6 +53,7 @@ Till March 2024, the top three models for five different tasks are:
 See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comprehensive benchmark. We will release a real-time updated online version soon.
 
 **Newly added baselines.** We will add them to the leaderboard after a comprehensive evaluation.
+  - [x] **KAN-AD** - KAN-AD: Time Series Anomaly Detection with Kolmogorov-Arnold Networks [[ICML 2025]](https://arxiv.org/abs/2411.00278) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/KANAD.py)
   - [x] **MultiPatchFormer** - A multiscale model for multivariate time series forecasting [[Scientific Reports 2025]](https://www.nature.com/articles/s41598-024-82417-4) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/MultiPatchFormer.py)
   - [x] **WPMixer** - WPMixer: Efficient Multi-Resolution Mixing for Long-Term Time Series Forecasting [[AAAI 2025]](https://arxiv.org/abs/2412.17176) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/WPMixer.py)
   - [x] **PAttn** - Are Language Models Actually Useful for Time Series Forecasting? [[NeurIPS 2024]](https://arxiv.org/pdf/2406.16964) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/PAttn.py)
