@@ -1,0 +1,10 @@
+aActivePower_L3
+aCurrentL1
+aCurrentL2
+aCurrentL3
+aReactivePower_L1
+aReactivePower_L2
+aReactivePower_L3
+aVoltage_L2_N
+aVoltage_L3_N
+airTotal
