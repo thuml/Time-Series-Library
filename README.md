@@ -72,11 +72,86 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
  
 ## Usage
 
+### Environment Setup
+
+#### Just pip
+
 1. Install Python 3.8. For convenience, execute the following command.
 
 ```
 pip install -r requirements.txt
 ```
+
+#### Using uv
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver. Follow steps below to set up your environment:
+
+1. **Install uv**
+
+   ```bash
+   # macOS/Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Windows (PowerShell)
+   irm https://astral.sh/uv/install.ps1 | iex
+   ```
+   
+   For Windows user, if you meet permission error that requires admin, you can try to run the following command:
+   ```bash
+   # For Windows User
+   Set-ExecutionPolicy RemoteSigned -Scope Process -Force
+   ```
+
+2. **Create a virtual environment and specify python version if needed**
+
+   ```bash
+   uv venv --python 3.9
+   ```
+
+3. **Activate the virtual environment**
+
+   ```bash
+   # macOS/Linux
+   source .venv/bin/activate
+
+   # Windows
+   # set CLI to be admin mode
+   Set-ExecutionPolicy RemoteSigned -Scope Process -Force
+   .venv\Scripts\activate
+   ```
+
+4. **Install dependencies**
+
+   ```bash
+   uv pip install -r requirements.txt
+   ```
+
+
+### Configuration
+
+1. Set CUDA_VISIBLE_DEVICES to the GPU id you want to use by editing .env
+   ```bash
+   ## copy .envtemplate to your own version of .env
+   cp .envtemplate .env
+   ```
+
+   edit .env if you want to use other GPUs
+   ```bash
+   CUDA_VISIBLE_DEVICES={0,1,2,3...}
+   ```
+
+2. If .env is not loaded automatically, you can activate it manually by running
+   ```bash
+   source .env
+   ```
+
+3. Check if GPU device has been set globally
+   ```bash
+   echo $CUDA_VISIBLE_DEVICES
+   ## expected output: {0,1,2,3...}
+   ```
+
+### Prepare data and run scripts
 
 2. Prepare Data. You can obtain the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing) or [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy), Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
 
