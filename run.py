@@ -140,6 +140,22 @@ if __name__ == '__main__':
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
+    # GCN
+    parser.add_argument('--node_dim', type=int, default=10, help='each node embbed to dim dimentions')
+    parser.add_argument('--gcn_depth', type=int, default=2, help='')
+    parser.add_argument('--gcn_dropout', type=float, default=0.3, help='')
+    parser.add_argument('--propalpha', type=float, default=0.3, help='')
+    parser.add_argument('--conv_channel', type=int, default=32, help='')
+    parser.add_argument('--skip_channel', type=int, default=32, help='')
+
+    parser.add_argument('--individual', action='store_true', default=False,
+                        help='DLinear: a linear layer for each variate(channel) individually')
+
+    # TimeFilter
+    parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
+    parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
+    parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
+
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
