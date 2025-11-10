@@ -12,9 +12,11 @@ from data_provider.uea import subsample, interpolate_missing, Normalizer
 from sktime.datasets import load_from_tsfile_to_dataframe
 import warnings
 from utils.augmentation import run_augmentation_single
-
+from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 warnings.filterwarnings('ignore')
 
+HUGGINGFACE_REPO = "lalababa/Time-Series-Library"
 
 class Dataset_ETT_hour(Dataset):
     def __init__(self, args, root_path, flag='train', size=None,
@@ -48,9 +50,16 @@ class Dataset_ETT_hour(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
 
+        local_fp = os.path.join(self.root_path, self.data_path)
+        cfg_name = os.path.splitext(os.path.basename(self.data_path))[0]
+
+        if os.path.exists(local_fp):
+            df_raw = pd.read_csv(local_fp)
+        else:
+            ds = load_dataset(HUGGINGFACE_REPO, name=cfg_name)
+            df_raw = ds["train"].to_pandas()
+            
         border1s = [0, 12 * 30 * 24 - self.seq_len, 12 * 30 * 24 + 4 * 30 * 24 - self.seq_len]
         border2s = [12 * 30 * 24, 12 * 30 * 24 + 4 * 30 * 24, 12 * 30 * 24 + 8 * 30 * 24]
         border1 = border1s[self.set_type]
@@ -141,8 +150,15 @@ class Dataset_ETT_minute(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        
+        local_fp = os.path.join(self.root_path, self.data_path)
+        cfg_name = os.path.splitext(os.path.basename(self.data_path))[0]
+
+        if os.path.exists(local_fp):
+            df_raw = pd.read_csv(local_fp)
+        else:
+            ds = load_dataset(HUGGINGFACE_REPO, name=cfg_name)
+            df_raw = ds["train"].to_pandas()
 
         border1s = [0, 12 * 30 * 24 * 4 - self.seq_len, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4 - self.seq_len]
         border2s = [12 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 4 * 30 * 24 * 4, 12 * 30 * 24 * 4 + 8 * 30 * 24 * 4]
@@ -236,8 +252,15 @@ class Dataset_Custom(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
+        local_fp = os.path.join(self.root_path, self.data_path)
+        cfg_name = os.path.splitext(os.path.basename(self.data_path))[0]
+
+        if os.path.exists(local_fp):
+            df_raw = pd.read_csv(local_fp)
+        else:
+            ds = load_dataset(HUGGINGFACE_REPO, name=cfg_name)
+            split_name = "train" if "train" in ds else list(ds.keys())[0]
+            df_raw = ds[split_name].to_pandas()
 
         '''
         df_raw.columns: ['date', ...(other features), target feature]
@@ -392,19 +415,34 @@ class PSMSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = pd.read_csv(os.path.join(root_path, 'train.csv'))
-        data = data.values[:, 1:]
+        train_path = os.path.join(root_path, "train.csv")
+        test_path = os.path.join(root_path, "test.csv")
+        label_path = os.path.join(root_path, "test_label.csv")
+
+        if all(os.path.exists(p) for p in [train_path, test_path, label_path]):
+            train_df      = pd.read_csv(train_path)
+            test_df       = pd.read_csv(test_path)
+            test_label_df = pd.read_csv(label_path)
+        else:
+            ds_data  = load_dataset(HUGGINGFACE_REPO, name="PSM-data")
+            ds_label = load_dataset(HUGGINGFACE_REPO, name="PSM-label")
+            train_df      = ds_data["train"].to_pandas()
+            test_df       = ds_data["test"].to_pandas()
+            test_label_df = ds_label[next(iter(ds_label))].to_pandas()
+
+        data = train_df.values[:, 1:]
         data = np.nan_to_num(data)
         self.scaler.fit(data)
         data = self.scaler.transform(data)
-        test_data = pd.read_csv(os.path.join(root_path, 'test.csv'))
-        test_data = test_data.values[:, 1:]
+        
+        test_data = test_df.values[:, 1:]
         test_data = np.nan_to_num(test_data)
         self.test = self.scaler.transform(test_data)
+        
         self.train = data
         data_len = len(self.train)
         self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = pd.read_csv(os.path.join(root_path, 'test_label.csv')).values[:, 1:]
+        self.test_labels = test_label_df.values[:, 1:]
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 
@@ -439,15 +477,35 @@ class MSLSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(os.path.join(root_path, "MSL_train.npy"))
-        self.scaler.fit(data)
-        data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "MSL_test.npy"))
-        self.test = self.scaler.transform(test_data)
-        self.train = data
+        
+        train_path = os.path.join(root_path, "MSL_train.npy")
+        test_path  = os.path.join(root_path, "MSL_test.npy")
+        label_path = os.path.join(root_path, "MSL_test_label.npy")
+
+        if all(os.path.exists(p) for p in [train_path, test_path, label_path]):
+            train_data = np.load(train_path)
+            test_data  = np.load(test_path)
+            test_label = np.load(label_path)
+        else:
+            train_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="MSL/MSL_train.npy",repo_type="dataset")
+            test_path  = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="MSL/MSL_test.npy",repo_type="dataset")
+            label_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="MSL/MSL_test_label.npy",repo_type="dataset")
+
+            train_data  = np.load(train_path)
+            test_data   = np.load(test_path)
+            test_label  = np.load(label_path)
+
+        self.scaler.fit(train_data)
+        train_data = self.scaler.transform(train_data)
+        test_data  = self.scaler.transform(test_data)
+
+        self.train = train_data
+        self.test  = test_data
+        self.test_labels = test_label
+
         data_len = len(self.train)
-        self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "MSL_test_label.npy"))
+        self.val = self.train[int(data_len * 0.8):]
+
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 
@@ -482,15 +540,36 @@ class SMAPSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(os.path.join(root_path, "SMAP_train.npy"))
-        self.scaler.fit(data)
-        data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "SMAP_test.npy"))
-        self.test = self.scaler.transform(test_data)
-        self.train = data
+        
+        train_path = os.path.join(root_path, "SMAP_train.npy")
+        test_path  = os.path.join(root_path, "SMAP_test.npy")
+        label_path = os.path.join(root_path, "SMAP_test_label.npy")
+
+        if all(os.path.exists(p) for p in [train_path, test_path, label_path]):
+            train_data = np.load(train_path)
+            test_data  = np.load(test_path)
+            test_label = np.load(label_path)
+        else:
+            train_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMAP/SMAP_train.npy",repo_type="dataset")
+            test_path  = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMAP/SMAP_test.npy",repo_type="dataset")
+            label_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMAP/SMAP_test_label.npy",repo_type="dataset")
+
+            train_data  = np.load(train_path)
+            test_data   = np.load(test_path)
+            test_label = np.load(label_path)
+
+        # 标准化
+        self.scaler.fit(train_data)
+        train_data = self.scaler.transform(train_data)
+        test_data  = self.scaler.transform(test_data)
+
+        self.train = train_data
+        self.test  = test_data
+        self.test_labels = test_label
+
         data_len = len(self.train)
-        self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "SMAP_test_label.npy"))
+        self.val = self.train[int(data_len * 0.8):]
+
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 
@@ -526,15 +605,34 @@ class SMDSegLoader(Dataset):
         self.step = step
         self.win_size = win_size
         self.scaler = StandardScaler()
-        data = np.load(os.path.join(root_path, "SMD_train.npy"))
-        self.scaler.fit(data)
-        data = self.scaler.transform(data)
-        test_data = np.load(os.path.join(root_path, "SMD_test.npy"))
-        self.test = self.scaler.transform(test_data)
-        self.train = data
+        
+        train_path = os.path.join(root_path, "SMD_train.npy")
+        test_path  = os.path.join(root_path, "SMD_test.npy")
+        label_path = os.path.join(root_path, "SMD_test_label.npy")
+
+        if all(os.path.exists(p) for p in [train_path, test_path, label_path]):
+            train_data = np.load(train_path)
+            test_data  = np.load(test_path)
+            test_label = np.load(label_path)
+        else:
+            train_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMD/SMD_train.npy",repo_type="dataset")
+            test_path  = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMD/SMD_test.npy",repo_type="dataset")
+            label_path = hf_hub_download(repo_id=HUGGINGFACE_REPO, filename="SMD/SMD_test_label.npy",repo_type="dataset")
+
+            train_data  = np.load(train_path)
+            test_data   = np.load(test_path)
+            test_label = np.load(label_path)
+            
+        self.scaler.fit(train_data)
+        train_data = self.scaler.transform(train_data)
+        test_data = self.scaler.transform(test_data)
+        self.train = train_data
+        self.test = test_data
         data_len = len(self.train)
         self.val = self.train[(int)(data_len * 0.8):]
-        self.test_labels = np.load(os.path.join(root_path, "SMD_test_label.npy"))
+        self.test_labels = test_label
+        print("test:", self.test.shape)
+        print("train:", self.train.shape)
 
     def __len__(self):
         if self.flag == "train":
@@ -568,8 +666,15 @@ class SWATSegLoader(Dataset):
         self.win_size = win_size
         self.scaler = StandardScaler()
 
-        train_data = pd.read_csv(os.path.join(root_path, 'swat_train2.csv'))
-        test_data = pd.read_csv(os.path.join(root_path, 'swat2.csv'))
+        train2_path = os.path.join(root_path, "swat_train2.csv")
+        test_path   = os.path.join(root_path, "swat2.csv")
+        if all(os.path.exists(p) for p in [train2_path, test_path]):
+            train_data = pd.read_csv(train2_path)
+            test_data   = pd.read_csv(test_path)
+        else:
+            ds = load_dataset(HUGGINGFACE_REPO, name="SWaT")
+            train_data = ds["train"].to_pandas()
+            test_data  = ds["test"].to_pandas()
         labels = test_data.values[:, -1:]
         train_data = train_data.values[:, :-1]
         test_data = test_data.values[:, :-1]
@@ -654,6 +759,14 @@ class UEAloader(Dataset):
         self.feature_df = normalizer.normalize(self.feature_df)
         print(len(self.all_IDs))
 
+    def _resolve_ts_path(self, root_path, dataset_name, flag):
+        split = "TRAIN" if "train" in str(flag).lower() else "TEST"
+        fname = f"{dataset_name}_{split}.ts"
+        local = os.path.join(root_path, fname)
+        if os.path.exists(local):
+            return local
+        return hf_hub_download(HUGGINGFACE_REPO, filename=f"{dataset_name}/{fname}", repo_type="dataset")
+
     def load_all(self, root_path, file_list=None, flag=None):
         """
         Loads datasets from ts files contained in `root_path` into a dataframe, optionally choosing from `pattern`
@@ -666,21 +779,10 @@ class UEAloader(Dataset):
             labels_df: dataframe containing label(s) for each sample
         """
         # Select paths for training and evaluation
-        if file_list is None:
-            data_paths = glob.glob(os.path.join(root_path, '*'))  # list of all paths
-        else:
-            data_paths = [os.path.join(root_path, p) for p in file_list]
-        if len(data_paths) == 0:
-            raise Exception('No files found using: {}'.format(os.path.join(root_path, '*')))
-        if flag is not None:
-            data_paths = list(filter(lambda x: re.search(flag, x), data_paths))
-        input_paths = [p for p in data_paths if os.path.isfile(p) and p.endswith('.ts')]
-        if len(input_paths) == 0:
-            pattern='*.ts'
-            raise Exception("No .ts files found using pattern: '{}'".format(pattern))
+        dataset_name = self.args.model_id
+        ts_path = self._resolve_ts_path(root_path, dataset_name, flag or "train")
 
-        all_df, labels_df = self.load_single(input_paths[0])  # a single file contains dataset
-
+        all_df, labels_df = self.load_single(ts_path)
         return all_df, labels_df
 
     def load_single(self, filepath):
