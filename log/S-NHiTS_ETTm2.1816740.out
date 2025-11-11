@@ -1,0 +1,464 @@
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           96                  Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         32                  
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl96_ll0_pl96_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 34369
+val 11425
+test 11425
+	iters: 100, epoch: 1 | loss: 0.5008661
+	speed: 0.0177s/iter; left time: 188.5694s
+	iters: 200, epoch: 1 | loss: 0.2555252
+	speed: 0.0071s/iter; left time: 75.0648s
+	iters: 300, epoch: 1 | loss: 0.3448972
+	speed: 0.0070s/iter; left time: 72.6723s
+	iters: 400, epoch: 1 | loss: 0.2890276
+	speed: 0.0068s/iter; left time: 70.8310s
+	iters: 500, epoch: 1 | loss: 0.3098437
+	speed: 0.0071s/iter; left time: 72.6447s
+	iters: 600, epoch: 1 | loss: 0.2892796
+	speed: 0.0070s/iter; left time: 70.6117s
+	iters: 700, epoch: 1 | loss: 0.2680278
+	speed: 0.0067s/iter; left time: 67.6652s
+	iters: 800, epoch: 1 | loss: 0.2762200
+	speed: 0.0067s/iter; left time: 66.2454s
+	iters: 900, epoch: 1 | loss: 0.3075677
+	speed: 0.0070s/iter; left time: 69.4161s
+	iters: 1000, epoch: 1 | loss: 0.2649217
+	speed: 0.0068s/iter; left time: 66.3628s
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 234, in <module>
+    exp.train(setting)
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 125, in train
+    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 269, in forward
+    forecast = self.forecast(insample_y=insample_y, insample_mask=insample_mask)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 217, in forecast
+    backcast, block_forecast = block(residuals)        # ✅ 간단화
+                               ^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 153, in forward
+    theta = self.layers(x)
+            ^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 193, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2811, in batch_norm
+    _verify_batch_size(input.size())
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2777, in _verify_batch_size
+    raise ValueError(
+ValueError: Expected more than 1 value per channel when training, got input size torch.Size([1, 512])
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            192                 Label Len:          0                   
+  Pred Len:           192                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         32                  
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl192_ll0_pl192_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 34177
+val 11329
+test 11329
+	iters: 100, epoch: 1 | loss: 0.4400250
+	speed: 0.0161s/iter; left time: 170.7296s
+	iters: 200, epoch: 1 | loss: 0.4483825
+	speed: 0.0070s/iter; left time: 73.3237s
+	iters: 300, epoch: 1 | loss: 0.3280275
+	speed: 0.0071s/iter; left time: 74.2379s
+	iters: 400, epoch: 1 | loss: 0.3655963
+	speed: 0.0067s/iter; left time: 68.4379s
+	iters: 500, epoch: 1 | loss: 0.3183187
+	speed: 0.0068s/iter; left time: 69.7277s
+	iters: 600, epoch: 1 | loss: 0.2671333
+	speed: 0.0070s/iter; left time: 70.1840s
+	iters: 700, epoch: 1 | loss: 0.3068844
+	speed: 0.0070s/iter; left time: 69.7238s
+	iters: 800, epoch: 1 | loss: 0.2574091
+	speed: 0.0069s/iter; left time: 68.4037s
+	iters: 900, epoch: 1 | loss: 0.2631012
+	speed: 0.0069s/iter; left time: 67.0768s
+	iters: 1000, epoch: 1 | loss: 0.2516615
+	speed: 0.0069s/iter; left time: 66.9553s
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 234, in <module>
+    exp.train(setting)
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 125, in train
+    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 269, in forward
+    forecast = self.forecast(insample_y=insample_y, insample_mask=insample_mask)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 217, in forecast
+    backcast, block_forecast = block(residuals)        # ✅ 간단화
+                               ^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 153, in forward
+    theta = self.layers(x)
+            ^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 193, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2811, in batch_norm
+    _verify_batch_size(input.size())
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2777, in _verify_batch_size
+    raise ValueError(
+ValueError: Expected more than 1 value per channel when training, got input size torch.Size([1, 512])
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            336                 Label Len:          0                   
+  Pred Len:           336                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         32                  
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl336_ll0_pl336_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 33889
+val 11185
+test 11185
+	iters: 100, epoch: 1 | loss: 0.4420715
+	speed: 0.0158s/iter; left time: 166.0121s
+	iters: 200, epoch: 1 | loss: 0.3449223
+	speed: 0.0062s/iter; left time: 64.3760s
+	iters: 300, epoch: 1 | loss: 0.3329438
+	speed: 0.0063s/iter; left time: 64.5740s
+	iters: 400, epoch: 1 | loss: 0.2710908
+	speed: 0.0062s/iter; left time: 63.0401s
+	iters: 500, epoch: 1 | loss: 0.2497418
+	speed: 0.0062s/iter; left time: 62.5871s
+	iters: 600, epoch: 1 | loss: 0.2594943
+	speed: 0.0063s/iter; left time: 63.4872s
+	iters: 700, epoch: 1 | loss: 0.2802785
+	speed: 0.0063s/iter; left time: 62.1963s
+	iters: 800, epoch: 1 | loss: 0.2135655
+	speed: 0.0061s/iter; left time: 59.9954s
+	iters: 900, epoch: 1 | loss: 0.2680989
+	speed: 0.0061s/iter; left time: 59.3745s
+	iters: 1000, epoch: 1 | loss: 0.2569307
+	speed: 0.0064s/iter; left time: 61.7099s
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 234, in <module>
+    exp.train(setting)
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 125, in train
+    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 269, in forward
+    forecast = self.forecast(insample_y=insample_y, insample_mask=insample_mask)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 217, in forecast
+    backcast, block_forecast = block(residuals)        # ✅ 간단화
+                               ^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 153, in forward
+    theta = self.layers(x)
+            ^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 193, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2811, in batch_norm
+    _verify_batch_size(input.size())
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2777, in _verify_batch_size
+    raise ValueError(
+ValueError: Expected more than 1 value per channel when training, got input size torch.Size([1, 512])
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            720                 Label Len:          0                   
+  Pred Len:           720                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       10                  Batch Size:         32                  
+  Patience:           3                   Learning Rate:      0.0001              
+  Des:                test                Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl720_ll0_pl720_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 33121
+val 10801
+test 10801
+	iters: 100, epoch: 1 | loss: 0.5232768
+	speed: 0.0174s/iter; left time: 178.1637s
+	iters: 200, epoch: 1 | loss: 0.3169678
+	speed: 0.0075s/iter; left time: 75.7898s
+	iters: 300, epoch: 1 | loss: 0.3182729
+	speed: 0.0071s/iter; left time: 71.2379s
+	iters: 400, epoch: 1 | loss: 0.3216687
+	speed: 0.0076s/iter; left time: 75.2666s
+	iters: 500, epoch: 1 | loss: 0.2434223
+	speed: 0.0073s/iter; left time: 71.6816s
+	iters: 600, epoch: 1 | loss: 0.2938872
+	speed: 0.0070s/iter; left time: 68.4028s
+	iters: 700, epoch: 1 | loss: 0.2855215
+	speed: 0.0070s/iter; left time: 67.6398s
+	iters: 800, epoch: 1 | loss: 0.3096379
+	speed: 0.0072s/iter; left time: 68.4985s
+	iters: 900, epoch: 1 | loss: 0.2462310
+	speed: 0.0070s/iter; left time: 66.1639s
+	iters: 1000, epoch: 1 | loss: 0.2415833
+	speed: 0.0076s/iter; left time: 70.7621s
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 234, in <module>
+    exp.train(setting)
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 125, in train
+    outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 269, in forward
+    forecast = self.forecast(insample_y=insample_y, insample_mask=insample_mask)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 217, in forecast
+    backcast, block_forecast = block(residuals)        # ✅ 간단화
+                               ^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 153, in forward
+    theta = self.layers(x)
+            ^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 193, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2811, in batch_norm
+    _verify_batch_size(input.size())
+  File "/home/s2/jinmyeongchoi/nhits-tinkering/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2777, in _verify_batch_size
+    raise ValueError(
+ValueError: Expected more than 1 value per channel when training, got input size torch.Size([1, 512])

@@ -1,0 +1,72 @@
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 165, in <module>
+    parser.add_argument('--activation', type=str, default='ReLU', choices=['ReLU','Softplus','Tanh','SELU','LeakyReLU','PReLU','Sigmoid'])
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1473, in add_argument
+    return self._add_action(action)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1855, in _add_action
+    self._optionals._add_action(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1675, in _add_action
+    action = super(_ArgumentGroup, self)._add_action(action)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1487, in _add_action
+    self._check_conflict(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1624, in _check_conflict
+    conflict_handler(action, confl_optionals)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1633, in _handle_conflict_error
+    raise ArgumentError(action, message % conflict_string)
+argparse.ArgumentError: argument --activation: conflicting option string: --activation
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 165, in <module>
+    parser.add_argument('--activation', type=str, default='ReLU', choices=['ReLU','Softplus','Tanh','SELU','LeakyReLU','PReLU','Sigmoid'])
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1473, in add_argument
+    return self._add_action(action)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1855, in _add_action
+    self._optionals._add_action(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1675, in _add_action
+    action = super(_ArgumentGroup, self)._add_action(action)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1487, in _add_action
+    self._check_conflict(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1624, in _check_conflict
+    conflict_handler(action, confl_optionals)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1633, in _handle_conflict_error
+    raise ArgumentError(action, message % conflict_string)
+argparse.ArgumentError: argument --activation: conflicting option string: --activation
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 165, in <module>
+    parser.add_argument('--activation', type=str, default='ReLU', choices=['ReLU','Softplus','Tanh','SELU','LeakyReLU','PReLU','Sigmoid'])
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1473, in add_argument
+    return self._add_action(action)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1855, in _add_action
+    self._optionals._add_action(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1675, in _add_action
+    action = super(_ArgumentGroup, self)._add_action(action)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1487, in _add_action
+    self._check_conflict(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1624, in _check_conflict
+    conflict_handler(action, confl_optionals)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1633, in _handle_conflict_error
+    raise ArgumentError(action, message % conflict_string)
+argparse.ArgumentError: argument --activation: conflicting option string: --activation
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 165, in <module>
+    parser.add_argument('--activation', type=str, default='ReLU', choices=['ReLU','Softplus','Tanh','SELU','LeakyReLU','PReLU','Sigmoid'])
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1473, in add_argument
+    return self._add_action(action)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1855, in _add_action
+    self._optionals._add_action(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1675, in _add_action
+    action = super(_ArgumentGroup, self)._add_action(action)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1487, in _add_action
+    self._check_conflict(action)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1624, in _check_conflict
+    conflict_handler(action, confl_optionals)
+  File "/home/s2/jinmyeongchoi/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/argparse.py", line 1633, in _handle_conflict_error
+    raise ArgumentError(action, message % conflict_string)
+argparse.ArgumentError: argument --activation: conflicting option string: --activation

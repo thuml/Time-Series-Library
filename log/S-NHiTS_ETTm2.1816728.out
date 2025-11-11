@@ -1,0 +1,40 @@
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 1, in <module>
+    from data_provider.data_factory import data_provider
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_factory.py", line 1, in <module>
+    from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_loader.py", line 12, in <module>
+    from sktime.datasets import load_from_tsfile_to_dataframe
+ModuleNotFoundError: No module named 'sktime'
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 1, in <module>
+    from data_provider.data_factory import data_provider
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_factory.py", line 1, in <module>
+    from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_loader.py", line 12, in <module>
+    from sktime.datasets import load_from_tsfile_to_dataframe
+ModuleNotFoundError: No module named 'sktime'
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 1, in <module>
+    from data_provider.data_factory import data_provider
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_factory.py", line 1, in <module>
+    from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_loader.py", line 12, in <module>
+    from sktime.datasets import load_from_tsfile_to_dataframe
+ModuleNotFoundError: No module named 'sktime'
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 1, in <module>
+    from data_provider.data_factory import data_provider
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_factory.py", line 1, in <module>
+    from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/data_provider/data_loader.py", line 12, in <module>
+    from sktime.datasets import load_from_tsfile_to_dataframe
+ModuleNotFoundError: No module named 'sktime'

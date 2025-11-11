@@ -22,6 +22,16 @@ def adjust_learning_rate(optimizer, epoch, args):
         lr_adjust = {epoch: args.learning_rate if epoch < 3 else args.learning_rate * (0.9 ** ((epoch - 3) // 1))}
     elif args.lradj == "cosine":
         lr_adjust = {epoch: args.learning_rate /2 * (1 + math.cos(epoch / args.train_epochs * math.pi))}
+    elif args.lradj == 'nhits':
+        E = args.train_epochs
+        # 25%, 50%, 75% 지점에서 감소 (필요하면 다른 분할로 바꿔도 OK)
+        milestones = {max(1, math.ceil(E*0.25)),
+                      max(1, math.ceil(E*0.50)),
+                      max(1, math.ceil(E*0.75))}
+        # 현재 에포크까지 몇 번 지났는지 세서 0.5**count 적용
+        count = sum(1 for m in milestones if epoch >= m)
+        lr_adjust = {epoch: args.learning_rate * (0.5 ** count)}
+
     if epoch in lr_adjust.keys():
         lr = lr_adjust[epoch]
         for param_group in optimizer.param_groups:

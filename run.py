@@ -93,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
-    parser.add_argument('--loss', type=str, default='MSE', help='loss function')
+    parser.add_argument('--loss', type=str, default='MAE', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 
@@ -155,6 +155,22 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
+
+    # NHiTS
+    parser.add_argument('--pooling_mode', type=str, default='max', choices=['max','average'])
+    parser.add_argument('--interpolation_mode', type=str, default='linear', help='linear | nearest | cubic-<batch>')
+
+    # boolean flags: safer handling
+    parser.add_argument('--batch_normalization', action='store_true', default=True)
+    parser.add_argument('--shared_weights', action='store_true', default=True)
+    parser.add_argument('--initialization', type=str, default='glorot_uniform',
+                        choices=['orthogonal','he_uniform','he_normal','glorot_uniform','glorot_normal','lecun_normal'])
+    parser.add_argument('--stack_types', nargs='+', type=str, default=['identity','identity','identity'])
+    parser.add_argument('--n_blocks', nargs='+', type=int, default=[1,1,1])
+    parser.add_argument('--n_layers', type=int, default=2)                   # per-block depth (same across stacks for simplicity)
+    parser.add_argument('--n_theta_hidden', nargs='+', type=int, default=[512,512])  # hidden widths only (in_features = pooled_len internally)
+    parser.add_argument('--n_pool_kernel_size', nargs='+', type=int, default=[8,4,1])
+    parser.add_argument('--n_freq_downsample', nargs='+', type=int, default=[16,8,1])
 
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:

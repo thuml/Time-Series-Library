@@ -1,0 +1,1 @@
+/var/spool/slurmd/job1816789/slurm_script: line 20: ${pred_lens[$i]*5}: bad substitution

@@ -1,0 +1,342 @@
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            96                  Label Len:          0                   
+  Pred Len:           96                  Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       20                  Batch Size:         256                 
+  Patience:           3                   Learning Rate:      0.001               
+  Des:                test                Loss:               MAE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl96_ll0_pl96_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 34369
+val 11425
+test 11425
+	iters: 100, epoch: 1 | loss: 0.1699144
+	speed: 0.0205s/iter; left time: 53.2596s
+Epoch: 1 cost time: 2.3427727222442627
+Epoch: 1, Steps: 135 | Train Loss: 0.2321335 Vali Loss: 0.0990657 Test Loss: 0.0976482
+Validation loss decreased (inf --> 0.099066).  Saving model ...
+Updating learning rate to 0.001
+	iters: 100, epoch: 2 | loss: 0.1270823
+	speed: 0.0255s/iter; left time: 62.8410s
+Epoch: 2 cost time: 1.568528413772583
+Epoch: 2, Steps: 135 | Train Loss: 0.1400471 Vali Loss: 0.0995334 Test Loss: 0.0886737
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 0.0005
+	iters: 100, epoch: 3 | loss: 0.1209909
+	speed: 0.0257s/iter; left time: 59.8318s
+Epoch: 3 cost time: 1.6000475883483887
+Epoch: 3, Steps: 135 | Train Loss: 0.1184317 Vali Loss: 0.0983444 Test Loss: 0.0892203
+Validation loss decreased (0.099066 --> 0.098344).  Saving model ...
+Updating learning rate to 0.00025
+	iters: 100, epoch: 4 | loss: 0.1042939
+	speed: 0.0257s/iter; left time: 56.3312s
+Epoch: 4 cost time: 1.5661091804504395
+Epoch: 4, Steps: 135 | Train Loss: 0.1093311 Vali Loss: 0.0962755 Test Loss: 0.0750040
+Validation loss decreased (0.098344 --> 0.096276).  Saving model ...
+Updating learning rate to 0.000125
+	iters: 100, epoch: 5 | loss: 0.1044963
+	speed: 0.0258s/iter; left time: 53.2095s
+Epoch: 5 cost time: 1.555074691772461
+Epoch: 5, Steps: 135 | Train Loss: 0.1041595 Vali Loss: 0.0951712 Test Loss: 0.0789387
+Validation loss decreased (0.096276 --> 0.095171).  Saving model ...
+Updating learning rate to 6.25e-05
+	iters: 100, epoch: 6 | loss: 0.1042086
+	speed: 0.0255s/iter; left time: 49.1448s
+Epoch: 6 cost time: 1.5901153087615967
+Epoch: 6, Steps: 135 | Train Loss: 0.1014628 Vali Loss: 0.0952576 Test Loss: 0.0759929
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 3.125e-05
+	iters: 100, epoch: 7 | loss: 0.1013267
+	speed: 0.0258s/iter; left time: 46.1406s
+Epoch: 7 cost time: 1.5454351902008057
+Epoch: 7, Steps: 135 | Train Loss: 0.1001782 Vali Loss: 0.0946395 Test Loss: 0.0748747
+Validation loss decreased (0.095171 --> 0.094640).  Saving model ...
+Updating learning rate to 1.5625e-05
+	iters: 100, epoch: 8 | loss: 0.1009757
+	speed: 0.0260s/iter; left time: 43.1370s
+Epoch: 8 cost time: 1.6129679679870605
+Epoch: 8, Steps: 135 | Train Loss: 0.0993976 Vali Loss: 0.0950804 Test Loss: 0.0790857
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 7.8125e-06
+	iters: 100, epoch: 9 | loss: 0.1079591
+	speed: 0.0255s/iter; left time: 38.7404s
+Epoch: 9 cost time: 1.5539758205413818
+Epoch: 9, Steps: 135 | Train Loss: 0.0993674 Vali Loss: 0.0954001 Test Loss: 0.0778607
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 3.90625e-06
+	iters: 100, epoch: 10 | loss: 0.0924383
+	speed: 0.0254s/iter; left time: 35.1514s
+Epoch: 10 cost time: 1.5360164642333984
+Epoch: 10, Steps: 135 | Train Loss: 0.0992657 Vali Loss: 0.0949144 Test Loss: 0.0772953
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl96_ll0_pl96_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 11425
+test shape: (11425, 96, 1) (11425, 96, 1)
+test shape: (11425, 96, 1) (11425, 96, 1)
+mse:0.07509780675172806, mae:0.19946081936359406, dtw:Not calculated
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            192                 Label Len:          0                   
+  Pred Len:           192                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       20                  Batch Size:         256                 
+  Patience:           3                   Learning Rate:      0.001               
+  Des:                test                Loss:               MAE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl192_ll0_pl192_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 34177
+val 11329
+test 11329
+	iters: 100, epoch: 1 | loss: 0.1825318
+	speed: 0.0222s/iter; left time: 57.3363s
+Epoch: 1 cost time: 2.5629944801330566
+Epoch: 1, Steps: 134 | Train Loss: 0.2485941 Vali Loss: 0.1532772 Test Loss: 0.1387816
+Validation loss decreased (inf --> 0.153277).  Saving model ...
+Updating learning rate to 0.001
+	iters: 100, epoch: 2 | loss: 0.1691446
+	speed: 0.0293s/iter; left time: 71.6348s
+Epoch: 2 cost time: 1.7623915672302246
+Epoch: 2, Steps: 134 | Train Loss: 0.1655262 Vali Loss: 0.1478490 Test Loss: 0.1330888
+Validation loss decreased (0.153277 --> 0.147849).  Saving model ...
+Updating learning rate to 0.0005
+	iters: 100, epoch: 3 | loss: 0.1537658
+	speed: 0.0293s/iter; left time: 67.7157s
+Epoch: 3 cost time: 1.7901318073272705
+Epoch: 3, Steps: 134 | Train Loss: 0.1427775 Vali Loss: 0.1513475 Test Loss: 0.1157239
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 0.00025
+	iters: 100, epoch: 4 | loss: 0.1292071
+	speed: 0.0291s/iter; left time: 63.4756s
+Epoch: 4 cost time: 1.780562400817871
+Epoch: 4, Steps: 134 | Train Loss: 0.1297910 Vali Loss: 0.1546797 Test Loss: 0.1341791
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 0.000125
+	iters: 100, epoch: 5 | loss: 0.1105251
+	speed: 0.0293s/iter; left time: 59.8235s
+Epoch: 5 cost time: 1.8289954662322998
+Epoch: 5, Steps: 134 | Train Loss: 0.1228597 Vali Loss: 0.1642963 Test Loss: 0.1351779
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl192_ll0_pl192_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 11329
+test shape: (11329, 192, 1) (11329, 192, 1)
+test shape: (11329, 192, 1) (11329, 192, 1)
+mse:0.13411715626716614, mae:0.28300920128822327, dtw:Not calculated
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            336                 Label Len:          0                   
+  Pred Len:           336                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       20                  Batch Size:         256                 
+  Patience:           3                   Learning Rate:      0.001               
+  Des:                test                Loss:               MAE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl336_ll0_pl336_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 33889
+val 11185
+test 11185
+	iters: 100, epoch: 1 | loss: 0.1976156
+	speed: 0.0259s/iter; left time: 66.3253s
+Epoch: 1 cost time: 2.976980209350586
+Epoch: 1, Steps: 133 | Train Loss: 0.2705441 Vali Loss: 0.2190148 Test Loss: 0.1339901
+Validation loss decreased (inf --> 0.219015).  Saving model ...
+Updating learning rate to 0.001
+	iters: 100, epoch: 2 | loss: 0.1788116
+	speed: 0.0350s/iter; left time: 85.0845s
+Epoch: 2 cost time: 2.180001974105835
+Epoch: 2, Steps: 133 | Train Loss: 0.1833230 Vali Loss: 0.2387368 Test Loss: 0.1817031
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 0.0005
+	iters: 100, epoch: 3 | loss: 0.1454537
+	speed: 0.0345s/iter; left time: 79.2689s
+Epoch: 3 cost time: 2.176203966140747
+Epoch: 3, Steps: 133 | Train Loss: 0.1496350 Vali Loss: 0.2292353 Test Loss: 0.1357050
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 0.00025
+	iters: 100, epoch: 4 | loss: 0.1262227
+	speed: 0.0347s/iter; left time: 75.0583s
+Epoch: 4 cost time: 2.191291570663452
+Epoch: 4, Steps: 133 | Train Loss: 0.1296146 Vali Loss: 0.2371029 Test Loss: 0.2038381
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl336_ll0_pl336_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 11185
+test shape: (11185, 336, 1) (11185, 336, 1)
+test shape: (11185, 336, 1) (11185, 336, 1)
+mse:0.134348064661026, mae:0.2917048931121826, dtw:Not calculated
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          long_term_forecast  Is Training:        1                   
+  Model ID:           NHiTS               Model:              NHiTS               
+
+[1mData Loader[0m
+  Data:               ETTm2               Root Path:          /shared/s2/lab01/timeSeries/forecasting/base/ETT-small/
+  Data Path:          ETTm2.csv           Features:           S                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints/      
+
+[1mForecasting Task[0m
+  Seq Len:            720                 Label Len:          0                   
+  Pred Len:           720                 Seasonal Patterns:  Monthly             
+  Inverse:            0                   
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2048                
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         ReLU                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       20                  Batch Size:         256                 
+  Patience:           3                   Learning Rate:      0.001               
+  Des:                test                Loss:               MAE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+>>>>>>>start training : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl720_ll0_pl720_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0>>>>>>>>>>>>>>>>>>>>>>>>>>
+train 33121
+val 10801
+test 10801
+	iters: 100, epoch: 1 | loss: 0.2079400
+	speed: 0.0306s/iter; left time: 76.5149s
+Epoch: 1 cost time: 3.4637176990509033
+Epoch: 1, Steps: 130 | Train Loss: 0.2558147 Vali Loss: 0.2043082 Test Loss: 0.2758052
+Validation loss decreased (inf --> 0.204308).  Saving model ...
+Updating learning rate to 0.001
+	iters: 100, epoch: 2 | loss: 0.1434772
+	speed: 0.0441s/iter; left time: 104.4896s
+Epoch: 2 cost time: 2.7025628089904785
+Epoch: 2, Steps: 130 | Train Loss: 0.1545659 Vali Loss: 0.2280417 Test Loss: 0.2728640
+EarlyStopping counter: 1 out of 3
+Updating learning rate to 0.0005
+	iters: 100, epoch: 3 | loss: 0.1041135
+	speed: 0.0429s/iter; left time: 96.0583s
+Epoch: 3 cost time: 2.6589152812957764
+Epoch: 3, Steps: 130 | Train Loss: 0.1115565 Vali Loss: 0.2374297 Test Loss: 0.1895388
+EarlyStopping counter: 2 out of 3
+Updating learning rate to 0.00025
+	iters: 100, epoch: 4 | loss: 0.0856459
+	speed: 0.0430s/iter; left time: 90.8551s
+Epoch: 4 cost time: 3.0003604888916016
+Epoch: 4, Steps: 130 | Train Loss: 0.0920735 Vali Loss: 0.2261457 Test Loss: 0.2109698
+EarlyStopping counter: 3 out of 3
+Early stopping
+>>>>>>>testing : long_term_forecast_NHiTS_NHiTS_ETTm2_ftS_sl720_ll0_pl720_dm512_nh8_el2_dl1_df2048_expand2_dc4_fc1_ebtimeF_dtTrue_test_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 10801
+test shape: (10801, 720, 1) (10801, 720, 1)
+test shape: (10801, 720, 1) (10801, 720, 1)
+mse:0.2777150869369507, mae:0.42107895016670227, dtw:Not calculated

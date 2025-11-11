@@ -1,0 +1,52 @@
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 2, in <module>
+    from exp.exp_basic import Exp_Basic
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_basic.py", line 3, in <module>
+    from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 14, in <module>
+    from layers.nhits_utils import RepeatVector
+  File "/home/s2/jinmyeongchoi/nhits-tsl/layers/nhits_utils.py", line 1, in <module>
+    class RepeatVector(nn.Module):
+                       ^^
+NameError: name 'nn' is not defined
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 2, in <module>
+    from exp.exp_basic import Exp_Basic
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_basic.py", line 3, in <module>
+    from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 14, in <module>
+    from layers.nhits_utils import RepeatVector
+  File "/home/s2/jinmyeongchoi/nhits-tsl/layers/nhits_utils.py", line 1, in <module>
+    class RepeatVector(nn.Module):
+                       ^^
+NameError: name 'nn' is not defined
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 2, in <module>
+    from exp.exp_basic import Exp_Basic
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_basic.py", line 3, in <module>
+    from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 14, in <module>
+    from layers.nhits_utils import RepeatVector
+  File "/home/s2/jinmyeongchoi/nhits-tsl/layers/nhits_utils.py", line 1, in <module>
+    class RepeatVector(nn.Module):
+                       ^^
+NameError: name 'nn' is not defined
+Traceback (most recent call last):
+  File "/home/s2/jinmyeongchoi/nhits-tsl/run.py", line 5, in <module>
+    from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_long_term_forecasting.py", line 2, in <module>
+    from exp.exp_basic import Exp_Basic
+  File "/home/s2/jinmyeongchoi/nhits-tsl/exp/exp_basic.py", line 3, in <module>
+    from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+  File "/home/s2/jinmyeongchoi/nhits-tsl/models/NHiTS.py", line 14, in <module>
+    from layers.nhits_utils import RepeatVector
+  File "/home/s2/jinmyeongchoi/nhits-tsl/layers/nhits_utils.py", line 1, in <module>
+    class RepeatVector(nn.Module):
+                       ^^
+NameError: name 'nn' is not defined
