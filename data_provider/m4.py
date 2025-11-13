@@ -32,7 +32,7 @@ import sys
 from urllib import request
 from huggingface_hub import hf_hub_download
 
-HUGGINGFACE_REPO = "lalababa/Time-Series-Library"
+HUGGINGFACE_REPO = "thuml/Time-Series-Library"
 
 def _ensure_m4_triplet(root_dir="./dataset/m4", repo_id=HUGGINGFACE_REPO):
     root_dir = os.path.abspath(root_dir)
