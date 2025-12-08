@@ -4,7 +4,7 @@ from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer,
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
     WPMixer, MultiPatchFormer, KANAD, MSGNet, TimeFilter, Sundial, TimeMoE, Chronos, Moirai, TiRex,\
-    TimesFM, Toto, Chronos2
+    TimesFM, Chronos2
 
 
 class Exp_Basic(object):
@@ -49,7 +49,6 @@ class Exp_Basic(object):
             'Moirai': Moirai,
             'TiRex': TiRex,
             'TimesFM': TimesFM,
-            'Toto': Toto,
             'Chronos2': Chronos2
         }
         if args.model == 'Mamba':
