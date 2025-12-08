@@ -30,6 +30,28 @@ import os
 import pathlib
 import sys
 from urllib import request
+from huggingface_hub import hf_hub_download
+
+HUGGINGFACE_REPO = "thuml/Time-Series-Library"
+
+def _ensure_m4_triplet(root_dir="./dataset/m4", repo_id=HUGGINGFACE_REPO):
+    root_dir = os.path.abspath(root_dir)
+    os.makedirs(root_dir, exist_ok=True)
+    files = {
+        "M4-info.csv":  "m4/M4-info.csv",
+        "training.npz": "m4/training.npz",
+        "test.npz":     "m4/test.npz",
+    }
+    for name, remote in files.items():
+        dst = os.path.join(root_dir, name)
+        if not os.path.exists(dst):
+            path = hf_hub_download(
+                repo_id=repo_id,
+                filename=remote,
+                repo_type="dataset",
+                local_dir="./dataset",
+                local_dir_use_symlinks=False
+            )
 
 
 def url_file_name(url: str) -> str:
@@ -85,6 +107,7 @@ class M4Dataset:
 
         :param training: Load training part if training is True, test part otherwise.
         """
+        _ensure_m4_triplet(dataset_file, repo_id=HUGGINGFACE_REPO)
         info_file = os.path.join(dataset_file, 'M4-info.csv')
         train_cache_file = os.path.join(dataset_file, 'training.npz')
         test_cache_file = os.path.join(dataset_file, 'test.npz')
@@ -135,4 +158,4 @@ def load_m4_info() -> pd.DataFrame:
 
     :return: Pandas DataFrame of M4Info.
     """
-    return pd.read_csv(INFO_FILE_PATH)
+    # return pd.read_csv(INFO_FILE_PATH)

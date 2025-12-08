@@ -3,6 +3,8 @@ TSLib is an open-source library for deep learning researchers, especially for de
 
 We provide a neat code base to evaluate advanced deep time series models or develop your model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
+:triangular_flag_on_post:**News** (2025.11) Considering the rapid development of Large Time Series Models (LTSMs), we have newly added a [[zero-shot forecasting]](https://github.com/thuml/Time-Series-Library/blob/main/exp/exp_zero_shot_forecasting.py) feature in TSLib. You can try [this script](https://github.com/thuml/Time-Series-Library/blob/main/scripts/long_term_forecast/ETT_script/LTSM.sh) to evaluate LTSMs.
+
 :triangular_flag_on_post:**News** (2025.10) Given the recent confusion among researchers regarding minor improvements on standard benchmarks, we propose the [[Accuracy Law]](https://arxiv.org/abs/2510.02729) to characterize the objectives of deep time series forecasting tasks, which can be used to identify saturated datasets.
 
 :triangular_flag_on_post:**News** (2024.10) We have included [[TimeXer]](https://arxiv.org/abs/2402.19072), which defined a practical forecasting paradigm: Forecasting with Exogenous Variables. Considering both practicability and computation efficiency, we believe the new forecasting paradigm defined in TimeXer can be the "right" task for future research.
@@ -55,9 +57,11 @@ Till March 2024, the top three models for five different tasks are:
 See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comprehensive benchmark. We will release a real-time updated online version soon.
 
 **Newly added baselines.** We will add them to the leaderboard after a comprehensive evaluation.
+  - [x] **TimeFilter** - TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting [[ICML 2025]](https://arxiv.org/abs/2501.13041) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TimeFilter.py)
   - [x] **KAN-AD** - KAN-AD: Time Series Anomaly Detection with Kolmogorov-Arnold Networks [[ICML 2025]](https://arxiv.org/abs/2411.00278) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/KANAD.py)
   - [x] **MultiPatchFormer** - A multiscale model for multivariate time series forecasting [[Scientific Reports 2025]](https://www.nature.com/articles/s41598-024-82417-4) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/MultiPatchFormer.py)
   - [x] **WPMixer** - WPMixer: Efficient Multi-Resolution Mixing for Long-Term Time Series Forecasting [[AAAI 2025]](https://arxiv.org/abs/2412.17176) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/WPMixer.py)
+  - [x] **MSGNet** - MSGNet: Learning Multi-Scale Inter-Series Correlations for Multivariate Time Series Forecasting [[AAAI 2024]](https://dl.acm.org/doi/10.1609/aaai.v38i10.28991) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/MSGNet.py)
   - [x] **PAttn** - Are Language Models Actually Useful for Time Series Forecasting? [[NeurIPS 2024]](https://arxiv.org/pdf/2406.16964) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/PAttn.py)
   - [x] **Mamba** - Mamba: Linear-Time Sequence Modeling with Selective State Spaces [[arXiv 2023]](https://arxiv.org/abs/2312.00752) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Mamba.py)
   - [x] **SegRNN** - SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting [[arXiv 2023]](https://arxiv.org/abs/2308.11200.pdf) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/SegRNN.py).
@@ -68,7 +72,20 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
   - [x] **TiDE** - Long-term Forecasting with TiDE: Time-series Dense Encoder [[arXiv 2023]](https://arxiv.org/pdf/2304.08424.pdf) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TiDE.py).
   - [x] **SCINet** - SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction [[NeurIPS 2022]](https://openreview.net/pdf?id=AyajSjTAzmg)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/SCINet.py).
   - [x] **FiLM** - FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting [[NeurIPS 2022]](https://openreview.net/forum?id=zTQdHSQUQWc)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/FiLM.py).
-  - [x] **TFT** - Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting [[arXiv 2019]](https://arxiv.org/abs/1912.09363)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TemporalFusionTransformer.py). 
+  - [x] **TFT** - Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting [[arXiv 2019]](https://arxiv.org/abs/1912.09363)[[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TemporalFusionTransformer.py).
+
+**Newly added Large Time Series Models.** This library also supports the zero-shot evaluation of the following LTSMs.
+
+- [x] **Chronos2** - Chronos-2: From Univariate to Universal Forecasting [[arXiv 2025]](https://arxiv.org/abs/2510.15821) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Chronos2.py)
+- [x] **TiRex** - TiRex: Zero-Shot Forecasting Across Long and Short Horizons with Enhanced In-Context Learning [[NeurIPS 2025]](https://arxiv.org/pdf/2505.23719) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TiRex.py)
+- [x] **Sundial** - Sundial: A Family of Highly Capable Time Series Foundation Models [[ICML 2025]](https://arxiv.org/pdf/2502.00816) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Sundial.py)
+- [x] **Time-MoE** - Time-MoE: Billion-Scale Time Series Foundation Models with Mixture of Experts [[ICLR 2025]](https://arxiv.org/pdf/2409.16040) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TimeMoE.py)
+- [x] **Toto** - Toto: Time Series Optimized Transformer for Observability [arXiv 2024](https://arxiv.org/pdf/2407.07874)
+- [x] **Chronos** - Chronos: Learning the Language of Time Series [[TMLR 2024]](https://arxiv.org/pdf/2403.07815) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/Chronos.py)
+- [x] **Moirai** - Unified Training of Universal Time Series Forecasting Transformers [[ICML 2024]](https://arxiv.org/pdf/2402.02592)
+- [x] **TimesFM** - A decoder-only foundation model for time-series forecasting [[ICML 2024]](https://arxiv.org/abs/2310.10688) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TimesFM.py)
+
+
  
 ## Usage
 
@@ -78,13 +95,13 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 pip install -r requirements.txt
 ```
 
-2. Prepare Data. You can obtain the well pre-processed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing) or [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy), Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
+2. Prepare Data. You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
 
 <p align="center">
 <img src=".\pic\dataset.png" height = "200" alt="" align=center />
 </p>
 
-3. Train and evaluate model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
+3. Train and evaluate the model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
 ```
 # long-term forecast
@@ -136,11 +153,11 @@ If you have any questions or suggestions, feel free to contact our maintenance t
 
 Current:
 - Haixu Wu (Ph.D. student, wuhx23@mails.tsinghua.edu.cn)
+- Yuxuan Wang (Ph.D. student, wangyuxu22@mails.tsinghua.edu.cn)
 - Yong Liu (Ph.D. student, liuyong21@mails.tsinghua.edu.cn)
 - Huikun Weng (Undergraduate, wenghk22@mails.tsinghua.edu.cn)
 
 Previous:
-- Yuxuan Wang (Ph.D. student, wangyuxu22@mails.tsinghua.edu.cn)
 - Tengge Hu (Master student, htg21@mails.tsinghua.edu.cn)
 - Haoran Zhang (Master student, z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (Undergraduate, guo-jw21@mails.tsinghua.edu.cn)
