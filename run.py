@@ -152,6 +152,20 @@ if __name__ == '__main__':
     parser.add_argument('--individual', action='store_true', default=False,
                         help='DLinear: a linear layer for each variate(channel) individually')
 
+    
+    # Times2d
+    parser.add_argument('--patch_length', type=int, nargs='+', default=[16], help='patch high')
+    parser.add_argument('--add', action='store_true', default=False, help='add')
+    parser.add_argument('--affine', type=int, default=0, help='RevIN-affine; True 1 False 0')
+    parser.add_argument('--head_dropout', type=float, default=0.0, help='head dropout')
+    parser.add_argument('--subtract_last', type=int, default=0, help='0: subtract mean; 1: subtract last')
+    parser.add_argument('--attn_dropout', type=float, default=0.05, help='attention dropout')
+    parser.add_argument('--kernel_list', type=int, nargs='+', default=[3, 7, 9], help='kernel size list')
+    parser.add_argument('--period_list', type=int, nargs='+', default=[24, 12], help='period list')
+    parser.add_argument('--stride', type=int, nargs='+', default=None, help='stride')
+    parser.add_argument('--fc_dropout', type=float, default=0.0, help='fully connected dropout')
+
+    
     # TimeFilter
     parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
