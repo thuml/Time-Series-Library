@@ -1,6 +1,8 @@
 # Time Series Library (TSLib)
 TSLib is an open-source library for deep learning researchers, especially for deep time series analysis.
 
+> **中文文档**：[README_zh.md](./README_zh.md)
+
 We provide a neat code base to evaluate advanced deep time series models or develop your model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
 :triangular_flag_on_post:**News** (2025.11) Considering the rapid development of Large Time Series Models (LTSMs), we have newly added a [[zero-shot forecasting]](https://github.com/thuml/Time-Series-Library/blob/main/exp/exp_zero_shot_forecasting.py) feature in TSLib. You can try [this script](https://github.com/thuml/Time-Series-Library/blob/main/scripts/long_term_forecast/ETT_script/LTSM.sh) to evaluate LTSMs.
@@ -89,19 +91,55 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
  
 ## Usage
 
-1. Install Python 3.8. For convenience, execute the following command.
+1. Install Python 3.11. For convenience, execute the following command.
 
 ```
 pip install -r requirements.txt
+pip install https://github.com/state-spaces/mamba/releases/download/v2.2.6.post3/mamba_ssm-2.2.6.post3+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+pip install uni2ts --no-deps
 ```
 
-2. Prepare Data. You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
+2. Use docker to run
+```
+# Build and start the Docker container in detached mode
+docker compose -f 'Time-Series-Library/docker-compose.yml' up -d --build
+
+# Download / place the dataset into a newly created folder ./dataset at the repository root
+mkdir -p dataset  # create the dataset directory
+
+# Copy the local dataset into the container at /workspace/dataset
+docker cp ./dataset tslib:/workspace/dataset
+
+# Enter the running container to continue training / evaluation
+docker exec -it tslib bash
+
+# Switch to the workspace directory inside the container
+cd /workspace
+
+# Run zero-shot forecasting with the pre-trained Moirai model
+python -u run.py \
+  --task_name zero_shot_forecast \   # task type: zero-shot forecasting
+  --is_training 0 \                  # 0 = inference only (no training)
+  --root_path ./dataset/ETT-small/ \ # root directory of the dataset
+  --data_path ETTh1.csv \            # dataset file name
+  --model_id ETTh1_512_96 \           # experiment/model identifier
+  --model Moirai \                   # model name (TimesFM / Moirai)
+  --data ETTh1 \                     # dataset name
+  --features M \                     # multivariate forecasting
+  --seq_len 512 \                    # input sequence length
+  --pred_len 96 \                    # prediction horizon
+  --enc_in 7 \                       # number of input variables
+  --des 'Exp' \                      # experiment description
+  --itr 1                            # number of runs
+```
+
+3. Prepare Data. You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
 
 <p align="center">
 <img src=".\pic\dataset.png" height = "200" alt="" align=center />
 </p>
 
-3. Train and evaluate the model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
+4. Train and evaluate the model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
 ```
 # long-term forecast
@@ -116,7 +154,7 @@ bash ./scripts/anomaly_detection/PSM/TimesNet.sh
 bash ./scripts/classification/TimesNet.sh
 ```
 
-4. Develop your own model.
+5. Develop your own model.
 
 - Add the model file to the folder `./models`. You can follow the `./models/Transformer.py`.
 - Include the newly added model in the `Exp_Basic.model_dict` of  `./exp/exp_basic.py`.
@@ -127,6 +165,63 @@ Note:
 (1) About classification: Since we include all five tasks in a unified code base, the accuracy of each subtask may fluctuate but the average performance can be reproduced (even a bit better). We have provided the reproduced checkpoints [here](https://github.com/thuml/Time-Series-Library/issues/494).
 
 (2) About anomaly detection: Some discussion about the adjustment strategy in anomaly detection can be found [here](https://github.com/thuml/Anomaly-Transformer/issues/14). The key point is that the adjustment strategy corresponds to an event-level metric.
+
+6. Inspect the project structure:
+
+```
+Time-Series-Library/
+├── README.md                     # Official README with tasks, leaderboard, usage
+├── requirements.txt              # pip dependency list for quick environment setup
+├── LICENSE / CONTRIBUTING.md     # Upstream license and contribution guide
+├── run.py                        # Unified entry that parses args and dispatches tasks
+├── exp/                          # Task pipelines wrapping train/val/test
+│   ├── exp_basic.py              # Experiment base class, registers models, builds flows
+│   ├── exp_long_term_forecasting.py    # Long-term forecasting logic
+│   ├── exp_short_term_forecasting.py   # Short-term forecasting logic
+│   ├── exp_imputation.py               # Missing-value imputation
+│   ├── exp_anomaly_detection.py        # Anomaly detection
+│   ├── exp_classification.py           # Classification
+│   └── exp_zero_shot_forecasting.py    # LTSM zero-shot evaluation
+├── data_provider/                # Dataset loaders and splits
+│   ├── data_factory.py           # Chooses the proper DataLoader per task
+│   ├── data_loader.py            # Generic TS reader with sliding-window logic
+│   ├── uea.py / m4.py            # Parsers for UEA, M4 and other formats
+│   └── __init__.py               # Exposes factory interfaces upward
+├── models/                       # All model implementations
+│   ├── TimesNet.py, TimeMixer.py # Main forecasting models
+│   ├── Chronos2.py, TiRex.py     # LTSM zero-shot models
+│   └── __init__.py               # Enables name-based instantiation inside exp
+├── layers/                       # Reusable attention / conv / embedding blocks
+│   ├── Transformer_EncDec.py     # Transformer stacks
+│   ├── AutoCorrelation.py        # Auto-correlation operator
+│   ├── MultiWaveletCorrelation.py# Frequency-domain unit
+│   └── Embed.py etc.             # Shared primitives
+├── utils/                        # Utility toolbox
+│   ├── metrics.py                # MSE / MAE / DTW and other metrics
+│   ├── tools.py                  # General helpers such as EarlyStopping
+│   ├── augmentation.py           # Augmentations for classification / detection
+│   ├── print_args.py             # Unified argument printer
+│   └── masking.py / losses.py    # Task-specific helpers
+├── scripts/                      # Bash recipes for reproducible experiments
+│   ├── long_term_forecast/       # Long-term forecasting per dataset/model
+│   ├── short_term_forecast/      # M4 and other short-term scripts
+│   ├── imputation/               # Imputation scripts
+│   ├── anomaly_detection/        # SMD / SMAP / SWAT detection scripts
+│   ├── classification/           # UEA classification scripts
+│   └── exogenous_forecast/       # TimeXer exogenous forecasting flow
+├── tutorial/                     # TimesNet tutorial notebook and figures
+└── pic/                          # README figures (dataset overview, etc.)
+```
+
+7. Understand the project architecture:
+
+- **E2E flow**: configure experiments via `scripts/*.sh` → run `python run.py ...` → `run.py` parses arguments and selects the proper `Exp_*` via `task_name` → the experiment builds datasets through `data_provider`, instantiates networks from `models`, and drives train/val/test with utilities in `utils` → metrics and checkpoints are written to `./checkpoints`.
+- **Experiment layer (`exp/`)**: `Exp_Basic` registers models and devices; subclasses implement `_get_data`, `train`, and `test` to encapsulate task-specific differences so the same model can be reused.
+- **Model & layer layer (`models/` + `layers/`)**: model files define architectures, while reusable attention/conv/frequency components live in `layers/` to minimize duplication.
+- **Data layer (`data_provider/`)**: `data_factory` returns the correct `Dataset/DataLoader`; `data_loader` handles windowing, masking, and sampling, with arguments controlling window length, missing ratio, anomaly ratio, etc.
+- **Script layer (`scripts/`)**: bash scripts capture paper configurations (dataset, window, model, GPU) for reproducibility and serve as templates for custom runs.
+- **Utility layer (`utils/`)**: `metrics` centralizes evaluation, `tools` bundles essentials like `EarlyStopping` and `adjust_learning_rate`, while `augmentation`/`masking` cover task-specific preprocessing.
+- **Learning path**: recommended reading order is `scripts -> run.py -> exp/exp_basic.py -> corresponding Exp subclass -> data_provider -> models`, using `tutorial/TimesNet_tutorial.ipynb` as a guided walkthrough before diving deeper.
 
 ## Citation
 
