@@ -5,6 +5,8 @@ TSLib is an open-source library for deep learning researchers, especially for de
 
 We provide a neat code base to evaluate advanced deep time series models or develop your model, which covers five mainstream tasks: **long- and short-term forecasting, imputation, anomaly detection, and classification.**
 
+:triangular_flag_on_post:**News** (2025.12) Many thanks to the great work from [ailuntz](https://github.com/thuml/Time-Series-Library/pull/805), which provides an updated requirements and docker deployment, as well as a well-organized document. This is quite meaningful to this project and beginners.
+
 :triangular_flag_on_post:**News** (2025.11) Considering the rapid development of Large Time Series Models (LTSMs), we have newly added a [[zero-shot forecasting]](https://github.com/thuml/Time-Series-Library/blob/main/exp/exp_zero_shot_forecasting.py) feature in TSLib. You can try [this script](https://github.com/thuml/Time-Series-Library/blob/main/scripts/long_term_forecast/ETT_script/LTSM.sh) to evaluate LTSMs.
 
 :triangular_flag_on_post:**News** (2025.10) Given the recent confusion among researchers regarding minor improvements on standard benchmarks, we propose the [[Accuracy Law]](https://arxiv.org/abs/2510.02729) to characterize the objectives of deep time series forecasting tasks, which can be used to identify saturated datasets.
