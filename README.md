@@ -89,17 +89,127 @@ See our latest paper [[TimesNet]](https://arxiv.org/abs/2210.02186) for the comp
 
 
  
+## Getting Started
+
+### Prepare Data
+You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder `./dataset`.
+
+### Installation
+1. Clone this repository.
+   ```bash
+   git clone https://github.com/thuml/Time-Series-Library.git
+   cd Time-Series-Library
+   ```
+
+2. Create a new Conda environment.
+   ```bash
+   conda create -n tslib python=3.11
+   conda activate tslib
+   ```
+
+3. Install Core Dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Install Dependencies for Mamba Model (Required for Time-Series-Library/models/Mamba.py)
+   > ⚠️ **CUDA Compatibility Notice**
+   > The prebuilt Mamba wheel is **CUDA-version specific**.
+   > Please make sure to install the wheel that matches your local CUDA version
+   > (e.g., `cu11` or `cu12`). Installing a mismatched version may result in
+   > runtime errors or import failures.
+
+   Example for **CUDA 12**:
+
+   ```bash
+   pip install https://github.com/state-spaces/mamba/releases/download/v2.2.6.post3/mamba_ssm-2.2.6.post3+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+   ```
+
+5. Install Dependencies for Moirai Model (Required for Time-Series-Library/models/Moirai.py)
+   ```bash
+   pip install uni2ts --no-deps
+   ```
+
+## Docker Deployment
+```bash
+# Build and start the Docker container in detached mode
+docker compose -f 'Time-Series-Library/docker-compose.yml' up -d --build
+
+# Download / place the dataset into a newly created folder ./dataset at the repository root
+mkdir -p dataset  # create the dataset directory
+
+# Copy the local dataset into the container at /workspace/dataset
+docker cp ./dataset tslib:/workspace/dataset
+
+# Enter the running container to continue training / evaluation
+docker exec -it tslib bash
+
+# Switch to the workspace directory inside the container
+cd /workspace
+
+# Run zero-shot forecasting with the pre-trained Moirai model
+python -u run.py \
+  --task_name zero_shot_forecast \   # task type: zero-shot forecasting
+  --is_training 0 \                  # 0 = inference only (no training)
+  --root_path ./dataset/ETT-small/ \ # root directory of the dataset
+  --data_path ETTh1.csv \            # dataset file name
+  --model_id ETTh1_512_96 \          # experiment/model identifier
+  --model Moirai \                   # model name (TimesFM / Moirai)
+  --data ETTh1 \                     # dataset name
+  --features M \                     # multivariate forecasting
+  --seq_len 512 \                    # input sequence length
+  --pred_len 96 \                    # prediction horizon
+  --enc_in 7 \                       # number of input variables
+  --des 'Exp' \                      # experiment description
+  --itr 1                             # number of runs
+```
+
+## Train and Evaluate
+
+We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
+
+```bash
+# long-term forecast
+bash ./scripts/long_term_forecast/ETT_script/TimesNet_ETTh1.sh
+# short-term forecast
+bash ./scripts/short_term_forecast/TimesNet_M4.sh
+# imputation
+bash ./scripts/imputation/ETT_script/TimesNet_ETTh1.sh
+# anomaly detection
+bash ./scripts/anomaly_detection/PSM/TimesNet.sh
+# classification
+bash ./scripts/classification/TimesNet.sh
+```
+
+## Quick Test
+
+Quick test for all 5 tasks (1 epoch each):
+
+```bash
+# Run quick tests for all 5 tasks
+export CUDA_VISIBLE_DEVICES=0
+
+# 1. Long-term forecasting
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_long --model DLinear --data ETTh1 --features M --seq_len 96 --pred_len 96 --enc_in 7 --dec_in 7 --c_out 7 --train_epochs 1 --num_workers 2
+
+# 2. Short-term forecasting (using ETT dataset with shorter prediction length)
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_short --model TimesNet --data ETTh1 --features M --seq_len 24 --label_len 12 --pred_len 24 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 5 --train_epochs 1 --num_workers 2
+
+# 3. Imputation
+python -u run.py --task_name imputation --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_imp --model TimesNet --data ETTh1 --features M --seq_len 96 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 3 --train_epochs 1 --num_workers 2 --label_len 0 --pred_len 0 --mask_rate 0.125 --learning_rate 0.001
+
+# 4. Anomaly detection
+python -u run.py --task_name anomaly_detection --is_training 1 --root_path ./dataset/PSM --model_id test_ad --model TimesNet --data PSM --features M --seq_len 100 --pred_len 0 --d_model 64 --d_ff 64 --e_layers 2 --enc_in 25 --c_out 25 --anomaly_ratio 1.0 --top_k 3 --train_epochs 1 --batch_size 128 --num_workers 2
+
+# 5. Classification
+python -u run.py --task_name classification --is_training 1 --root_path ./dataset/Heartbeat/ --model_id Heartbeat --model TimesNet --data UEA --e_layers 2 --d_layers 1 --factor 3 --d_model 64 --d_ff 128 --top_k 3 --train_epochs 1 --batch_size 16 --learning_rate 0.001 --num_workers 0
+```
+
+## Develop Your Own Model
+
 ## Usage
 
-1. Install Python 3.11. For convenience, execute the following command.
-
-```
-pip install -r requirements.txt
-pip install https://github.com/state-spaces/mamba/releases/download/v2.2.6.post3/mamba_ssm-2.2.6.post3+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-pip install uni2ts --no-deps
-```
-
-2. Use docker to run
+### Docker Deployment
 ```
 # Build and start the Docker container in detached mode
 docker compose -f 'Time-Series-Library/docker-compose.yml' up -d --build
@@ -133,15 +243,11 @@ python -u run.py \
   --itr 1                            # number of runs
 ```
 
-3. Prepare Data. You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder`./dataset`. Here is a summary of supported datasets.
+4. Prepare Data. You can obtain the well-preprocessed datasets from [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing), [[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) or [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library). Then place the downloaded data in the folder`./dataset`.
 
-<p align="center">
-<img src=".\pic\dataset.png" height = "200" alt="" align=center />
-</p>
+5. Train and evaluate the model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
 
-4. Train and evaluate the model. We provide the experiment scripts for all benchmarks under the folder `./scripts/`. You can reproduce the experiment results as the following examples:
-
-```
+```bash
 # long-term forecast
 bash ./scripts/long_term_forecast/ETT_script/TimesNet_ETTh1.sh
 # short-term forecast
@@ -154,7 +260,29 @@ bash ./scripts/anomaly_detection/PSM/TimesNet.sh
 bash ./scripts/classification/TimesNet.sh
 ```
 
-5. Develop your own model.
+6. Quick test for all 5 tasks (1 epoch each):
+
+```bash
+# Run quick tests for all 5 tasks
+export CUDA_VISIBLE_DEVICES=0
+
+# 1. Long-term forecasting
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_long --model DLinear --data ETTh1 --features M --seq_len 96 --pred_len 96 --enc_in 7 --dec_in 7 --c_out 7 --train_epochs 1 --num_workers 2
+
+# 2. Short-term forecasting (using ETT dataset with shorter prediction length)
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_short --model TimesNet --data ETTh1 --features M --seq_len 24 --label_len 12 --pred_len 24 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 5 --train_epochs 1 --num_workers 2
+
+# 3. Imputation
+python -u run.py --task_name imputation --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_imp --model TimesNet --data ETTh1 --features M --seq_len 96 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 3 --train_epochs 1 --num_workers 2 --label_len 0 --pred_len 0 --mask_rate 0.125 --learning_rate 0.001
+
+# 4. Anomaly detection
+python -u run.py --task_name anomaly_detection --is_training 1 --root_path ./dataset/PSM --model_id test_ad --model TimesNet --data PSM --features M --seq_len 100 --pred_len 0 --d_model 64 --d_ff 64 --e_layers 2 --enc_in 25 --c_out 25 --anomaly_ratio 1.0 --top_k 3 --train_epochs 1 --batch_size 128 --num_workers 2
+
+# 5. Classification
+python -u run.py --task_name classification --is_training 1 --root_path ./dataset/Heartbeat/ --model_id Heartbeat --model TimesNet --data UEA --e_layers 2 --d_layers 1 --factor 3 --d_model 64 --d_ff 128 --top_k 3 --train_epochs 1 --batch_size 16 --learning_rate 0.001 --num_workers 0
+```
+
+7. Develop your own model.
 
 - Add the model file to the folder `./models`. You can follow the `./models/Transformer.py`.
 - Include the newly added model in the `Exp_Basic.model_dict` of  `./exp/exp_basic.py`.

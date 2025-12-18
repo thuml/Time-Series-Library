@@ -86,17 +86,127 @@ TSLib 是一个面向深度学习研究者的开源库，特别适用于深度�
 - [x] **Moirai** - Unified Training of Universal Time Series Forecasting Transformers [[ICML 2024]](https://arxiv.org/pdf/2402.02592)
 - [x] **TimesFM** - TimesFM: A decoder-only foundation model for time-series forecasting [[ICML 2024]](https://arxiv.org/abs/2310.10688) [[代码]](https://github.com/thuml/Time-Series-Library/blob/main/models/TimesFM.py)
 
+## 快速开始
+
+### 准备数据
+可从 [[Google Drive]](https://drive.google.com/drive/folders/13Cg1KYOlzM5C7K8gK8NfC-F3EYxkM3D2?usp=sharing)、[[Baidu Drive]](https://pan.baidu.com/s/1r3KhGd0Q9PJIUZdfEYoymg?pwd=i9iy) 或 [[Hugging Face]](https://huggingface.co/datasets/thuml/Time-Series-Library) 下载预处理数据，并置于 `./dataset` 目录。
+
+### 安装
+1. 克隆本仓库
+   ```bash
+   git clone https://github.com/thuml/Time-Series-Library.git
+   cd Time-Series-Library
+   ```
+
+2. 创建新的 Conda 环境
+   ```bash
+   conda create -n tslib python=3.11
+   conda activate tslib
+   ```
+
+3. 安装核心依赖
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. 安装 Mamba 模型依赖（models/Mamba.py 需要）
+   > ⚠️ **CUDA 兼容性提示**
+   > Mamba 预编译包与 **CUDA 版本强相关**。
+   > 请确保安装与本地 CUDA 版本匹配的包（如 `cu11` 或 `cu12`）。
+   > 版本不匹配可能导致运行时错误或导入失败。
+
+   **CUDA 12** 示例：
+
+   ```bash
+   pip install https://github.com/state-spaces/mamba/releases/download/v2.2.6.post3/mamba_ssm-2.2.6.post3+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+   ```
+
+5. 安装 Moirai 模型依赖（models/Moirai.py 需要）
+   ```bash
+   pip install uni2ts --no-deps
+   ```
+
+## Docker 部署
+
+```bash
+# 构建并以后台模式启动容器
+docker compose -f 'Time-Series-Library/docker-compose.yml' up -d --build
+
+# 在仓库根目录创建 ./dataset 并下载/放置数据集
+mkdir -p dataset
+
+# 将本地数据集复制到容器内 /workspace/dataset
+docker cp ./dataset tslib:/workspace/dataset
+
+# 进入运行中的容器
+docker exec -it tslib bash
+
+# 切换到容器内的工作目录
+cd /workspace
+
+# 使用预训练 Moirai 模型进行零样本预测
+python -u run.py \
+  --task_name zero_shot_forecast \   # 任务类型：零样本预测
+  --is_training 0 \                  # 0 = 仅推理
+  --root_path ./dataset/ETT-small/ \ # 数据集根路径
+  --data_path ETTh1.csv \            # 数据文件名
+  --model_id ETTh1_512_96 \          # 实验/模型标识
+  --model Moirai \                   # 模型名称（TimesFM / Moirai）
+  --data ETTh1 \                     # 数据集名称
+  --features M \                     # 多变量预测
+  --seq_len 512 \                    # 输入序列长度
+  --pred_len 96 \                    # 预测步长
+  --enc_in 7 \                       # 输入变量数
+  --des 'Exp' \                      # 实验描述
+  --itr 1                             # 运行次数
+```
+
+## 训练与评测
+
+`./scripts/` 目录下提供了全部基准的实验脚本，可参考下列示例复现实验：
+
+```bash
+# 长期预测
+bash ./scripts/long_term_forecast/ETT_script/TimesNet_ETTh1.sh
+# 短期预测
+bash ./scripts/short_term_forecast/TimesNet_M4.sh
+# 插补
+bash ./scripts/imputation/ETT_script/TimesNet_ETTh1.sh
+# 异常检测
+bash ./scripts/anomaly_detection/PSM/TimesNet.sh
+# 分类
+bash ./scripts/classification/TimesNet.sh
+```
+
+## 快速测试
+
+5个任务快速测试（每个任务1个epoch）：
+
+```bash
+# 执行所有5个任务的快速测试
+export CUDA_VISIBLE_DEVICES=0
+
+# 1. 长期预测
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_long --model DLinear --data ETTh1 --features M --seq_len 96 --pred_len 96 --enc_in 7 --dec_in 7 --c_out 7 --train_epochs 1 --num_workers 2
+
+# 2. 短期预测（使用ETT数据集，较短预测长度）
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_short --model TimesNet --data ETTh1 --features M --seq_len 24 --label_len 12 --pred_len 24 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 5 --train_epochs 1 --num_workers 2
+
+# 3. 插补
+python -u run.py --task_name imputation --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_imp --model TimesNet --data ETTh1 --features M --seq_len 96 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 3 --train_epochs 1 --num_workers 2 --label_len 0 --pred_len 0 --mask_rate 0.125 --learning_rate 0.001
+
+# 4. 异常检测
+python -u run.py --task_name anomaly_detection --is_training 1 --root_path ./dataset/PSM --model_id test_ad --model TimesNet --data PSM --features M --seq_len 100 --pred_len 0 --d_model 64 --d_ff 64 --e_layers 2 --enc_in 25 --c_out 25 --anomaly_ratio 1.0 --top_k 3 --train_epochs 1 --batch_size 128 --num_workers 2
+
+# 5. 分类
+python -u run.py --task_name classification --is_training 1 --root_path ./dataset/Heartbeat/ --model_id Heartbeat --model TimesNet --data UEA --e_layers 2 --d_layers 1 --factor 3 --d_model 64 --d_ff 128 --top_k 3 --train_epochs 1 --batch_size 16 --learning_rate 0.001 --num_workers 0
+```
+
+## 开发自定义模型
+
 ## 使用方法
 
-1. 安装 Python 3.11。可直接执行以下命令：
-
-```
-pip install -r requirements.txt
-pip install https://github.com/state-spaces/mamba/releases/download/v2.2.6.post3/mamba_ssm-2.2.6.post3+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-pip install uni2ts --no-deps
-```
-
-2. 使用 Docker 运行：
+### Docker 部署
 
 ```
 # 构建并以后台模式启动容器
@@ -139,7 +249,7 @@ python -u run.py \
 
 4. 训练与评测模型。`./scripts/` 目录下提供了全部基准的实验脚本，可参考下列示例复现实验：
 
-```
+```bash
 # 长期预测
 bash ./scripts/long_term_forecast/ETT_script/TimesNet_ETTh1.sh
 # 短期预测
@@ -152,7 +262,29 @@ bash ./scripts/anomaly_detection/PSM/TimesNet.sh
 bash ./scripts/classification/TimesNet.sh
 ```
 
-5. 开发自定义模型：
+5. 5个任务快速测试（每个任务1个epoch）：
+
+```bash
+# 执行所有5个任务的快速测试
+export CUDA_VISIBLE_DEVICES=0
+
+# 1. 长期预测
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_long --model DLinear --data ETTh1 --features M --seq_len 96 --pred_len 96 --enc_in 7 --dec_in 7 --c_out 7 --train_epochs 1 --num_workers 2
+
+# 2. 短期预测（使用ETT数据集，较短预测长度）
+python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_short --model TimesNet --data ETTh1 --features M --seq_len 24 --label_len 12 --pred_len 24 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 5 --train_epochs 1 --num_workers 2
+
+# 3. 插补
+python -u run.py --task_name imputation --is_training 1 --root_path ./dataset/ETT-small/ --data_path ETTh1.csv --model_id test_imp --model TimesNet --data ETTh1 --features M --seq_len 96 --e_layers 2 --d_layers 1 --d_model 16 --d_ff 32 --enc_in 7 --dec_in 7 --c_out 7 --top_k 3 --train_epochs 1 --num_workers 2 --label_len 0 --pred_len 0 --mask_rate 0.125 --learning_rate 0.001
+
+# 4. 异常检测
+python -u run.py --task_name anomaly_detection --is_training 1 --root_path ./dataset/PSM --model_id test_ad --model TimesNet --data PSM --features M --seq_len 100 --pred_len 0 --d_model 64 --d_ff 64 --e_layers 2 --enc_in 25 --c_out 25 --anomaly_ratio 1.0 --top_k 3 --train_epochs 1 --batch_size 128 --num_workers 2
+
+# 5. 分类
+python -u run.py --task_name classification --is_training 1 --root_path ./dataset/Heartbeat/ --model_id Heartbeat --model TimesNet --data UEA --e_layers 2 --d_layers 1 --factor 3 --d_model 64 --d_ff 128 --top_k 3 --train_epochs 1 --batch_size 16 --learning_rate 0.001 --num_workers 0
+```
+
+6. 开发自定义模型：
 
 - 将模型文件放入 `./models`，可参考 `./models/Transformer.py`。
 - 在 `./exp/exp_basic.py` 的 `Exp_Basic.model_dict` 中注册新模型。
@@ -164,7 +296,7 @@ bash ./scripts/classification/TimesNet.sh
 
 (2) 关于异常检测：有关异常检测调整策略的讨论见[这里](https://github.com/thuml/Anomaly-Transformer/issues/14)，核心是该调整策略对应事件级指标。
 
-6. 查看项目文件结构：
+7. 查看项目文件结构：
 
 ```
 Time-Series-Library/
@@ -211,7 +343,7 @@ Time-Series-Library/
 └── pic/                          # README插图（数据集分布等）
 ```
 
-7. 理解项目架构：
+8. 理解项目架构：
 
 - **整体流程**：通过 `scripts/*.sh` 设定实验参数 → 调用 `python run.py ...` → `run.py` 解析参数并根据 `task_name` 选择对应 `Exp_*` 类 → `Exp_*` 内部利用 `data_provider` 构造数据加载器、`models` 实例化网络、`utils` 中的工具完成训练/验证/测试 → 结果与模型参数写入 `./checkpoints`。
 - **实验层（exp/）**：`Exp_Basic` 负责注册模型与设备，子类实现 `_get_data/train/test`，将不同任务的差异隔离，方便模型在多任务间复用。
