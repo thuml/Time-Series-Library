@@ -301,12 +301,13 @@ If you find this repo useful, please cite our paper.
 If you have any questions or suggestions, feel free to contact our maintenance team:
 
 Current:
-- Haixu Wu (Ph.D. student, wuhx23@mails.tsinghua.edu.cn)
+- Haixu Wu (Ph.D., wuhaixu98@gmail.com)
 - Yuxuan Wang (Ph.D. student, wangyuxu22@mails.tsinghua.edu.cn)
 - Yong Liu (Ph.D. student, liuyong21@mails.tsinghua.edu.cn)
-- Huikun Weng (Undergraduate, wenghk22@mails.tsinghua.edu.cn)
+- Ailuntz (Student from Open-source Community, ailuntz@icloud.com)
 
 Previous:
+- Huikun Weng (Undergraduate, wenghk22@mails.tsinghua.edu.cn)
 - Tengge Hu (Master student, htg21@mails.tsinghua.edu.cn)
 - Haoran Zhang (Master student, z-hr20@mails.tsinghua.edu.cn)
 - Jiawei Guo (Undergraduate, guo-jw21@mails.tsinghua.edu.cn)
