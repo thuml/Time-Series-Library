@@ -1,60 +1,105 @@
 import os
 import torch
-from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
-    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
-    Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
-    WPMixer, MultiPatchFormer, KANAD, MSGNet, TimeFilter, Sundial, TimeMoE, Chronos, Moirai, TiRex,\
-    TimesFM, Chronos2
+from models import (
+    Autoformer,
+    Transformer,
+    TimesNet,
+    Nonstationary_Transformer,
+    DLinear,
+    FEDformer,
+    Informer,
+    LightTS,
+    Reformer,
+    ETSformer,
+    Pyraformer,
+    PatchTST,
+    MICN,
+    Crossformer,
+    FiLM,
+    iTransformer,
+    iTransformerDiffusion,
+    Koopa,
+    TiDE,
+    FreTS,
+    TimeMixer,
+    TSMixer,
+    SegRNN,
+    MambaSimple,
+    TemporalFusionTransformer,
+    SCINet,
+    PAttn,
+    TimeXer,
+    WPMixer,
+    MultiPatchFormer,
+    KANAD,
+    MSGNet,
+    TimeFilter,
+    Sundial,
+    TimeMoE,
+    Moirai,
+    TiRex,
+    TimesFM,
+    Chronos,
+)
+
+# Try to import Chronos2
+try:
+    from models import Chronos2
+except ImportError:
+    Chronos2 = None
 
 
 class Exp_Basic(object):
     def __init__(self, args):
         self.args = args
         self.model_dict = {
-            'TimesNet': TimesNet,
-            'Autoformer': Autoformer,
-            'Transformer': Transformer,
-            'Nonstationary_Transformer': Nonstationary_Transformer,
-            'DLinear': DLinear,
-            'FEDformer': FEDformer,
-            'Informer': Informer,
-            'LightTS': LightTS,
-            'Reformer': Reformer,
-            'ETSformer': ETSformer,
-            'PatchTST': PatchTST,
-            'Pyraformer': Pyraformer,
-            'MICN': MICN,
-            'Crossformer': Crossformer,
-            'FiLM': FiLM,
-            'iTransformer': iTransformer,
-            'Koopa': Koopa,
-            'TiDE': TiDE,
-            'FreTS': FreTS,
-            'MambaSimple': MambaSimple,
-            'TimeMixer': TimeMixer,
-            'TSMixer': TSMixer,
-            'SegRNN': SegRNN,
-            'TemporalFusionTransformer': TemporalFusionTransformer,
+            "TimesNet": TimesNet,
+            "Autoformer": Autoformer,
+            "Transformer": Transformer,
+            "Nonstationary_Transformer": Nonstationary_Transformer,
+            "DLinear": DLinear,
+            "FEDformer": FEDformer,
+            "Informer": Informer,
+            "LightTS": LightTS,
+            "Reformer": Reformer,
+            "ETSformer": ETSformer,
+            "PatchTST": PatchTST,
+            "Pyraformer": Pyraformer,
+            "MICN": MICN,
+            "Crossformer": Crossformer,
+            "FiLM": FiLM,
+            "iTransformer": iTransformer,
+            "iTransformerDiffusion": iTransformerDiffusion,
+            "Koopa": Koopa,
+            "TiDE": TiDE,
+            "FreTS": FreTS,
+            "MambaSimple": MambaSimple,
+            "TimeMixer": TimeMixer,
+            "TSMixer": TSMixer,
+            "SegRNN": SegRNN,
+            "TemporalFusionTransformer": TemporalFusionTransformer,
             "SCINet": SCINet,
-            'PAttn': PAttn,
-            'TimeXer': TimeXer,
-            'WPMixer': WPMixer,
-            'MultiPatchFormer': MultiPatchFormer,
-            'KANAD': KANAD,
-            'MSGNet': MSGNet,
-            'TimeFilter': TimeFilter,
-            'Sundial': Sundial,
-            'TimeMoE': TimeMoE,
-            'Chronos': Chronos,
-            'Moirai': Moirai,
-            'TiRex': TiRex,
-            'TimesFM': TimesFM,
-            'Chronos2': Chronos2
+            "PAttn": PAttn,
+            "TimeXer": TimeXer,
+            "WPMixer": WPMixer,
+            "MultiPatchFormer": MultiPatchFormer,
+            "KANAD": KANAD,
+            "MSGNet": MSGNet,
+            "TimeFilter": TimeFilter,
+            "Sundial": Sundial,
+            "TimeMoE": TimeMoE,
+            "Moirai": Moirai,
+            "TiRex": TiRex,
+            "TimesFM": TimesFM,
+            "Chronos": Chronos,
         }
-        if args.model == 'Mamba':
-            print('Please make sure you have successfully installed mamba_ssm')
+        if Chronos2 is not None:
+            self.model_dict["Chronos2"] = Chronos2
+        if args.model == "Mamba":
+            print("Please make sure you have successfully installed mamba_ssm")
             from models import Mamba
-            self.model_dict['Mamba'] = Mamba
+
+            self.model_dict["Mamba"] = Mamba
 
         self.device = self._acquire_device()
         self.model = self._build_model().to(self.device)
@@ -64,17 +109,18 @@ class Exp_Basic(object):
         return None
 
     def _acquire_device(self):
-        if self.args.use_gpu and self.args.gpu_type == 'cuda':
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(
-                self.args.gpu) if not self.args.use_multi_gpu else self.args.devices
-            device = torch.device('cuda:{}'.format(self.args.gpu))
-            print('Use GPU: cuda:{}'.format(self.args.gpu))
-        elif self.args.use_gpu and self.args.gpu_type == 'mps':
-            device = torch.device('mps')
-            print('Use GPU: mps')
+        if self.args.use_gpu and self.args.gpu_type == "cuda":
+            os.environ["CUDA_VISIBLE_DEVICES"] = (
+                str(self.args.gpu) if not self.args.use_multi_gpu else self.args.devices
+            )
+            device = torch.device("cuda:{}".format(self.args.gpu))
+            print("Use GPU: cuda:{}".format(self.args.gpu))
+        elif self.args.use_gpu and self.args.gpu_type == "mps":
+            device = torch.device("mps")
+            print("Use GPU: mps")
         else:
-            device = torch.device('cpu')
-            print('Use CPU')
+            device = torch.device("cpu")
+            print("Use CPU")
         return device
 
     def _get_data(self):

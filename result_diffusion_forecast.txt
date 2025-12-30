@@ -1,0 +1,8 @@
+diffusion_forecast_ETTh1_test_iTransformerDiffusion_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc3_ebtimeF_dtTrue_QuickTest_0  
+Point: mse:67776.992188, mae:205.929779, rmse:260.340149
+Prob: crps:0.546501, calib_50:0.7737, calib_90:0.9841, sharpness:544.906738
+
+diffusion_forecast_ETTh1_quick_amp_test_iTransformerDiffusion_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc3_ebtimeF_dtTrue_test_0  
+Point: mse:0.426996, mae:0.437423, rmse:0.653450
+Prob: crps:0.497621, calib_50:0.5236, calib_90:0.8524, sharpness:0.518151
+

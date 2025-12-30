@@ -8,6 +8,7 @@ from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
 from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
+from exp.exp_diffusion_forecast import Exp_Diffusion_Forecast
 from utils.print_args import print_args
 import random
 import numpy as np
@@ -157,6 +158,20 @@ if __name__ == '__main__':
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
 
+    # Diffusion model parameters (iTransformerDiffusion)
+    parser.add_argument('--diffusion_steps', type=int, default=1000, help='number of diffusion steps')
+    parser.add_argument('--beta_schedule', type=str, default='cosine', help='beta schedule: linear or cosine')
+    parser.add_argument('--cond_dim', type=int, default=256, help='condition dimension for FiLM')
+    parser.add_argument('--stage1_epochs', type=int, default=30, help='epochs for stage 1 (backbone warmup)')
+    parser.add_argument('--stage2_epochs', type=int, default=20, help='epochs for stage 2 (joint training)')
+    parser.add_argument('--stage1_lr', type=float, default=1e-4, help='learning rate for stage 1')
+    parser.add_argument('--stage2_lr', type=float, default=1e-5, help='learning rate for stage 2')
+    parser.add_argument('--loss_lambda', type=float, default=0.5, help='weight for MSE loss in joint training')
+    parser.add_argument('--n_samples', type=int, default=100, help='number of samples for probabilistic prediction')
+    parser.add_argument('--use_ddim', action='store_true', help='use DDIM sampling instead of DDPM', default=False)
+    parser.add_argument('--ddim_steps', type=int, default=50, help='number of DDIM steps')
+    parser.add_argument('--chunk_size', type=int, default=10, help='samples per chunk for batch sampling (tune for GPU memory)')
+
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
@@ -189,6 +204,8 @@ if __name__ == '__main__':
         Exp = Exp_Classification
     elif args.task_name == 'zero_shot_forecast':
         Exp = Exp_Zero_Shot_Forecast
+    elif args.task_name == 'diffusion_forecast':
+        Exp = Exp_Diffusion_Forecast
     else:
         Exp = Exp_Long_Term_Forecast
 

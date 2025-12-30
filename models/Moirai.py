@@ -4,10 +4,15 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from uni2ts.eval_util.plot import plot_single
-from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
-from uni2ts.model.moirai_moe import MoiraiMoEForecast, MoiraiMoEModule
-from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module
+
+try:
+    from uni2ts.eval_util.plot import plot_single
+    from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
+    from uni2ts.model.moirai_moe import MoiraiMoEForecast, MoiraiMoEModule
+    from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module
+except ImportError:
+    print("Warning: uni2ts not installed. Moirai model may not work properly.")
+
 
 class Model(nn.Module):
     def __init__(self, configs):
@@ -25,7 +30,7 @@ class Model(nn.Module):
             target_dim=1,
             feat_dynamic_real_dim=0,
             past_feat_dynamic_real_dim=0,
-        ).to('cuda')
+        ).to("cuda")
 
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
@@ -34,7 +39,7 @@ class Model(nn.Module):
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
         outputs = []
         for i in range(x_enc.shape[-1]):
-            output = self.model.predict(x_enc[...,i].cpu().numpy())
+            output = self.model.predict(x_enc[..., i].cpu().numpy())
             output = np.mean(output, axis=1)
             outputs.append(torch.Tensor(output).to(x_enc.device))
         dec_out = torch.stack(outputs, dim=-1)
@@ -42,7 +47,7 @@ class Model(nn.Module):
         return dec_out
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
-        if self.task_name == 'zero_shot_forecast':
+        if self.task_name == "zero_shot_forecast":
             dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
             return dec_out
         return None
