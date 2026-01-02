@@ -361,11 +361,22 @@ class Dataset_M4(Dataset):
             dataset = M4Dataset.load(training=True, dataset_file=self.root_path)
         else:
             dataset = M4Dataset.load(training=False, dataset_file=self.root_path)
-        training_values = np.array(
-            [v[~np.isnan(v)] for v in
-             dataset.values[dataset.groups == self.seasonal_patterns]])  # split different frequencies
-        self.ids = np.array([i for i in dataset.ids[dataset.groups == self.seasonal_patterns]])
-        self.timeseries = [ts for ts in training_values]
+        # training_values = np.array(
+        #     [v[~np.isnan(v)] for v in
+        #      dataset.values[dataset.groups == self.seasonal_patterns]])  # split different frequencies
+        # self.ids = np.array([i for i in dataset.ids[dataset.groups == self.seasonal_patterns]])
+        # self.timeseries = [ts for ts in training_values]
+        mask = dataset.groups == self.seasonal_patterns
+        raw_sequences = [v[~np.isnan(v)] for v in dataset.values[mask]]  # 移除NaN值
+        self.ids = np.array([i for i in dataset.ids[mask]])
+        # 确定目标长度（训练集用seq_len，测试集用M4定义的预测长度）
+        from data_provider.m4 import M4Meta, pad_sequences  # 导入必要的类和函数
+        if self.flag == 'train':
+            target_len = self.seq_len  # 训练集使用模型输入序列长度
+        else:
+            target_len = M4Meta.horizons_map[self.seasonal_patterns]  # 测试集使用M4标准长度
+        # 统一序列长度（填充/截断）
+        self.timeseries = pad_sequences(raw_sequences, target_len, mode='edge')
 
     def __getitem__(self, index):
         insample = np.zeros((self.seq_len, 1))
