@@ -3,7 +3,7 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from chronos import BaseChronosPipeline
+from chronos import BaseChronosPipeline, Chronos2Config, Chronos2Model
 
 
 class Model(nn.Module):
@@ -13,7 +13,9 @@ class Model(nn.Module):
         stride: int, stride for patch_embedding
         """
         super().__init__()
-        self.model = BaseChronosPipeline.from_pretrained("amazon/chronos-2", device_map="cuda")
+        config = Chronos2Config.from_pretrained("amazon/chronos-2")
+        model = Chronos2Model(config)
+        self.model = BaseChronosPipeline.from_model(model=model, device_map="cuda")
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len

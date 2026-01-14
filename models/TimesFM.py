@@ -4,6 +4,7 @@ from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
 import timesfm
+from transformers import AutoConfig
 
 
 class Model(nn.Module):
@@ -14,7 +15,8 @@ class Model(nn.Module):
         """
         super().__init__()
 
-        self.model = timesfm.TimesFM_2p5_200M_torch.from_pretrained("google/timesfm-2.5-200m-pytorch")
+        config = AutoConfig.from_pretrained("google/timesfm-2.5-200m-pytorch", trust_remote_code=True)
+        self.model = timesfm.TimesFM_2p5_200M_torch(config)
         self.model.compile(
             timesfm.ForecastConfig(
                 max_context=configs.seq_len,

@@ -3,7 +3,7 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoConfig
 
 class Model(nn.Module):
     def __init__(self, configs):
@@ -12,7 +12,8 @@ class Model(nn.Module):
         stride: int, stride for patch_embedding
         """
         super().__init__()
-        self.model = AutoModelForCausalLM.from_pretrained('Maple728/TimeMoE-50M', trust_remote_code=True)
+        config = AutoConfig.from_pretrained('Maple728/TimeMoE-50M', trust_remote_code=True)
+        self.model = AutoModelForCausalLM.from_config(config, trust_remote_code=True)
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len

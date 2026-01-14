@@ -7,7 +7,7 @@ from layers.Embed import PatchEmbedding
 from uni2ts.eval_util.plot import plot_single
 from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
 from uni2ts.model.moirai_moe import MoiraiMoEForecast, MoiraiMoEModule
-from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module
+from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module, Moirai2Config
 
 class Model(nn.Module):
     def __init__(self, configs):
@@ -16,10 +16,9 @@ class Model(nn.Module):
         stride: int, stride for patch_embedding
         """
         super().__init__()
+        config = Moirai2Config.from_pretrained("Salesforce/moirai-2.0-R-small")
         self.model = Moirai2Forecast(
-            module=Moirai2Module.from_pretrained(
-                f"Salesforce/moirai-2.0-R-small",
-            ),
+            module=Moirai2Module(config),
             prediction_length=configs.pred_len,
             context_length=configs.seq_len,
             target_dim=1,

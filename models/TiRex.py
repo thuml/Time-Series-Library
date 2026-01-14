@@ -3,7 +3,7 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from tirex import load_model, ForecastModel
+from tirex import load_model, ForecastModel, TiRexConfig
 
 
 class Model(nn.Module):
@@ -13,7 +13,8 @@ class Model(nn.Module):
         stride: int, stride for patch_embedding
         """
         super().__init__()
-        self.model = load_model("NX-AI/TiRex")
+        config = TiRexConfig.from_pretrained("NX-AI/TiRex")
+        self.model = ForecastModel(config)
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
