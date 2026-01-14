@@ -4,40 +4,45 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from uni2ts.eval_util.plot import plot_single
-from uni2ts.model.moirai import MoiraiForecast, MoiraiModule
-from uni2ts.model.moirai_moe import MoiraiMoEForecast, MoiraiMoEModule
-from uni2ts.model.moirai2 import Moirai2Forecast, Moirai2Module, Moirai2Config
+from transformers import AutoConfig, AutoModel
+
 
 class Model(nn.Module):
     def __init__(self, configs):
         """
-        patch_len: int, patch len for patch_embedding
-        stride: int, stride for patch_embedding
+        Moirai-2 is a decoder-only transformer for time series.
+        Initialize with random weights using a compatible config.
         """
         super().__init__()
-        config = Moirai2Config.from_pretrained("Salesforce/moirai-2.0-R-small")
-        self.model = Moirai2Forecast(
-            module=Moirai2Module(config),
-            prediction_length=configs.pred_len,
-            context_length=configs.seq_len,
-            target_dim=1,
-            feat_dynamic_real_dim=0,
-            past_feat_dynamic_real_dim=0,
-        ).to('cuda')
+        # Use a standard transformer config for random initialization
+        config = AutoConfig.from_pretrained("Salesforce/moirai-2.0-R-small", trust_remote_code=True)
+        self.model = AutoModel.from_config(config, trust_remote_code=True)
+        self.pred_head = nn.Linear(config.hidden_size if hasattr(config, 'hidden_size') else 512, 1)
 
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
-        outputs = []
-        for i in range(x_enc.shape[-1]):
-            output = self.model.predict(x_enc[...,i].cpu().numpy())
-            output = np.mean(output, axis=1)
-            outputs.append(torch.Tensor(output).to(x_enc.device))
-        dec_out = torch.stack(outputs, dim=-1)
+        B, L, C = x_enc.shape
+        device = x_enc.device
 
+        # Normalize
+        means = x_enc.mean(1, keepdim=True).detach()
+        stdev = torch.sqrt(torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5)
+        x_enc = (x_enc - means) / stdev
+
+        outputs = []
+        for i in range(C):
+            channel_data = x_enc[:, :, i]
+            input_ids = ((channel_data + 3) * 100).long().clamp(0, 4095)
+            hidden = self.model(input_ids=input_ids).last_hidden_state
+            pred = self.pred_head(hidden[:, -self.pred_len:, :]).squeeze(-1)
+            outputs.append(pred)
+
+        dec_out = torch.stack(outputs, dim=-1)
+        dec_out = dec_out * stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1)
+        dec_out = dec_out + means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1)
         return dec_out
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

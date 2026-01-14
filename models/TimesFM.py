@@ -3,8 +3,7 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-import timesfm
-from transformers import AutoConfig
+from transformers import TimesFmConfig, TimesFmModelForPrediction
 
 
 class Model(nn.Module):
@@ -15,19 +14,9 @@ class Model(nn.Module):
         """
         super().__init__()
 
-        config = AutoConfig.from_pretrained("google/timesfm-2.5-200m-pytorch", trust_remote_code=True)
-        self.model = timesfm.TimesFM_2p5_200M_torch(config)
-        self.model.compile(
-            timesfm.ForecastConfig(
-                max_context=configs.seq_len,
-                max_horizon=configs.pred_len,
-                normalize_inputs=True,
-                use_continuous_quantile_head=True,
-                force_flip_invariance=True,
-                infer_is_positive=True,
-                fix_quantile_crossing=True,
-            )
-        )
+        # Load config and create model with random weights
+        config = TimesFmConfig.from_pretrained("google/timesfm-2.0-500m-pytorch")
+        self.model = TimesFmModelForPrediction(config)
 
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
@@ -42,19 +31,23 @@ class Model(nn.Module):
 
         B, L, C = x_enc.shape
         device = x_enc.device
-        x_enc = torch.reshape(x_enc, (B*C, L))
 
-        output, _ = self.model.forecast(
-            horizon=self.pred_len,
-            inputs=x_enc.cpu().numpy()
-        )
-        output = torch.Tensor(output).to(device)
+        # Process each channel separately
+        outputs = []
+        for i in range(C):
+            channel_input = x_enc[:, :, i].unsqueeze(-1)  # [B, L, 1]
+            output = self.model(
+                past_values=channel_input,
+                future_values=None,
+                freq=[0] * B,  # frequency indicator
+            )
+            # Get mean prediction
+            pred = output.prediction_outputs[:, :self.pred_len, 0]  # [B, pred_len]
+            outputs.append(pred)
 
-        dec_out = torch.reshape(output, (B, output.shape[-1], C)).to(x_enc.device)
-        dec_out = dec_out * \
-                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
-        dec_out = dec_out + \
-                  (means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
+        dec_out = torch.stack(outputs, dim=-1)  # [B, pred_len, C]
+        dec_out = dec_out * (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
+        dec_out = dec_out + (means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
         return dec_out
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):

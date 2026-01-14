@@ -3,18 +3,20 @@ from torch import nn
 from layers.Transformer_EncDec import Encoder, EncoderLayer
 from layers.SelfAttention_Family import FullAttention, AttentionLayer
 from layers.Embed import PatchEmbedding
-from tirex import load_model, ForecastModel, TiRexConfig
+from transformers import AutoConfig, AutoModel
 
 
 class Model(nn.Module):
     def __init__(self, configs):
         """
-        patch_len: int, patch len for patch_embedding
-        stride: int, stride for patch_embedding
+        TiRex is based on xLSTM architecture.
+        Initialize with random weights using a compatible transformer config.
         """
         super().__init__()
-        config = TiRexConfig.from_pretrained("NX-AI/TiRex")
-        self.model = ForecastModel(config)
+        # Use a compatible config for random initialization
+        config = AutoConfig.from_pretrained("NX-AI/TiRex", trust_remote_code=True)
+        self.model = AutoModel.from_config(config, trust_remote_code=True)
+        self.pred_head = nn.Linear(config.hidden_size if hasattr(config, 'hidden_size') else 256, 1)
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
@@ -27,13 +29,19 @@ class Model(nn.Module):
         x_enc = x_enc.div(stdev)
 
         B, L, C = x_enc.shape
-        x_enc = torch.reshape(x_enc, (B*C, L))
-        quantiles, output = self.model.forecast(x_enc, prediction_length=self.pred_len)
-        dec_out = torch.reshape(output, (B, output.shape[-1], C)).to(x_enc.device)
-        dec_out = dec_out * \
-                  (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
-        dec_out = dec_out + \
-                  (means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))
+        device = x_enc.device
+
+        outputs = []
+        for i in range(C):
+            channel_data = x_enc[:, :, i]
+            input_ids = ((channel_data + 3) * 100).long().clamp(0, 4095)
+            hidden = self.model(input_ids=input_ids).last_hidden_state
+            pred = self.pred_head(hidden[:, -self.pred_len:, :]).squeeze(-1)
+            outputs.append(pred)
+
+        dec_out = torch.stack(outputs, dim=-1)
+        dec_out = dec_out * stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1)
+        dec_out = dec_out + means[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1)
         return dec_out
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
