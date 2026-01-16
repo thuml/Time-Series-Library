@@ -211,7 +211,6 @@ bash ./scripts/classification/TimesNet.sh
 
 ### Develop Your Own Model
 - Add the model file to the folder `./models`. You can follow the `./models/Transformer.py`.
-- Include the newly added model in the `Exp_Basic.model_dict` of  `./exp/exp_basic.py`.
 - Create the corresponding scripts under the folder `./scripts`.
 
 ### Note: 

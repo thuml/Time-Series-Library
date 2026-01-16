@@ -205,7 +205,6 @@ bash ./scripts/classification/TimesNet.sh
 
 ### 开发自定义模型
 - 将模型文件放入 `./models`，可参考 `./models/Transformer.py`。
-- 在 `./exp/exp_basic.py` 的 `Exp_Basic.model_dict` 中注册新模型。
 - 在 `./scripts` 下创建对应的运行脚本。
 
 ### 注意事项：
