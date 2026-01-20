@@ -1,0 +1,26 @@
+services:
+  dev_tslib:
+    image: tslib
+    build:
+      context: .
+      target: tslib
+      # args:
+      #   http_proxy: "http://192.168.8.135:7897" #optional, Modify it to your agent address
+      #   https_proxy: "http://192.168.8.135:7897" #optional, Modify it to your agent address
+    container_name: tslib
+    shm_size: 8gb
+    tty: true
+    restart: always
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      # - http_proxy=http://192.168.8.135:7897 #optional, Modify it to your agent address
+      # - https_proxy=http://192.168.8.135:7897 #optional, Modify it to your agent address
+    # ports:
+    #   - "8888:8888"
+    #   - "6006:6006"
+    volumes:
+      - workspace_data:/workspace
+    working_dir: /workspace
+volumes:
+  workspace_data:
