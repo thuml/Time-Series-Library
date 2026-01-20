@@ -18,6 +18,7 @@ from models import (
     FiLM,
     iTransformer,
     iTransformerDiffusion,
+    iTransformerDiffusionDirect,
     Koopa,
     TiDE,
     FreTS,
