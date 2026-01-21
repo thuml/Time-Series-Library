@@ -2,6 +2,7 @@
 from . import Autoformer, Transformer, TimesNet, Nonstationary_Transformer
 from . import DLinear, FEDformer, Informer, LightTS, Reformer, ETSformer
 from . import Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer
+from . import iTransformerDiffusion, iTransformerDiffusionDirect
 from . import Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN
 from . import TemporalFusionTransformer, SCINet, PAttn, TimeXer
 from . import WPMixer, MultiPatchFormer, KANAD, MSGNet, TimeFilter
@@ -9,6 +10,7 @@ from . import WPMixer, MultiPatchFormer, KANAD, MSGNet, TimeFilter
 # Optional models - gracefully skip if dependencies are missing
 try:
     from . import Mamba
+
     MambaSimple = Mamba
 except ImportError:
     MambaSimple = None
@@ -49,11 +51,45 @@ except ImportError:
     Chronos2 = None
 
 __all__ = [
-    'Autoformer', 'Transformer', 'TimesNet', 'Nonstationary_Transformer',
-    'DLinear', 'FEDformer', 'Informer', 'LightTS', 'Reformer', 'ETSformer',
-    'Pyraformer', 'PatchTST', 'MICN', 'Crossformer', 'FiLM', 'iTransformer',
-    'Koopa', 'TiDE', 'FreTS', 'TimeMixer', 'TSMixer', 'SegRNN',
-    'MambaSimple', 'TemporalFusionTransformer', 'SCINet', 'PAttn', 'TimeXer',
-    'WPMixer', 'MultiPatchFormer', 'KANAD', 'MSGNet', 'TimeFilter',
-    'Sundial', 'TimeMoE', 'Chronos', 'Moirai', 'TiRex', 'TimesFM', 'Chronos2'
+    "Autoformer",
+    "Transformer",
+    "TimesNet",
+    "Nonstationary_Transformer",
+    "DLinear",
+    "FEDformer",
+    "Informer",
+    "LightTS",
+    "Reformer",
+    "ETSformer",
+    "Pyraformer",
+    "PatchTST",
+    "MICN",
+    "Crossformer",
+    "FiLM",
+    "iTransformer",
+    "iTransformerDiffusion",
+    "iTransformerDiffusionDirect",
+    "Koopa",
+    "TiDE",
+    "FreTS",
+    "TimeMixer",
+    "TSMixer",
+    "SegRNN",
+    "MambaSimple",
+    "TemporalFusionTransformer",
+    "SCINet",
+    "PAttn",
+    "TimeXer",
+    "WPMixer",
+    "MultiPatchFormer",
+    "KANAD",
+    "MSGNet",
+    "TimeFilter",
+    "Sundial",
+    "TimeMoE",
+    "Chronos",
+    "Moirai",
+    "TiRex",
+    "TimesFM",
+    "Chronos2",
 ]

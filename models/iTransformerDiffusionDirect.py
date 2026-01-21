@@ -37,12 +37,22 @@ from layers.Diffusion_layers import UNet1D, ResidualNormalizer
 
 class Model(nn.Module):
     """
-    iTransformer + Diffusion with configurable parameterization.
+    iTransformerDiffusionDirect: 直接预测条件扩散模型
 
-    Supports three parameterization modes:
-    - 'x0': Direct x₀ prediction
-    - 'epsilon': Noise ε prediction
-    - 'v': Velocity v prediction (recommended)
+    基于 iTransformer 的条件扩散模型，使用直接预测策略：
+    - Stage 1: 训练 iTransformer backbone（MSE 损失）
+    - Stage 2: 联合训练确定性预测和扩散去噪网络
+
+    支持的参数化类型：
+    - 'x0': 直接预测干净数据（默认，最稳定）
+    - 'epsilon': 预测噪声（标准 DDPM）
+    - 'v': v-参数化（推荐，更稳定的训练）
+
+    与 iTransformerDiffusion 的区别：
+    - 直接预测目标而非噪声，训练更稳定
+    - 简化的两阶段训练策略
+    - 更好的收敛性质
+    - 支持多种参数化类型
     """
 
     def __init__(self, configs):
@@ -56,19 +66,23 @@ class Model(nn.Module):
         self.d_model = configs.d_model
 
         # Diffusion configs (with defaults)
-        self.timesteps = getattr(configs, 'diffusion_steps', 1000)
-        self.beta_schedule = getattr(configs, 'beta_schedule', 'cosine')
-        self.cond_dim = getattr(configs, 'cond_dim', 256)
-        self.unet_channels = getattr(configs, 'unet_channels', [64, 128, 256, 512])
-        self.n_samples = getattr(configs, 'n_samples', 100)
+        self.timesteps = getattr(configs, "diffusion_steps", 1000)
+        self.beta_schedule = getattr(configs, "beta_schedule", "cosine")
+        self.cond_dim = getattr(configs, "cond_dim", 256)
+        self.unet_channels = getattr(configs, "unet_channels", [64, 128, 256, 512])
+        self.n_samples = getattr(configs, "n_samples", 100)
 
-        # Parameterization: 'x0', 'epsilon', or 'v' (recommended)
-        self.parameterization = getattr(configs, 'parameterization', 'v')
+        # Parameterization: 'x0', 'epsilon', or 'v'
+        self.parameterization = getattr(configs, "parameterization", "x0")
 
         # ================== iTransformer Backbone ==================
         # Embedding
         self.enc_embedding = DataEmbedding_inverted(
-            configs.seq_len, configs.d_model, configs.embed, configs.freq, configs.dropout
+            configs.seq_len,
+            configs.d_model,
+            configs.embed,
+            configs.freq,
+            configs.dropout,
         )
 
         # Encoder
@@ -76,17 +90,23 @@ class Model(nn.Module):
             [
                 EncoderLayer(
                     AttentionLayer(
-                        FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=False),
-                        configs.d_model, configs.n_heads
+                        FullAttention(
+                            False,
+                            configs.factor,
+                            attention_dropout=configs.dropout,
+                            output_attention=False,
+                        ),
+                        configs.d_model,
+                        configs.n_heads,
                     ),
                     configs.d_model,
                     configs.d_ff,
                     dropout=configs.dropout,
-                    activation=configs.activation
-                ) for _ in range(configs.e_layers)
+                    activation=configs.activation,
+                )
+                for _ in range(configs.e_layers)
             ],
-            norm_layer=nn.LayerNorm(configs.d_model)
+            norm_layer=nn.LayerNorm(configs.d_model),
         )
 
         # Projection (deterministic prediction for warmup stage)
@@ -102,7 +122,7 @@ class Model(nn.Module):
             pred_len=self.pred_len,
             d_model=self.d_model,
             cond_dim=self.cond_dim,
-            channels=self.unet_channels
+            channels=self.unet_channels,
         )
 
         # ================== Diffusion Schedule ==================
@@ -110,9 +130,9 @@ class Model(nn.Module):
 
     def _setup_diffusion_schedule(self):
         """Setup beta schedule and precompute diffusion constants."""
-        if self.beta_schedule == 'linear':
+        if self.beta_schedule == "linear":
             betas = torch.linspace(1e-4, 2e-2, self.timesteps)
-        elif self.beta_schedule == 'cosine':
+        elif self.beta_schedule == "cosine":
             # Cosine schedule (improved DDPM)
             s = 0.008
             steps = self.timesteps + 1
@@ -122,17 +142,19 @@ class Model(nn.Module):
             betas = 1 - (alpha_cumprod[1:] / alpha_cumprod[:-1])
             betas = torch.clip(betas, 0.0001, 0.9999)
         else:
-            raise ValueError(f'Unknown beta schedule: {self.beta_schedule}')
+            raise ValueError(f"Unknown beta schedule: {self.beta_schedule}")
 
         alphas = 1.0 - betas
         alpha_cumprods = torch.cumprod(alphas, dim=0)
 
         # Register as buffers (will be moved to correct device automatically)
-        self.register_buffer('betas', betas)
-        self.register_buffer('alphas', alphas)
-        self.register_buffer('alpha_cumprods', alpha_cumprods)
-        self.register_buffer('sqrt_alpha_cumprods', torch.sqrt(alpha_cumprods))
-        self.register_buffer('sqrt_one_minus_alpha_cumprods', torch.sqrt(1.0 - alpha_cumprods))
+        self.register_buffer("betas", betas)
+        self.register_buffer("alphas", alphas)
+        self.register_buffer("alpha_cumprods", alpha_cumprods)
+        self.register_buffer("sqrt_alpha_cumprods", torch.sqrt(alpha_cumprods))
+        self.register_buffer(
+            "sqrt_one_minus_alpha_cumprods", torch.sqrt(1.0 - alpha_cumprods)
+        )
 
     def backbone_forward(self, x_enc, x_mark_enc=None):
         """
@@ -166,8 +188,13 @@ class Model(nn.Module):
             if actual_n_vars > N:
                 z = z[:, :N, :]
             else:
-                padding = torch.zeros(z.shape[0], N - actual_n_vars, z.shape[2],
-                                    device=z.device, dtype=z.dtype)
+                padding = torch.zeros(
+                    z.shape[0],
+                    N - actual_n_vars,
+                    z.shape[2],
+                    device=z.device,
+                    dtype=z.dtype,
+                )
                 z = torch.cat([z, padding], dim=1)
 
         # Projection: [B, N, d_model] -> [B, N, pred_len] -> [B, pred_len, N]
@@ -195,12 +222,14 @@ class Model(nn.Module):
             noise = torch.randn_like(x0)
 
         sqrt_alpha_cumprod = self.sqrt_alpha_cumprods[t][:, None, None]
-        sqrt_one_minus_alpha_cumprod = self.sqrt_one_minus_alpha_cumprods[t][:, None, None]
+        sqrt_one_minus_alpha_cumprod = self.sqrt_one_minus_alpha_cumprods[t][
+            :, None, None
+        ]
 
         xt = sqrt_alpha_cumprod * x0 + sqrt_one_minus_alpha_cumprod * noise
         return xt, noise
 
-    def forward_loss(self, x_enc, x_mark_enc, y_true, stage='joint'):
+    def forward_loss(self, x_enc, x_mark_enc, y_true, stage="joint"):
         """
         Compute training loss.
 
@@ -222,9 +251,9 @@ class Model(nn.Module):
         # MSE loss for deterministic prediction
         loss_mse = F.mse_loss(y_det, y_true)
 
-        if stage == 'warmup':
+        if stage == "warmup":
             # Stage 1: Only MSE loss to train backbone
-            return loss_mse, {'loss_mse': loss_mse.item()}
+            return loss_mse, {"loss_mse": loss_mse.item()}
 
         # Stage 2: Direct x₀ prediction diffusion
         # Normalize target for stable diffusion
@@ -240,32 +269,81 @@ class Model(nn.Module):
         noise = torch.randn_like(y_norm)
         y_noisy, _ = self.add_noise(y_norm, t, noise)
 
-        # Predict x₀ directly (NOT noise)
-        x0_pred = self.denoise_net(y_noisy, t, z)
+        # Predict based on parameterization
+        if self.parameterization == "x0":
+            # x₀-prediction: predict clean data directly
+            target = y_norm
+            pred = self.denoise_net(y_noisy, t, z)
+        elif self.parameterization == "epsilon":
+            # epsilon-prediction: predict noise
+            target = noise
+            pred = self.denoise_net(y_noisy, t, z)
+        elif self.parameterization == "v":
+            # v-parameterization: predict v = √ᾱ·ε - √(1-ᾱ)·x₀
+            sqrt_alpha_cumprod = self.sqrt_alpha_cumprods[t][:, None, None]
+            sqrt_one_minus_alpha_cumprod = self.sqrt_one_minus_alpha_cumprods[t][
+                :, None, None
+            ]
+            target = sqrt_alpha_cumprod * noise - sqrt_one_minus_alpha_cumprod * y_norm
+            pred = self.denoise_net(y_noisy, t, z)
+        else:
+            raise ValueError(f"Unsupported parameterization: {self.parameterization}")
 
-        # Diffusion loss: MSE between predicted x₀ and true x₀
-        loss_diff = F.mse_loss(x0_pred, y_norm)
+        # Diffusion loss
+        loss_diff = F.mse_loss(pred, target)
 
         # Combined loss (λ = 0.5)
         loss_lambda = 0.5
         loss_total = loss_lambda * loss_mse + (1 - loss_lambda) * loss_diff
 
         return loss_total, {
-            'loss_total': loss_total.item(),
-            'loss_mse': loss_mse.item(),
-            'loss_diff': loss_diff.item()
+            "loss_total": loss_total.item(),
+            "loss_mse": loss_mse.item(),
+            "loss_diff": loss_diff.item(),
         }
 
     @torch.no_grad()
-    def sample_ddpm_x0(self, z, n_samples=1):
+    def predict_x0_from_output(self, model_output, x_t, t):
         """
-        DDPM sampling with x₀-parameterization.
+        根据模型输出和参数化类型预测 x₀。
 
         Args:
-            z: [B, N, d_model] encoder features (condition)
-            n_samples: number of samples per input
+            model_output: 模型直接输出
+            x_t: [B, N, T] 当前时间步的噪声数据
+            t: [B] 时间步
         Returns:
-            samples: [n_samples, B, N, pred_len] sampled predictions (normalized)
+            x0_pred: [B, N, T] 预测的干净数据
+        """
+        if self.parameterization == "x0":
+            # x₀-prediction: 模型直接输出 x₀
+            return model_output
+        elif self.parameterization == "epsilon":
+            # epsilon-prediction: 从噪声预测 x₀
+            alpha_cumprod = self.alpha_cumprods[t][:, None, None]
+            return (x_t - torch.sqrt(1 - alpha_cumprod) * model_output) / torch.sqrt(
+                alpha_cumprod + 1e-8
+            )
+        elif self.parameterization == "v":
+            # v-parameterization: 从 v 预测 x₀
+            alpha_cumprod = self.alpha_cumprods[t][:, None, None]
+            sqrt_alpha_cumprod = torch.sqrt(alpha_cumprod)
+            sqrt_one_minus_alpha_cumprod = torch.sqrt(1 - alpha_cumprod)
+            return (
+                sqrt_alpha_cumprod * x_t - sqrt_one_minus_alpha_cumprod * model_output
+            )
+        else:
+            raise ValueError(f"不支持的参数化类型: {self.parameterization}")
+
+    @torch.no_grad()
+    def sample_ddpm(self, z, n_samples=1):
+        """
+        DDPM 采样，支持所有参数化类型。
+
+        Args:
+            z: [B, N, d_model] 编码器特征（条件）
+            n_samples: 每个输入的采样数量
+        Returns:
+            samples: [n_samples, B, N, pred_len] 采样的预测结果（归一化）
         """
         B, _, _ = z.shape
         device = z.device
@@ -273,22 +351,27 @@ class Model(nn.Module):
 
         all_samples = []
         for _ in range(n_samples):
-            # Start from pure noise
+            # 从纯噪声开始
             x = torch.randn(B, N, self.pred_len, device=device)
 
-            # Reverse diffusion
+            # 逆向扩散
             for t in reversed(range(self.timesteps)):
                 t_batch = torch.full((B,), t, device=device, dtype=torch.long)
 
-                # Predict x₀ directly
-                x0_pred = self.denoise_net(x, t_batch, z)
-                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)  # Stability
+                # 模型预测
+                model_output = self.denoise_net(x, t_batch, z)
 
-                # Derive noise from x₀ prediction
+                # 根据参数化类型预测 x₀
+                x0_pred = self.predict_x0_from_output(model_output, x, t_batch)
+                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)  # 稳定性
+
+                # 推导噪声预测
                 alpha_t = self.alpha_cumprods[t]
-                noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(1 - alpha_t + 1e-8)
+                noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(
+                    1 - alpha_t + 1e-8
+                )
 
-                # DDPM update
+                # DDPM 更新
                 alpha = self.alphas[t]
                 beta = self.betas[t]
 
@@ -309,17 +392,17 @@ class Model(nn.Module):
         return torch.stack(all_samples, dim=0)  # [n_samples, B, N, pred_len]
 
     @torch.no_grad()
-    def sample_ddim_x0(self, z, n_samples=1, ddim_steps=50, eta=0.0):
+    def sample_ddim(self, z, n_samples=1, ddim_steps=50, eta=0.0):
         """
-        DDIM sampling with x₀-parameterization (faster than DDPM).
+        DDIM 采样，支持所有参数化类型（比 DDPM 更快）。
 
         Args:
-            z: [B, N, d_model] encoder features (condition)
-            n_samples: number of samples per input
-            ddim_steps: number of DDIM steps (default 50)
-            eta: DDIM stochasticity (0 = deterministic)
+            z: [B, N, d_model] 编码器特征（条件）
+            n_samples: 每个输入的采样数量
+            ddim_steps: DDIM 步数（默认 50）
+            eta: DDIM 随机性（0 = 确定性）
         Returns:
-            samples: [n_samples, B, N, pred_len] sampled predictions (normalized)
+            samples: [n_samples, B, N, pred_len] 采样的预测结果（归一化）
         """
         B, _, _ = z.shape
         device = z.device
@@ -350,13 +433,19 @@ class Model(nn.Module):
                     alpha_t_prev = self.alpha_cumprods[t_prev]
 
                 # Derive noise from x₀
-                noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(1 - alpha_t + 1e-8)
+                noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(
+                    1 - alpha_t + 1e-8
+                )
 
                 # Compute sigma
-                sigma_t = eta * torch.sqrt((1 - alpha_t_prev) / (1 - alpha_t + 1e-8) * (1 - alpha_t / alpha_t_prev))
+                sigma_t = eta * torch.sqrt(
+                    (1 - alpha_t_prev)
+                    / (1 - alpha_t + 1e-8)
+                    * (1 - alpha_t / alpha_t_prev)
+                )
 
                 # Direction pointing to xt
-                dir_xt = torch.sqrt(1 - alpha_t_prev - sigma_t ** 2) * noise_pred
+                dir_xt = torch.sqrt(1 - alpha_t_prev - sigma_t**2) * noise_pred
 
                 # Sample noise
                 noise = torch.randn_like(x) if sigma_t > 0 else torch.zeros_like(x)
@@ -401,7 +490,9 @@ class Model(nn.Module):
 
             # Derive noise from x₀
             alpha_t = self.alpha_cumprods[t]
-            noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(1 - alpha_t + 1e-8)
+            noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(
+                1 - alpha_t + 1e-8
+            )
 
             # DDPM update
             alpha = self.alphas[t]
@@ -466,13 +557,17 @@ class Model(nn.Module):
                 alpha_t_prev = self.alpha_cumprods[t_prev]
 
             # Derive noise from x₀
-            noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(1 - alpha_t + 1e-8)
+            noise_pred = (x - torch.sqrt(alpha_t) * x0_pred) / torch.sqrt(
+                1 - alpha_t + 1e-8
+            )
 
             # Compute sigma
-            sigma_t = eta * torch.sqrt((1 - alpha_t_prev) / (1 - alpha_t + 1e-8) * (1 - alpha_t / alpha_t_prev))
+            sigma_t = eta * torch.sqrt(
+                (1 - alpha_t_prev) / (1 - alpha_t + 1e-8) * (1 - alpha_t / alpha_t_prev)
+            )
 
             # Direction pointing to xt
-            dir_xt = torch.sqrt(1 - alpha_t_prev - sigma_t ** 2) * noise_pred
+            dir_xt = torch.sqrt(1 - alpha_t_prev - sigma_t**2) * noise_pred
 
             # Sample noise
             noise = torch.randn_like(x) if sigma_t > 0 else torch.zeros_like(x)
@@ -484,7 +579,9 @@ class Model(nn.Module):
         return x.reshape(n_samples, B, N, self.pred_len)
 
     @torch.no_grad()
-    def sample_chunked(self, z, n_samples=1, use_ddim=False, ddim_steps=50, eta=0.0, chunk_size=10):
+    def sample_chunked(
+        self, z, n_samples=1, use_ddim=False, ddim_steps=50, eta=0.0, chunk_size=10
+    ):
         """
         Chunked sampling to balance speed and memory usage.
 
@@ -513,7 +610,16 @@ class Model(nn.Module):
         return torch.cat(all_samples, dim=0)
 
     @torch.no_grad()
-    def predict(self, x_enc, x_mark_enc=None, n_samples=None, use_ddim=False, ddim_steps=50, use_batch_sampling=True, chunk_size=10):
+    def predict(
+        self,
+        x_enc,
+        x_mark_enc=None,
+        n_samples=None,
+        use_ddim=False,
+        ddim_steps=50,
+        use_batch_sampling=True,
+        chunk_size=10,
+    ):
         """
         Probabilistic prediction.
 
@@ -538,7 +644,9 @@ class Model(nn.Module):
 
         # Sample predictions (normalized)
         if use_batch_sampling:
-            pred_samples = self.sample_chunked(z, n_samples, use_ddim, ddim_steps, chunk_size=chunk_size)
+            pred_samples = self.sample_chunked(
+                z, n_samples, use_ddim, ddim_steps, chunk_size=chunk_size
+            )
         else:
             if use_ddim:
                 pred_samples = self.sample_ddim_x0(z, n_samples, ddim_steps)
@@ -564,9 +672,12 @@ class Model(nn.Module):
         Standard forward for compatibility with TSLib training loop.
         Returns deterministic prediction only.
         """
-        if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
+        if (
+            self.task_name == "long_term_forecast"
+            or self.task_name == "short_term_forecast"
+        ):
             y_det, _, _, _ = self.backbone_forward(x_enc, x_mark_enc)
-            return y_det[:, -self.pred_len:, :]
+            return y_det[:, -self.pred_len :, :]
         return None
 
     def freeze_encoder(self):
@@ -585,3 +696,6 @@ class Model(nn.Module):
             param.requires_grad = True
         for param in self.encoder.parameters():
             param.requires_grad = True
+
+# 为兼容性添加别名
+iTransformerDiffusionDirect = Model

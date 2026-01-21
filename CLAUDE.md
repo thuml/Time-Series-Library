@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 交互要求
+
+- **Thinking 思考过程用中文表述**
+- **Reply 回答也要用中文回复**
+- **代码注释用中文编写**
+
 ## Overview
 
 Time-Series-Library (TSLib) is an open-source deep learning library from THU-ML supporting 40+ models for time series forecasting, imputation, anomaly detection, and classification. All experiments run through a unified CLI interface.

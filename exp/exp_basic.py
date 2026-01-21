@@ -71,6 +71,7 @@ class Exp_Basic(object):
             "FiLM": FiLM,
             "iTransformer": iTransformer,
             "iTransformerDiffusion": iTransformerDiffusion,
+            "iTransformerDiffusionDirect": iTransformerDiffusionDirect,
             "Koopa": Koopa,
             "TiDE": TiDE,
             "FreTS": FreTS,
