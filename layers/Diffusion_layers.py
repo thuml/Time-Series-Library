@@ -396,6 +396,96 @@ class UNet1D(nn.Module):
         return out
 
 
+class FrequencyAwareResidual(nn.Module):
+    """
+    FR2: Frequency-aware Residual Connection
+
+    频域感知的残差连接，用于增强扩散模型的频域表达能力。
+
+    工作原理:
+    1. 从 backbone 特征 z 中提取频域参数（幅度和相位）
+    2. 对扩散特征 x 进行 FFT 变换
+    3. 使用提取的频域参数调制 FFT 系数
+    4. 反变换回时域
+    5. 通过门控机制融合原始特征和频域调制特征
+
+    使用场景:
+    - 当频域损失 loss_freq 明显高于其他模型时
+    - 周期性预测不准确时
+    """
+
+    def __init__(self, channels, d_model, n_freqs=10):
+        """
+        Args:
+            channels: 扩散特征的通道数 (来自 UNet bottleneck)
+            d_model: backbone 特征维度
+            n_freqs: 频域参数数量（控制频率分辨率）
+        """
+        super().__init__()
+        self.n_freqs = n_freqs
+
+        # 从 backbone 特征提取频域参数
+        # 每个频率有 2 个参数: amplitude (幅度) 和 phase (相位)
+        self.freq_proj = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.SiLU(),
+            nn.Linear(d_model // 2, n_freqs * 2)
+        )
+
+        # 残差门控：决定频域调制的强度
+        self.residual_gate = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.SiLU(),
+            nn.Linear(d_model // 2, channels)
+        )
+
+    def forward(self, x, z):
+        """
+        Args:
+            x: [B, C, T] 扩散特征（来自 UNet bottleneck）
+            z: [B, N, d_model] backbone 特征
+        Returns:
+            [B, C, T] 频域调制后的特征
+        """
+        B, C, T = x.shape
+
+        # 全局平均 backbone 特征（跨变量维度）
+        z_global = z.mean(dim=1)  # [B, d_model]
+
+        # 提取频域参数
+        freq_params = self.freq_proj(z_global)  # [B, n_freqs*2]
+        freq_params = freq_params.reshape(B, self.n_freqs, 2)  # [B, n_freqs, 2]
+
+        # FFT 变换到频域（确保输入是连续的）
+        x_contiguous = x.contiguous()
+        x_fft = torch.fft.rfft(x_contiguous, dim=-1)  # [B, C, T//2+1]
+
+        # 提取幅度和相位调制参数
+        amp_mod = freq_params[:, :, 0].unsqueeze(1)  # [B, 1, n_freqs]
+        phase_mod = freq_params[:, :, 1].unsqueeze(1)  # [B, 1, n_freqs]
+
+        # 只调制低频部分（前 n_freqs 个频率）
+        freq_len = min(self.n_freqs, x_fft.shape[-1])
+
+        # 频域调制: 幅度缩放 + 相位偏移
+        x_fft_mod = x_fft.clone()
+        if freq_len > 0:
+            x_fft_mod[:, :, :freq_len] = (
+                x_fft[:, :, :freq_len] *
+                (1 + amp_mod[:, :, :freq_len]) *
+                torch.exp(1j * phase_mod[:, :, :freq_len])
+            )
+
+        # 逆 FFT 回时域（确保输出长度正确）
+        x_mod = torch.fft.irfft(x_fft_mod, n=T, dim=-1)  # [B, C, T]
+
+        # 门控融合
+        gate = torch.sigmoid(self.residual_gate(z_global))  # [B, C]
+        gate = gate.unsqueeze(-1)  # [B, C, 1]
+
+        return x + gate * x_mod
+
+
 class ResidualNormalizer(nn.Module):
     """
     Normalizer for residuals with EMA tracking of statistics.

@@ -162,15 +162,31 @@ if __name__ == '__main__':
     parser.add_argument('--diffusion_steps', type=int, default=1000, help='number of diffusion steps')
     parser.add_argument('--beta_schedule', type=str, default='cosine', help='beta schedule: linear or cosine')
     parser.add_argument('--cond_dim', type=int, default=256, help='condition dimension for FiLM')
+    parser.add_argument('--parameterization', type=str, default='v', choices=['x0', 'epsilon', 'v'],
+                        help='diffusion parameterization: x0, epsilon, or v (recommended)')
+
+    # 训练模式（新增）
+    parser.add_argument('--training_mode', type=str, default='end_to_end', choices=['end_to_end', 'two_stage'],
+                        help='training mode: end_to_end (recommended) or two_stage')
+
+    # 端到端训练参数
+    parser.add_argument('--warmup_epochs', type=int, default=10, help='warmup epochs for end-to-end training')
+
+    # 两阶段训练参数（保留兼容性）
     parser.add_argument('--stage1_epochs', type=int, default=30, help='epochs for stage 1 (backbone warmup)')
     parser.add_argument('--stage2_epochs', type=int, default=20, help='epochs for stage 2 (joint training)')
     parser.add_argument('--stage1_lr', type=float, default=1e-4, help='learning rate for stage 1')
     parser.add_argument('--stage2_lr', type=float, default=1e-5, help='learning rate for stage 2')
     parser.add_argument('--loss_lambda', type=float, default=0.5, help='weight for MSE loss in joint training')
+
+    # 采样配置
     parser.add_argument('--n_samples', type=int, default=100, help='number of samples for probabilistic prediction')
     parser.add_argument('--use_ddim', action='store_true', help='use DDIM sampling instead of DDPM', default=False)
     parser.add_argument('--ddim_steps', type=int, default=50, help='number of DDIM steps')
     parser.add_argument('--chunk_size', type=int, default=10, help='samples per chunk for batch sampling (tune for GPU memory)')
+
+    # 时序感知损失（新增）
+    parser.add_argument('--use_ts_loss', action='store_true', help='use time-series aware loss', default=False)
 
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:

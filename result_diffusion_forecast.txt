@@ -6,3 +6,27 @@ diffusion_forecast_ETTh1_quick_amp_test_iTransformerDiffusion_ETTh1_ftM_sl96_ll4
 Point: mse:0.426996, mae:0.437423, rmse:0.653450
 Prob: crps:0.497621, calib_50:0.5236, calib_90:0.8524, sharpness:0.518151
 
+diffusion_forecast_ETTh1_96_96_v1_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm64_nh8_el1_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Phase1_Final_0  
+Point: mse:nan, mae:nan, rmse:nan
+Prob: crps:0.385000, calib_50:0.0000, calib_90:0.0000, sharpness:nan
+
+diffusion_forecast_ETTh1_96_96_v1_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm64_nh8_el1_dl1_df64_expand2_dc4_fc3_ebtimeF_dtTrue_Phase1_Final_0  
+Point: mse:0.735529, mae:0.571589, rmse:0.857630
+Prob: crps:0.469074, calib_50:0.4152, calib_90:0.7788, sharpness:0.576756
+
+diffusion_forecast_ETTh1_96_96_baseline_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc3_ebtimeF_dtTrue_Phase2_Baseline_Conservative_0  
+Point: mse:0.708710, mae:0.541499, rmse:0.841849
+Prob: crps:0.495739, calib_50:0.4989, calib_90:0.8578, sharpness:0.665767
+
+diffusion_forecast_ETTh1_96_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc3_ebtimeF_dtTrue_Fixed_MSE_0  
+Point: mse:0.645241, mae:0.526038, rmse:0.803269
+Prob: crps:0.488904, calib_50:0.4603, calib_90:0.8569, sharpness:0.614972
+
+diffusion_forecast_ETTh1_96_96_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_NoMoM_Test_0  
+Point: mse:0.706246, mae:0.556442, rmse:0.840385
+Prob: crps:0.397180, calib_50:0.2150, calib_90:0.3230, sharpness:0.321473
+
+diffusion_forecast_ETTh1_96_iTransformerDiffusionDirect_ETTh1_ftM_sl96_ll48_pl96_dm128_nh8_el2_dl1_df128_expand2_dc4_fc1_ebtimeF_dtTrue_Extended_Training_100epochs_0  
+Point: mse:0.673970, mae:0.555252, rmse:0.820957
+Prob: crps:0.473961, calib_50:0.3807, calib_90:0.8242, sharpness:0.553092
+

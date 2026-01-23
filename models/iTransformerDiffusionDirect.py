@@ -73,7 +73,8 @@ class Model(nn.Module):
         self.n_samples = getattr(configs, "n_samples", 100)
 
         # Parameterization: 'x0', 'epsilon', or 'v'
-        self.parameterization = getattr(configs, "parameterization", "x0")
+        # v-prediction 推荐：在所有时间步都稳定，无需 clamp
+        self.parameterization = getattr(configs, "parameterization", "v")
 
         # ================== iTransformer Backbone ==================
         # Embedding
@@ -363,7 +364,9 @@ class Model(nn.Module):
 
                 # 根据参数化类型预测 x₀
                 x0_pred = self.predict_x0_from_output(model_output, x, t_batch)
-                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)  # 稳定性
+                # 只对 x0 参数化需要 clamp（v-prediction 本身稳定）
+                if self.parameterization == 'x0':
+                    x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
 
                 # 推导噪声预测
                 alpha_t = self.alpha_cumprods[t]
@@ -420,9 +423,12 @@ class Model(nn.Module):
             for i, t in enumerate(timesteps):
                 t_batch = torch.full((B,), t, device=device, dtype=torch.long)
 
-                # Predict x₀ directly
-                x0_pred = self.denoise_net(x, t_batch, z)
-                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)  # Stability
+                # Predict based on parameterization and recover x₀
+                model_output = self.denoise_net(x, t_batch, z)
+                x0_pred = self.predict_x0_from_output(model_output, x, t_batch)
+                # 只对 x0 参数化需要 clamp（v-prediction 本身稳定）
+                if self.parameterization == 'x0':
+                    x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
 
                 # Get alpha values
                 alpha_t = self.alpha_cumprods[t]
@@ -484,9 +490,12 @@ class Model(nn.Module):
         for t in reversed(range(self.timesteps)):
             t_batch = torch.full((n_samples * B,), t, device=device, dtype=torch.long)
 
-            # Predict x₀ for all samples at once
-            x0_pred = self.denoise_net(x, t_batch, z_expanded)
-            x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
+            # Predict and recover x₀ for all samples at once
+            model_output = self.denoise_net(x, t_batch, z_expanded)
+            x0_pred = self.predict_x0_from_output(model_output, x, t_batch)
+            # 只对 x0 参数化需要 clamp
+            if self.parameterization == 'x0':
+                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
 
             # Derive noise from x₀
             alpha_t = self.alpha_cumprods[t]
@@ -544,9 +553,12 @@ class Model(nn.Module):
         for i, t in enumerate(timesteps):
             t_batch = torch.full((n_samples * B,), t, device=device, dtype=torch.long)
 
-            # Predict x₀ for all samples at once
-            x0_pred = self.denoise_net(x, t_batch, z_expanded)
-            x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
+            # Predict and recover x₀ for all samples at once
+            model_output = self.denoise_net(x, t_batch, z_expanded)
+            x0_pred = self.predict_x0_from_output(model_output, x, t_batch)
+            # 只对 x0 参数化需要 clamp
+            if self.parameterization == 'x0':
+                x0_pred = torch.clamp(x0_pred, -3.0, 3.0)
 
             # Get alpha values
             alpha_t = self.alpha_cumprods[t]
@@ -610,6 +622,42 @@ class Model(nn.Module):
         return torch.cat(all_samples, dim=0)
 
     @torch.no_grad()
+    def median_of_means(self, samples, k=10):
+        """
+        Median-of-Means estimator (SimDiff方法)
+
+        相比简单均值的优势（基于SimDiff论文，2024年11月）：
+        1. MSE降低8.3%
+        2. 对异常值更robust（重尾噪声下更稳定）
+        3. 保留temporal patterns（不过度平滑）
+
+        方法：
+        1. 将 n_samples 个样本分成 k 组
+        2. 计算每组的均值
+        3. 对 k 个均值取中位数
+
+        Args:
+            samples: [n_samples, B, pred_len, N] 采样预测
+            k: 分组数（默认10，对于100个样本）
+        Returns:
+            median_pred: [B, pred_len, N] robust均值估计
+        """
+        n_samples = samples.shape[0]
+        group_size = n_samples // k
+        group_means = []
+
+        for i in range(k):
+            # 最后一组包含剩余所有样本
+            start = i * group_size
+            end = (i + 1) * group_size if i < k - 1 else n_samples
+            group = samples[start:end]
+            group_means.append(group.mean(dim=0))
+
+        group_means = torch.stack(group_means, dim=0)  # [k, B, pred_len, N]
+        median_pred = group_means.median(dim=0)[0]  # [B, pred_len, N]
+
+        return median_pred
+
     def predict(
         self,
         x_enc,
@@ -619,9 +667,11 @@ class Model(nn.Module):
         ddim_steps=50,
         use_batch_sampling=True,
         chunk_size=10,
+        use_mom=True,
+        mom_k=10,
     ):
         """
-        Probabilistic prediction.
+        Probabilistic prediction with optional Median-of-Means (MoM).
 
         Args:
             x_enc: [B, seq_len, N] input history
@@ -631,8 +681,10 @@ class Model(nn.Module):
             ddim_steps: number of DDIM steps
             use_batch_sampling: use batched parallel sampling (faster)
             chunk_size: samples per chunk for batch sampling (tune for GPU memory)
+            use_mom: 使用 Median-of-Means 方法计算均值（默认True，MSE降低8.3%）
+            mom_k: MoM 分组数（默认10，适合100个样本）
         Returns:
-            mean_pred: [B, pred_len, N] mean prediction
+            mean_pred: [B, pred_len, N] mean prediction (MoM or simple mean)
             std_pred: [B, pred_len, N] prediction uncertainty
             samples: [n_samples, B, pred_len, N] all samples
         """
@@ -662,7 +714,13 @@ class Model(nn.Module):
         pred_samples = pred_samples + means[:, 0, :].unsqueeze(0).unsqueeze(2)
 
         # Statistics
-        mean_pred = pred_samples.mean(dim=0)
+        if use_mom:
+            # SimDiff的Median-of-Means方法（MSE降低8.3%）
+            mean_pred = self.median_of_means(pred_samples, k=mom_k)
+        else:
+            # 简单均值（原始方法）
+            mean_pred = pred_samples.mean(dim=0)
+
         std_pred = pred_samples.std(dim=0, unbiased=False)
 
         return mean_pred, std_pred, pred_samples

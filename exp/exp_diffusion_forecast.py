@@ -17,6 +17,7 @@ from utils.metrics import metric
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import os
@@ -129,31 +130,56 @@ class EarlyStoppingWithSuffix:
 
 class Exp_Diffusion_Forecast(Exp_Basic):
     """
-    Two-stage training for iTransformer + CRD-Net.
-    Supports AMP (Automatic Mixed Precision) for memory efficiency.
+    训练器：支持两阶段训练和端到端联合训练两种模式
+
+    训练模式:
+    - 'two_stage': 原有两阶段训练（Stage 1: Backbone, Stage 2: Diffusion）
+    - 'end_to_end': 端到端联合训练（推荐，梯度连通）
+
+    支持 AMP (Automatic Mixed Precision) 以节省显存
     """
 
     def __init__(self, args):
         super(Exp_Diffusion_Forecast, self).__init__(args)
 
-        # Training stage configs
+        # 训练模式: 'two_stage' 或 'end_to_end'
+        self.training_mode = getattr(args, 'training_mode', 'end_to_end')
+
+        # 两阶段训练配置（用于 two_stage 模式）
         self.stage1_epochs = getattr(args, 'stage1_epochs', 30)
         self.stage2_epochs = getattr(args, 'stage2_epochs', 20)
         self.stage1_lr = getattr(args, 'stage1_lr', 1e-4)
         self.stage2_lr = getattr(args, 'stage2_lr', 1e-5)
         self.loss_lambda = getattr(args, 'loss_lambda', 0.5)
 
-        # Probabilistic prediction config
+        # 端到端训练配置
+        self.train_epochs = getattr(args, 'train_epochs', 50)
+        self.warmup_epochs = getattr(args, 'warmup_epochs', 10)
+        self.learning_rate = getattr(args, 'learning_rate', 1e-4)
+
+        # 概率预测配置
         self.n_samples = getattr(args, 'n_samples', 100)
         self.use_ddim = getattr(args, 'use_ddim', False)
         self.ddim_steps = getattr(args, 'ddim_steps', 50)
-        self.chunk_size = getattr(args, 'chunk_size', 10)  # For batch sampling memory control
+        self.chunk_size = getattr(args, 'chunk_size', 10)
 
         # AMP (Automatic Mixed Precision) support
         self.use_amp = getattr(args, 'use_amp', False)
         if self.use_amp:
             self.scaler = torch.cuda.amp.GradScaler()
             print("AMP (Automatic Mixed Precision) enabled - 显存节省 30-50%")
+
+        # 时序感知损失
+        self.use_ts_loss = getattr(args, 'use_ts_loss', False)
+        if self.use_ts_loss:
+            from utils.ts_losses import TimeSeriesAwareLoss
+            self.ts_loss_fn = TimeSeriesAwareLoss(
+                lambda_point=1.0,
+                lambda_trend=0.1,
+                lambda_freq=0.1,
+                lambda_corr=0.05
+            )
+            print("时序感知损失已启用")
 
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
@@ -181,13 +207,80 @@ class Exp_Diffusion_Forecast(Exp_Basic):
         param_groups = [
             {'params': self.model.projection.parameters(), 'lr': self.stage2_lr},
             {'params': self.model.denoise_net.parameters(), 'lr': self.stage2_lr * 10},
-            {'params': self.model.residual_normalizer.parameters(), 'lr': self.stage2_lr * 10},
+            {'params': self.model.output_normalizer.parameters(), 'lr': self.stage2_lr * 10},
         ]
         optimizer = optim.AdamW(param_groups, weight_decay=0.01)
         return optimizer
 
+    def _select_optimizer_end_to_end(self):
+        """
+        端到端训练优化器：所有参数联合优化
+
+        使用分组学习率，但不冻结任何参数
+        """
+        param_groups = [
+            {'params': self.model.enc_embedding.parameters(), 'lr': self.learning_rate},
+            {'params': self.model.encoder.parameters(), 'lr': self.learning_rate},
+            {'params': self.model.projection.parameters(), 'lr': self.learning_rate},
+            {'params': self.model.denoise_net.parameters(), 'lr': self.learning_rate},
+            {'params': self.model.output_normalizer.parameters(), 'lr': self.learning_rate},
+        ]
+        optimizer = optim.AdamW(param_groups, weight_decay=0.01)
+        return optimizer
+
+    def _get_loss_weights(self, epoch):
+        """
+        课程学习权重调度（修复版）
+
+        **问题发现**：
+        - 原策略：前期α从1.0降到0.5，后期α=0.3（70% Diffusion）
+        - 实验观察：Epoch 1 (α=1.0) 性能最佳，后续α降低反而MSE上升
+        - 根本原因：MSE损失权重过低（0.3）导致点预测性能下降
+
+        **修复策略**（基于SimDiff和调研发现）：
+        - 固定α=0.8（80% MSE + 20% Diffusion）
+        - 确保点预测性能优先，同时学习不确定性建模
+        - 扩散模型的MSE问题是已知的trade-off，不应过度优化分布
+
+        Args:
+            epoch: 当前 epoch
+        Returns:
+            alpha: MSE 损失权重（固定0.8）
+            beta: 扩散损失权重（固定0.2）
+        """
+        # 修复版：固定α=0.8，MSE为主
+        alpha = 0.8
+        beta = 0.2
+
+        # ===== 原有策略（已废弃，保留以供参考） =====
+        # if epoch < self.warmup_epochs:
+        #     # Warmup 阶段: MSE 权重从 1.0 线性降到 0.5
+        #     alpha = 1.0 - epoch / self.warmup_epochs * 0.5
+        # else:
+        #     # 联合阶段: 固定 30% MSE + 70% Diffusion
+        #     alpha = 0.3
+        # beta = 1.0 - alpha
+        # ==========================================
+
+        return alpha, beta
+
     def vali(self, vali_data, vali_loader, stage='warmup'):
-        """Validation step with optional AMP."""
+        """
+        验证损失计算（修复版）
+
+        使用 backbone 的确定性预测 MSE 作为验证损失，而非 forward_loss 的混合损失。
+        这确保 early stopping 基于真实的点预测性能，而非包含 diffusion 训练损失的混合指标。
+
+        修复前问题：
+        - forward_loss 返回 lambda*MSE + (1-lambda)*diffusion_loss
+        - diffusion_loss 是训练用的噪声预测误差，数值量级不对（600+）
+        - 导致 early stopping 在 Epoch 1 就触发
+
+        修复后：
+        - 只计算 backbone 确定性预测的 MSE
+        - 数值量级合理（0.3-0.6）
+        - early stopping 基于真实的点预测性能
+        """
         total_loss = []
         self.model.eval()
 
@@ -201,13 +294,16 @@ class Exp_Diffusion_Forecast(Exp_Basic):
                 f_dim = -1 if self.args.features == 'MS' else 0
                 y_true = batch_y[:, -self.args.pred_len:, f_dim:]
 
-                # Compute loss with optional AMP
+                # 使用 backbone 确定性预测计算 MSE（修复关键点）
                 if self.use_amp:
                     with torch.cuda.amp.autocast():
-                        loss, _ = self.model.forward_loss(batch_x, batch_x_mark, y_true, stage=stage)
+                        y_det, z, means, stdev = self.model.backbone_forward(batch_x, batch_x_mark)
+                        loss_mse = F.mse_loss(y_det, y_true)
                 else:
-                    loss, _ = self.model.forward_loss(batch_x, batch_x_mark, y_true, stage=stage)
-                total_loss.append(loss.item())
+                    y_det, z, means, stdev = self.model.backbone_forward(batch_x, batch_x_mark)
+                    loss_mse = F.mse_loss(y_det, y_true)
+
+                total_loss.append(loss_mse.item())
 
         self.model.train()
         return np.average(total_loss)
@@ -388,9 +484,127 @@ class Exp_Diffusion_Forecast(Exp_Basic):
             self.model.load_state_dict(torch.load(best_model_path))
             print(f"Loaded best stage 2 model from {best_model_path}")
 
+    def train_end_to_end(self, setting, train_loader, vali_loader, test_loader, path):
+        """
+        端到端联合训练（推荐）
+
+        与两阶段训练的区别：
+        1. Backbone 和 Diffusion 同时训练，梯度连通
+        2. 使用课程学习：前期 MSE 为主，后期 Diffusion 为主
+        3. 不冻结任何参数
+        """
+        print("=" * 50)
+        print("端到端联合训练 (End-to-End Training)")
+        if self.use_amp:
+            print("(AMP enabled)")
+        if self.use_ts_loss:
+            print("(时序感知损失 enabled)")
+        print("=" * 50)
+
+        train_steps = len(train_loader)
+        early_stopping = EarlyStoppingWithSuffix(patience=self.args.patience, verbose=True)
+
+        optimizer = self._select_optimizer_end_to_end()
+        scheduler = CosineAnnealingLR(optimizer, T_max=self.train_epochs)
+
+        for epoch in range(self.train_epochs):
+            iter_count = 0
+            train_loss = []
+            loss_mse_list = []
+            loss_diff_list = []
+
+            # 获取当前 epoch 的损失权重
+            alpha, beta = self._get_loss_weights(epoch)
+
+            self.model.train()
+            epoch_time = time.time()
+
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
+                iter_count += 1
+                optimizer.zero_grad()
+
+                batch_x = batch_x.float().to(self.device)
+                batch_y = batch_y.float().to(self.device)
+                batch_x_mark = batch_x_mark.float().to(self.device)
+
+                # Get ground truth
+                f_dim = -1 if self.args.features == 'MS' else 0
+                y_true = batch_y[:, -self.args.pred_len:, f_dim:]
+
+                # Forward pass with optional AMP
+                if self.use_amp:
+                    with torch.cuda.amp.autocast():
+                        # 获取原始损失
+                        loss, loss_dict = self.model.forward_loss(
+                            batch_x, batch_x_mark, y_true, stage='joint'
+                        )
+                        loss_mse = loss_dict['loss_mse']
+                        loss_diff = loss_dict['loss_diff']
+
+                    train_loss.append(loss.item())
+                    loss_mse_list.append(loss_mse)
+                    loss_diff_list.append(loss_diff)
+
+                    if (i + 1) % 100 == 0:
+                        print(f"\titers: {i+1}, epoch: {epoch+1} | "
+                              f"loss: {loss.item():.7f} mse: {loss_mse:.7f} diff: {loss_diff:.7f} "
+                              f"(α={alpha:.2f}, β={beta:.2f})")
+
+                    self.scaler.scale(loss).backward()
+                    self.scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                    self.scaler.step(optimizer)
+                    self.scaler.update()
+                else:
+                    # 获取原始损失
+                    loss, loss_dict = self.model.forward_loss(
+                        batch_x, batch_x_mark, y_true, stage='joint'
+                    )
+                    loss_mse = loss_dict['loss_mse']
+                    loss_diff = loss_dict['loss_diff']
+
+                    train_loss.append(loss.item())
+                    loss_mse_list.append(loss_mse)
+                    loss_diff_list.append(loss_diff)
+
+                    if (i + 1) % 100 == 0:
+                        print(f"\titers: {i+1}, epoch: {epoch+1} | "
+                              f"loss: {loss.item():.7f} mse: {loss_mse:.7f} diff: {loss_diff:.7f} "
+                              f"(α={alpha:.2f}, β={beta:.2f})")
+
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                    optimizer.step()
+
+            scheduler.step()
+
+            print(f"Epoch: {epoch+1} cost time: {time.time() - epoch_time:.2f}s")
+            train_loss_avg = np.average(train_loss)
+            avg_mse = np.average(loss_mse_list)
+            avg_diff = np.average(loss_diff_list)
+            vali_loss = self.vali(None, vali_loader, stage='joint')
+            test_loss = self.vali(None, test_loader, stage='joint')
+
+            print(f"Epoch: {epoch+1} | Train: {train_loss_avg:.7f} (MSE: {avg_mse:.7f}, Diff: {avg_diff:.7f}) "
+                  f"Vali: {vali_loss:.7f} Test: {test_loss:.7f} (α={alpha:.2f})")
+
+            early_stopping(vali_loss, self.model, path, suffix='')
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
+
+        # Load best model
+        best_model_path = path + '/checkpoint.pth'
+        if os.path.exists(best_model_path):
+            self.model.load_state_dict(torch.load(best_model_path))
+            print(f"Loaded best model from {best_model_path}")
+
     def train(self, setting):
         """
-        Full two-stage training pipeline.
+        训练入口：根据 training_mode 选择训练方式
+
+        - 'end_to_end': 端到端联合训练（推荐）
+        - 'two_stage': 两阶段训练（原有方式）
         """
         train_data, train_loader = self._get_data(flag='train')
         vali_data, vali_loader = self._get_data(flag='val')
@@ -402,18 +616,22 @@ class Exp_Diffusion_Forecast(Exp_Basic):
 
         time_now = time.time()
 
-        # Stage 1: Backbone warmup
-        self.train_stage1(setting, train_loader, vali_loader, test_loader, path)
+        if self.training_mode == 'end_to_end':
+            # 端到端联合训练（推荐）
+            print(f"\n使用端到端训练模式 (epochs={self.train_epochs}, warmup={self.warmup_epochs})")
+            self.train_end_to_end(setting, train_loader, vali_loader, test_loader, path)
+        else:
+            # 两阶段训练（原有方式）
+            print(f"\n使用两阶段训练模式 (stage1={self.stage1_epochs}, stage2={self.stage2_epochs})")
+            self.train_stage1(setting, train_loader, vali_loader, test_loader, path)
+            self.train_stage2(setting, train_loader, vali_loader, test_loader, path)
 
-        # Stage 2: Joint training
-        self.train_stage2(setting, train_loader, vali_loader, test_loader, path)
+            # 两阶段训练时，保存最终模型
+            final_model_path = path + '/checkpoint.pth'
+            torch.save(self.model.state_dict(), final_model_path)
+            print(f"Final model saved to {final_model_path}")
 
         print(f"\nTotal training time: {time.time() - time_now:.2f}s")
-
-        # Save final model
-        final_model_path = path + '/checkpoint.pth'
-        torch.save(self.model.state_dict(), final_model_path)
-        print(f"Final model saved to {final_model_path}")
 
         return self.model
 
