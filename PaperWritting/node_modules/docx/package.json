@@ -1,0 +1,116 @@
+{
+    "name": "docx",
+    "version": "9.5.1",
+    "description": "Easily generate .docx files with JS/TS with a nice declarative API. Works for Node and on the Browser.",
+    "type": "module",
+    "main": "dist/index.umd.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc && vite build",
+        "test": "vitest --ui --coverage",
+        "test:ci": "vitest run --coverage",
+        "prepublishOnly": "npm run build --omit=dev",
+        "lint": "eslint --flag unstable_ts_config --config eslint.config.ts",
+        "predemo": "npm run build",
+        "demo": "tsx ./demo/index.ts",
+        "typedoc": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
+        "prettier": "prettier -l \"{src,scripts,demo}/**/*.{ts,html}\"",
+        "prettier:fix": "npm run prettier -- --write",
+        "cspell": "cspell \"{src,demo,docs,scripts}/**/*.{ts,scss,html,md}\" && cspell \"./*.*\"",
+        "serve.docs": "cd docs && docsify serve",
+        "extract": "tsx scripts/extract-document.ts",
+        "run-ts": "tsx"
+    },
+    "pre-commit": [
+        "prettier",
+        "lint"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dolanmiu/docx.git"
+    },
+    "keywords": [
+        "docx",
+        "office",
+        "word",
+        "generate",
+        "creator",
+        "create",
+        "document",
+        "doc",
+        "officegen",
+        "clippy"
+    ],
+    "dependencies": {
+        "@types/node": "^24.0.1",
+        "hash.js": "^1.1.7",
+        "jszip": "^3.10.1",
+        "nanoid": "^5.1.3",
+        "xml": "^1.0.1",
+        "xml-js": "^1.6.8"
+    },
+    "author": "Dolan Miu",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/dolanmiu/docx/issues"
+    },
+    "homepage": "https://docx.js.org",
+    "devDependencies": {
+        "@types/eslint__js": "^8.42.3",
+        "@types/inquirer": "^9.0.3",
+        "@types/prompt": "^1.1.1",
+        "@types/unzipper": "^0.10.4",
+        "@types/xml": "^1.0.8",
+        "@typescript-eslint/eslint-plugin": "^8.8.1",
+        "@typescript-eslint/parser": "^8.8.1",
+        "@vitest/coverage-v8": "^3.0.8",
+        "@vitest/ui": "^3.0.8",
+        "cspell": "^9.0.0",
+        "docsify-cli": "^4.3.0",
+        "eslint": "^9.13.0",
+        "eslint-import-resolver-typescript": "^4.3.2",
+        "eslint-plugin-functional": "^7.0.2",
+        "eslint-plugin-import": "^2.26.0",
+        "eslint-plugin-jsdoc": "^51.0.1",
+        "eslint-plugin-no-null": "^1.0.2",
+        "eslint-plugin-prefer-arrow": "^1.2.3",
+        "eslint-plugin-unicorn": "^59.0.0",
+        "execa": "^9.4.0",
+        "glob": "^11.0.0",
+        "inquirer": "^12.0.0",
+        "jiti": "^2.3.3",
+        "jsdom": "^26.0.0",
+        "pre-commit": "^1.2.2",
+        "prettier": "^3.1.1",
+        "tsconfig-paths": "^4.0.0",
+        "tsx": "^4.7.0",
+        "typedoc": "^0.28.2",
+        "typescript": "5.3.3",
+        "typescript-eslint": "^8.10.0",
+        "unzipper": "^0.12.3",
+        "vite": "^6.0.1",
+        "vite-plugin-dts": "^4.2.4",
+        "vite-plugin-node-polyfills": "^0.23.0",
+        "vite-tsconfig-paths": "^5.0.1",
+        "vitest": "^3.0.8"
+    },
+    "engines": {
+        "node": ">=10"
+    }
+}
