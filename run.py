@@ -93,7 +93,8 @@ if __name__ == '__main__':
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 
     # GPU
-    parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
+    parser.add_argument('--use_gpu', action='store_true', default=True, help='use gpu (default: on)')
+    parser.add_argument('--no_use_gpu', action='store_false', dest='use_gpu', help='disable gpu (force cpu)')
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
     parser.add_argument('--gpu_type', type=str, default='cuda', help='gpu type')  # cuda or mps
     parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
@@ -105,8 +106,8 @@ if __name__ == '__main__':
     parser.add_argument('--p_hidden_layers', type=int, default=2, help='number of hidden layers in projector')
 
     # metrics (dtw)
-    parser.add_argument('--use_dtw', type=bool, default=False,
-                        help='the controller of using dtw metric (dtw is time consuming, not suggested unless necessary)')
+    parser.add_argument('--use_dtw', action='store_true', default=False,
+                        help='enable dtw metric (time consuming; default: off)')
 
     # Augmentation
     parser.add_argument('--augmentation_ratio', type=int, default=0, help="How many times to augment")
@@ -224,10 +225,11 @@ if __name__ == '__main__':
 
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
             exp.test(setting)
-            if args.gpu_type == 'mps':
-                torch.backends.mps.empty_cache()
-            elif args.gpu_type == 'cuda':
-                torch.cuda.empty_cache()
+            if args.use_gpu:
+                if args.gpu_type == 'mps':
+                    torch.backends.mps.empty_cache()
+                elif args.gpu_type == 'cuda':
+                    torch.cuda.empty_cache()
     else:
         exp = Exp(args)  # set experiments
         ii = 0
@@ -254,7 +256,8 @@ if __name__ == '__main__':
 
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)
-        if args.gpu_type == 'mps':
-            torch.backends.mps.empty_cache()
-        elif args.gpu_type == 'cuda':
-            torch.cuda.empty_cache()
+        if args.use_gpu:
+            if args.gpu_type == 'mps':
+                torch.backends.mps.empty_cache()
+            elif args.gpu_type == 'cuda':
+                torch.cuda.empty_cache()
