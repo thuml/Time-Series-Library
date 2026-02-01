@@ -5,6 +5,8 @@ TSLib 是一个面向深度学习研究者的开源库，特别适用于深度�
 
 我们提供了一个整洁的代码库，用于评测先进的深度时间序列模型或开发自定义模型，覆盖 **长短期预测、插补、异常检测和分类** 等五大主流任务。
 
+:triangular_flag_on_post:**最新动态**（2025.12）非常感谢 [ailuntz](https://github.com/thuml/Time-Series-Library/pull/805) 的杰出贡献，提供了更新的依赖要求和 Docker 部署，以及完善的文档。这对本项目和初学者都很有意义。
+
 :triangular_flag_on_post:**最新动态**（2025.11）鉴于大型时间序列模型（LTSM）的快速发展，我们在 TSLib 中新增了[[零样本预测]](https://github.com/thuml/Time-Series-Library/blob/main/exp/exp_zero_shot_forecasting.py)功能，可参考 [此脚本](https://github.com/thuml/Time-Series-Library/blob/main/scripts/long_term_forecast/ETT_script/LTSM.sh) 评测 LTSM。
 
 :triangular_flag_on_post:**最新动态**（2025.10）针对近期研究者在标准基准上追求微小提升而产生的困惑，我们提出了[[精度定律]](https://arxiv.org/abs/2510.02729)，以刻画深度时间序列预测任务的目标，并可据此识别已饱和的数据集。
@@ -105,11 +107,19 @@ TSLib 是一个面向深度学习研究者的开源库，特别适用于深度�
    ```
 
 3. 安装核心依赖
+   > ⚠️ **CUDA 兼容性提示**
+   > torch 预编译包与 **CUDA 版本强相关**。（查看 https://pytorch.org/get-started/previous-versions/ ）
+   > 请确保torch安装与本地 CUDA 版本匹配的包（如 `cu118` 或 `cu121`）。
+   > 推荐torch==2.5.1
+
    ```bash
+   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+   
    pip install -r requirements.txt
    ```
 
 4. 安装 Mamba 模型依赖（models/Mamba.py 需要）
+   > ⚠️ **只有linux版本**
    > ⚠️ **CUDA 兼容性提示**
    > Mamba 预编译包与 **CUDA 版本强相关**。
    > 请确保安装与本地 CUDA 版本匹配的包（如 `cu11` 或 `cu12`）。
@@ -188,6 +198,8 @@ python -u run.py --task_name classification --is_training 1 --root_path ./datase
 ### 训练与评测
 
 `./scripts/` 目录下提供了全部基准的实验脚本，可参考下列示例复现实验：
+
+> ⚠️ 部分脚本中默认设置了 `CUDA_VISIBLE_DEVICES`，请根据实际 GPU 配置修改或删除该设置，否则可能导致无法使用 GPU。
 
 ```bash
 # 长期预测
@@ -294,12 +306,13 @@ Time-Series-Library/
 如有问题或建议，欢迎联系维护团队：
 
 现任：
-- Haixu Wu（博士生，wuhx23@mails.tsinghua.edu.cn）
+- Haixu Wu（博士，wuhaixu98@gmail.com）
 - Yuxuan Wang（博士生，wangyuxu22@mails.tsinghua.edu.cn）
 - Yong Liu（博士生，liuyong21@mails.tsinghua.edu.cn）
-- Huikun Weng（本科生，wenghk22@mails.tsinghua.edu.cn）
+- Ailuntz（开源社区学生，ailuntz@icloud.com）
 
 往届：
+- Huikun Weng（本科生，wenghk22@mails.tsinghua.edu.cn）
 - Tengge Hu（硕士，htg21@mails.tsinghua.edu.cn）
 - Haoran Zhang（硕士，z-hr20@mails.tsinghua.edu.cn）
 - Jiawei Guo（本科生，guo-jw21@mails.tsinghua.edu.cn）
