@@ -16,12 +16,12 @@ class DFT_series_decomp(nn.Module):
         self.top_k = top_k
 
     def forward(self, x):
-        xf = torch.fft.rfft(x)
+        xf = torch.fft.rfft(x, dim=1)
         freq = abs(xf)
         freq[0] = 0
         top_k_freq, top_list = torch.topk(freq, k=self.top_k)
         xf[freq <= top_k_freq.min()] = 0
-        x_season = torch.fft.irfft(xf)
+        x_season = torch.fft.irfft(xf, dim=1)
         x_trend = x - x_season
         return x_season, x_trend
 

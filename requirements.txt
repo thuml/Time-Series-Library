@@ -10,6 +10,7 @@ matplotlib==3.10.8
 sktime==0.40.1
 sympy==1.13.1
 PyWavelets==1.9.0
+datasets==4.5.0
 
 tqdm==4.66.5
 patool==4.0.3

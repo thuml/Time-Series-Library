@@ -24,28 +24,23 @@ class Exp_Basic(object):
 
     def _scan_models_directory(self):
         """
-        自动扫描 models 文件夹下的所有 .py 文件
         Automatically scan all .py files in the models folder
         """
         model_map = {}
-        models_dir = 'models' # 文件夹名称
-        
-        # 遍历 models 文件夹中的所有文件
+        models_dir = 'models'
+
         # Iterate through all files in 'models' directory
         if os.path.exists(models_dir):
             for filename in os.listdir(models_dir):
-                # 忽略 __init__.py 和非 .py 文件
                 # Ignore __init__.py and non-.py files
                 if filename.endswith('.py') and filename != '__init__.py':
                     # Remove .py extension to get module name
-                    # 去掉 .py 后缀得到模块名 (例如: Transformer)
                     module_name = filename[:-3]
                     
                     # Build full import path
-                    # 构建完整路径: models.Transformer
                     full_path = f"{models_dir}.{module_name}"
                     
-                    # 存入字典: {'Transformer': 'models.Transformer'}
+                    # loading dict: {'Transformer': 'models.Transformer'}
                     model_map[module_name] = full_path
         
         return model_map
@@ -83,7 +78,7 @@ class Exp_Basic(object):
 
 class LazyModelDict(dict):
     """
-    Smart Lazy-Loading Dictionary / 智能懒加载字典
+    Smart Lazy-Loading Dictionary
     """
     def __init__(self, model_map):
         self.model_map = model_map
@@ -104,7 +99,7 @@ class LazyModelDict(dict):
             print(f"❌ Error: Failed to import model [{key}]. Dependencies missing?")
             raise e
 
-        # 尝试寻找模型类 / Try to find the model class
+        # Try to find the model class
         if hasattr(module, 'Model'):
             model_class = module.Model
         elif hasattr(module, key):
