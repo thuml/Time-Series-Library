@@ -1,4 +1,4 @@
-# Expirement
+# Experiment Record
 
 ## Run the code in bash
 
