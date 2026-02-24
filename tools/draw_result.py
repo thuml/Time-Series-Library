@@ -112,9 +112,9 @@ def plot_error_distribution(folder_path, feature_idx=-1):
 
 def list_results():
     """列出所有 results 資料夾"""
-    results_dirs = sorted(glob.glob('./results/*/'))
+    results_dirs = sorted(glob.glob('.\\results\\*\\'))
     if not results_dirs:
-        print("No results found in ./results/")
+        print("No results found in .\\results\\")
         return []
     print("Available result folders:")
     for i, d in enumerate(results_dirs):
@@ -122,7 +122,8 @@ def list_results():
         has_true = os.path.exists(os.path.join(d, 'true.npy'))
         has_metrics = os.path.exists(os.path.join(d, 'metrics.npy'))
         status = f"[pred:{'✓' if has_pred else '✗'} true:{'✓' if has_true else '✗'} metrics:{'✓' if has_metrics else '✗'}]"
-        print(f"  [{i}] {os.path.basename(d.rstrip('/'))} {status}")
+        folder_name = os.path.basename(d.rstrip('\\'))
+        print(f"  [{i}] {folder_name} {status}")
     return results_dirs
 
 
