@@ -4,7 +4,7 @@ import time
 def run_experiments():
     # 💡 將你所有想執行的指令，一行一行字串放在這個 list 裡面
     commands = [
-        "python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/yfinance/ --data_path TSMC.csv --model_id TSMC_30_7 --model DyVolFusion --use_norm 0 --data custom --features MS --target Target_Vol --seq_len 30 --label_len 15 --pred_len 7 --e_layers 4 --d_layers 2 --factor 3 --enc_in 5 --dec_in 5 --c_out 1 --d_model 215 --d_ff 512 --n_heads 8 --dropout 0.2 --loss MSE --patience 30 --des Exp --itr 1 --train_epochs 100 --batch_size 128 --learning_rate 0.0001"
+        "python -u run.py --task_name long_term_forecast --is_training 1 --root_path ./dataset/yfinance/ --data_path TSMC.csv --model_id TSMC_96_7 --model DyVolFusion --use_norm 1 --data custom --features MS --target Target_Vol --freq b --seq_len 96 --label_len 48 --pred_len 7 --e_layers 2 --d_layers 1 --factor 3 --enc_in 5 --dec_in 5 --c_out 1 --d_model 64 --d_ff 128 --n_heads 4 --dropout 0.2 --embed timeF --loss MAE --patience 10 --des Exp --itr 1 --train_epochs 30 --batch_size 32 --learning_rate 0.001 --lradj cosine"
     ]
 
     total_experiments = len(commands)
