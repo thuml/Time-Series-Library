@@ -11,7 +11,7 @@
 # Global Setting
 model_name="MambaSingleLayer"
 gpu_id=0
-resource_dir="/data/yoom618/TSLib"
+resource_dir="."
 data_dir="${resource_dir}/dataset"
 checkpoint_dir="${resource_dir}/checkpoints_best/MambaSL"
 
