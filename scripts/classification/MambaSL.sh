@@ -15,963 +15,110 @@ resource_dir="/data/yoom618/TSLib"
 data_dir="${resource_dir}/dataset"
 checkpoint_dir="${resource_dir}/checkpoints_best/MambaSL"
 
+run_model() {
+  local dn=$1; local dm=$2; local df=$3; local dt=$4; local tb=$5; local tc=$6; local nk=$7; local bs=${8:-16}
+
+  python run.py \
+    --use_gpu --gpu_type cuda --gpu ${gpu_id} \
+    --task_name classification --data UEA \
+    --root_path "${data_dir}/${dn}" \
+    --checkpoints "${checkpoint_dir}" \
+    --model "${model_name}" \
+    --model_id "${dn}" \
+    --d_model $dm --d_ff $df --expand 1 --d_conv 4 \
+    --tv_dt $dt --tv_B $tb --tv_C $tc --use_D 0 \
+    --num_kernels $nk \
+    --is_training 0 --pred_len 0 --label_len 0 --batch_size $bs \
+    --des gating4proposed --itr 1 --dropout 0.1 \
+    --learning_rate 0.001 --train_epochs 100 --patience 10
+}
 
 # ArticularyWordRecognition
-dataset_name="ArticularyWordRecognition"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 128 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "ArticularyWordRecognition" 128 8 0 0 1 3 16
 
 # AtrialFibrillation
-dataset_name="AtrialFibrillation"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 13 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "AtrialFibrillation" 32 16 1 0 0 13 16
 
 # BasicMotions
-dataset_name="BasicMotions"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "BasicMotions" 32 1 0 0 0 3 16
 
 # CharacterTrajectories
-dataset_name="CharacterTrajectories"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 128 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 4 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "CharacterTrajectories" 128 1 1 0 0 4 16
 
 # Cricket
-dataset_name="Cricket"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 24 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "Cricket" 32 4 0 1 0 24 16
 
 # DuckDuckGeese
-dataset_name="DuckDuckGeese"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 2 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 6 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "DuckDuckGeese" 1024 2 0 0 1 6 16
 
 # EigenWorms
-dataset_name="EigenWorms"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 360 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 4 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "EigenWorms" 32 1 1 1 0 360 4
 
 # Epilepsy
-dataset_name="Epilepsy"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 5 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "Epilepsy" 32 1 1 1 0 5 16
 
 # ERing
-dataset_name="ERing"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 128 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "ERing" 128 8 1 0 1 3 16
 
 # EthanolConcentration
-dataset_name="EthanolConcentration"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 512 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 36 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "EthanolConcentration" 512 4 0 0 0 36 16
 
 # FaceDetection
-dataset_name="FaceDetection"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 256 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "FaceDetection" 256 16 1 0 1 3 16
 
 # FingerMovements
-dataset_name="FingerMovements"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 1 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "FingerMovements" 32 1 0 1 1 3 16
 
 # HandMovementDirection
-dataset_name="HandMovementDirection"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 256 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 8 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "HandMovementDirection" 256 16 1 0 1 8 16
 
 # Handwriting
-dataset_name="Handwriting"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 4 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "Handwriting" 1024 4 1 0 1 4 16
 
 # Heartbeat
-dataset_name="Heartbeat"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 64 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 9 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "Heartbeat" 64 16 0 0 0 9 16
 
 # InsectWingbeat
-dataset_name="InsectWingbeat"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "InsectWingbeat" 1024 8 0 0 0 3 16
 
 # JapaneseVowels
-dataset_name="JapaneseVowels"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 128 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "JapaneseVowels" 128 8 1 1 0 3 16
 
 # Libras
-dataset_name="Libras"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "Libras" 1024 4 1 1 1 3 16
 
 # LSST
-dataset_name="LSST"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "LSST" 1024 4 1 1 1 3 16
 
 # MotorImagery
-dataset_name="MotorImagery"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 60 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "MotorImagery" 32 8 0 0 0 60 16
 
 # NATOPS
-dataset_name="NATOPS"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 512 \
-  --d_ff 2 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "NATOPS" 512 2 0 1 0 3 16
 
 # PEMS-SF
-dataset_name="PEMS-SF"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 512 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "PEMS-SF" 512 1 1 1 0 3 16
 
 # PenDigits
-dataset_name="PenDigits"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 64 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 1 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "PenDigits" 64 1 0 1 1 3 16
 
 # PhonemeSpectra
-dataset_name="PhonemeSpectra"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 256 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 5 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "PhonemeSpectra" 256 4 1 1 0 5 16
 
 # RacketSports
-dataset_name="RacketSports"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 4 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "RacketSports" 1024 4 1 0 1 3 16
 
 # SelfRegulationSCP1
-dataset_name="SelfRegulationSCP1"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 256 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 18 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "SelfRegulationSCP1" 256 16 1 0 1 18 16
 
 # SelfRegulationSCP2
-dataset_name="SelfRegulationSCP2"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 256 \
-  --d_ff 16 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 1 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 24 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "SelfRegulationSCP2" 256 16 1 1 1 24 16
 
 # SpokenArabicDigits
-dataset_name="SpokenArabicDigits"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 8 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 1 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 3 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "SpokenArabicDigits" 1024 8 0 1 0 3 16
 
 # StandWalkJump
-dataset_name="StandWalkJump"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 32 \
-  --d_ff 1 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 1 \
-  --tv_B 0 \
-  --tv_C 0 \
-  --use_D 0 \
-  --num_kernels 50 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "StandWalkJump" 32 1 1 0 0 50 16
 
 # UWaveGestureLibrary
-dataset_name="UWaveGestureLibrary"
-python run.py \
-  --use_gpu \
-  --gpu_type cuda \
-  --gpu ${gpu_id} \
-  --task_name classification \
-  --data UEA \
-  --root_path "${data_dir}/${dataset_name}" \
-  --checkpoints "${checkpoint_dir}" \
-  --model "${model_name}" \
-  --model_id "${dataset_name}" \
-  --d_model 1024 \
-  --d_ff 2 \
-  --expand 1 \
-  --d_conv 4 \
-  --tv_dt 0 \
-  --tv_B 0 \
-  --tv_C 1 \
-  --use_D 0 \
-  --num_kernels 7 \
-  --is_training 0 \
-  --pred_len 0 \
-  --label_len 0 \
-  --batch_size 16 \
-  --des gating4proposed \
-  --itr 1 \
-  --dropout 0.1 \
-  --learning_rate 0.001 \
-  --train_epochs 100 \
-  --patience 10
+run_model "UWaveGestureLibrary" 1024 2 0 0 1 7 16
