@@ -1,0 +1,1350 @@
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           ArticularyWordRecognitionModel:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/ArticularyWordRecognition
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+275
+300
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_ArticularyWordRecognition_MambaSingleLayer_UEA_ftM_sl144_ll0_pl0_dm128_ds8_expand1_dc4_nk3_tvdt0_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+300
+loading model
+test shape: torch.Size([300, 25]) torch.Size([300, 1])
+accuracy:0.9933333333333333
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           AtrialFibrillation  Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/AtrialFibrillation
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        13                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+15
+15
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_AtrialFibrillation_MambaSingleLayer_UEA_ftM_sl640_ll0_pl0_dm32_ds16_expand1_dc4_nk13_tvdt1_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+15
+loading model
+test shape: torch.Size([15, 3]) torch.Size([15, 1])
+accuracy:0.5333333333333333
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           BasicMotions        Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/BasicMotions
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+40
+40
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_BasicMotions_MambaSingleLayer_UEA_ftM_sl100_ll0_pl0_dm32_ds1_expand1_dc4_nk3_tvdt0_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+40
+loading model
+test shape: torch.Size([40, 4]) torch.Size([40, 1])
+accuracy:1.0
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           CharacterTrajectoriesModel:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/CharacterTrajectories
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        4                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+1422
+1436
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_CharacterTrajectories_MambaSingleLayer_UEA_ftM_sl182_ll0_pl0_dm128_ds1_expand1_dc4_nk4_tvdt1_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+1436
+loading model
+test shape: torch.Size([1436, 20]) torch.Size([1436, 1])
+accuracy:0.9972144846796658
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           Cricket             Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/Cricket
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        24                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+108
+72
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_Cricket_MambaSingleLayer_UEA_ftM_sl1197_ll0_pl0_dm32_ds4_expand1_dc4_nk24_tvdt0_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+72
+loading model
+test shape: torch.Size([72, 12]) torch.Size([72, 1])
+accuracy:1.0
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           DuckDuckGeese       Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/DuckDuckGeese
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        6                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+50
+50
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_DuckDuckGeese_MambaSingleLayer_UEA_ftM_sl270_ll0_pl0_dm1024_ds2_expand1_dc4_nk6_tvdt0_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+50
+loading model
+test shape: torch.Size([50, 5]) torch.Size([50, 1])
+accuracy:0.7
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           EigenWorms          Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/EigenWorms
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        360                 
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         4                   
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+128
+131
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_EigenWorms_MambaSingleLayer_UEA_ftM_sl17984_ll0_pl0_dm32_ds1_expand1_dc4_nk360_tvdt1_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+131
+loading model
+test shape: torch.Size([131, 5]) torch.Size([131, 1])
+accuracy:0.8396946564885496
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           Epilepsy            Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/Epilepsy
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        5                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+137
+138
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_Epilepsy_MambaSingleLayer_UEA_ftM_sl206_ll0_pl0_dm32_ds1_expand1_dc4_nk5_tvdt1_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+138
+loading model
+test shape: torch.Size([138, 4]) torch.Size([138, 1])
+accuracy:0.9782608695652174
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           ERing               Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/ERing
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+30
+270
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_ERing_MambaSingleLayer_UEA_ftM_sl65_ll0_pl0_dm128_ds8_expand1_dc4_nk3_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+270
+loading model
+test shape: torch.Size([270, 6]) torch.Size([270, 1])
+accuracy:0.937037037037037
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           EthanolConcentrationModel:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/EthanolConcentration
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        36                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+261
+263
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_EthanolConcentration_MambaSingleLayer_UEA_ftM_sl1751_ll0_pl0_dm512_ds4_expand1_dc4_nk36_tvdt0_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+263
+loading model
+test shape: torch.Size([263, 4]) torch.Size([263, 1])
+accuracy:0.42585551330798477
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           FaceDetection       Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/FaceDetection
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            256                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+5890
+3524
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_FaceDetection_MambaSingleLayer_UEA_ftM_sl62_ll0_pl0_dm256_ds16_expand1_dc4_nk3_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+3524
+loading model
+test shape: torch.Size([3524, 2]) torch.Size([3524, 1])
+accuracy:0.6929625425652668
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           FingerMovements     Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/FingerMovements
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+316
+100
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_FingerMovements_MambaSingleLayer_UEA_ftM_sl50_ll0_pl0_dm32_ds1_expand1_dc4_nk3_tvdt0_tvB1_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+100
+loading model
+test shape: torch.Size([100, 2]) torch.Size([100, 1])
+accuracy:0.71
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           HandMovementDirectionModel:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/HandMovementDirection
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        8                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            256                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+160
+74
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_HandMovementDirection_MambaSingleLayer_UEA_ftM_sl400_ll0_pl0_dm256_ds16_expand1_dc4_nk8_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+74
+loading model
+test shape: torch.Size([74, 4]) torch.Size([74, 1])
+accuracy:0.7027027027027027
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           Handwriting         Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/Handwriting
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        4                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+150
+850
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_Handwriting_MambaSingleLayer_UEA_ftM_sl152_ll0_pl0_dm1024_ds4_expand1_dc4_nk4_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+850
+loading model
+test shape: torch.Size([850, 26]) torch.Size([850, 1])
+accuracy:0.6082352941176471
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           Heartbeat           Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/Heartbeat
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        9                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            64                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+204
+205
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_Heartbeat_MambaSingleLayer_UEA_ftM_sl405_ll0_pl0_dm64_ds16_expand1_dc4_nk9_tvdt0_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+205
+loading model
+test shape: torch.Size([205, 2]) torch.Size([205, 1])
+accuracy:0.8048780487804879
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           InsectWingbeat      Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/InsectWingbeat
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+25000
+25000
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_InsectWingbeat_MambaSingleLayer_UEA_ftM_sl22_ll0_pl0_dm1024_ds8_expand1_dc4_nk3_tvdt0_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+25000
+loading model
+test shape: torch.Size([25000, 10]) torch.Size([25000, 1])
+accuracy:0.66304
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           JapaneseVowels      Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/JapaneseVowels
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            128                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+270
+370
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_JapaneseVowels_MambaSingleLayer_UEA_ftM_sl29_ll0_pl0_dm128_ds8_expand1_dc4_nk3_tvdt1_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+370
+loading model
+test shape: torch.Size([370, 9]) torch.Size([370, 1])
+accuracy:0.9864864864864865
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           Libras              Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/Libras
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+180
+180
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_Libras_MambaSingleLayer_UEA_ftM_sl45_ll0_pl0_dm1024_ds4_expand1_dc4_nk3_tvdt1_tvB1_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+180
+loading model
+test shape: torch.Size([180, 15]) torch.Size([180, 1])
+accuracy:0.9166666666666666
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           LSST                Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/LSST
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+2459
+2466
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_LSST_MambaSingleLayer_UEA_ftM_sl36_ll0_pl0_dm1024_ds4_expand1_dc4_nk3_tvdt1_tvB1_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2466
+loading model
+test shape: torch.Size([2466, 14]) torch.Size([2466, 1])
+accuracy:0.4557988645579886
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           MotorImagery        Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/MotorImagery
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        60                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+278
+100
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_MotorImagery_MambaSingleLayer_UEA_ftM_sl3000_ll0_pl0_dm32_ds8_expand1_dc4_nk60_tvdt0_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+100
+loading model
+test shape: torch.Size([100, 2]) torch.Size([100, 1])
+accuracy:0.69
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           NATOPS              Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/NATOPS
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+180
+180
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_NATOPS_MambaSingleLayer_UEA_ftM_sl51_ll0_pl0_dm512_ds2_expand1_dc4_nk3_tvdt0_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+180
+loading model
+test shape: torch.Size([180, 6]) torch.Size([180, 1])
+accuracy:0.9888888888888889
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           PEMS-SF             Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/PEMS-SF
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            512                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+267
+173
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_PEMS-SF_MambaSingleLayer_UEA_ftM_sl144_ll0_pl0_dm512_ds1_expand1_dc4_nk3_tvdt1_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+173
+loading model
+test shape: torch.Size([173, 7]) torch.Size([173, 1])
+accuracy:0.8554913294797688
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           PenDigits           Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/PenDigits
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            64                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+7494
+3498
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_PenDigits_MambaSingleLayer_UEA_ftM_sl8_ll0_pl0_dm64_ds1_expand1_dc4_nk3_tvdt0_tvB1_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+3498
+loading model
+test shape: torch.Size([3498, 10]) torch.Size([3498, 1])
+accuracy:0.9925671812464265
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           PhonemeSpectra      Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/PhonemeSpectra
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        5                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            256                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+3315
+3353
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_PhonemeSpectra_MambaSingleLayer_UEA_ftM_sl217_ll0_pl0_dm256_ds4_expand1_dc4_nk5_tvdt1_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+3353
+loading model
+test shape: torch.Size([3353, 39]) torch.Size([3353, 1])
+accuracy:0.3033104682373993
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           RacketSports        Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/RacketSports
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               4                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+151
+152
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_RacketSports_MambaSingleLayer_UEA_ftM_sl30_ll0_pl0_dm1024_ds4_expand1_dc4_nk3_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+152
+loading model
+test shape: torch.Size([152, 4]) torch.Size([152, 1])
+accuracy:0.9276315789473685
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           SelfRegulationSCP1  Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/SelfRegulationSCP1
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        18                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            256                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+268
+293
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_SelfRegulationSCP1_MambaSingleLayer_UEA_ftM_sl896_ll0_pl0_dm256_ds16_expand1_dc4_nk18_tvdt1_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+293
+loading model
+test shape: torch.Size([293, 2]) torch.Size([293, 1])
+accuracy:0.9249146757679181
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           SelfRegulationSCP2  Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/SelfRegulationSCP2
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        24                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            256                 
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               16                  
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+200
+180
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_SelfRegulationSCP2_MambaSingleLayer_UEA_ftM_sl1152_ll0_pl0_dm256_ds16_expand1_dc4_nk24_tvdt1_tvB1_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+180
+loading model
+test shape: torch.Size([180, 2]) torch.Size([180, 1])
+accuracy:0.65
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           SpokenArabicDigits  Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/SpokenArabicDigits
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        3                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               8                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+6599
+2199
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_SpokenArabicDigits_MambaSingleLayer_UEA_ftM_sl93_ll0_pl0_dm1024_ds8_expand1_dc4_nk3_tvdt0_tvB1_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+2199
+loading model
+test shape: torch.Size([2199, 10]) torch.Size([2199, 1])
+accuracy:0.9995452478399273
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           StandWalkJump       Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/StandWalkJump
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        50                  
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            32                  
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               1                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+12
+15
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_StandWalkJump_MambaSingleLayer_UEA_ftM_sl2500_ll0_pl0_dm32_ds1_expand1_dc4_nk50_tvdt1_tvB0_tvC0_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+15
+loading model
+test shape: torch.Size([15, 3]) torch.Size([15, 1])
+accuracy:0.7333333333333333
+Using GPU
+Args in experiment:
+[1mBasic Config[0m
+  Task Name:          classification      Is Training:        0                   
+  Model ID:           UWaveGestureLibrary Model:              MambaSingleLayer    
+
+[1mData Loader[0m
+  Data:               UEA                 Root Path:          ./dataset/UWaveGestureLibrary
+  Data Path:          ETTh1.csv           Features:           M                   
+  Target:             OT                  Freq:               h                   
+  Checkpoints:        ./checkpoints_best/MambaSL
+
+[1mModel Parameters[0m
+  Top k:              5                   Num Kernels:        7                   
+  Enc In:             7                   Dec In:             7                   
+  C Out:              7                   d model:            1024                
+  n heads:            8                   e layers:           2                   
+  d layers:           1                   d FF:               2                   
+  Moving Avg:         25                  Factor:             1                   
+  Distil:             1                   Dropout:            0.1                 
+  Embed:              timeF               Activation:         gelu                
+
+[1mRun Parameters[0m
+  Num Workers:        10                  Itr:                1                   
+  Train Epochs:       100                 Batch Size:         16                  
+  Patience:           10                  Learning Rate:      0.001               
+  Des:                gating4proposed     Loss:               MSE                 
+  Lradj:              type1               Use Amp:            0                   
+
+[1mGPU[0m
+  Use GPU:            1                   GPU:                0                   
+  Use Multi GPU:      0                   Devices:            0,1,2,3             
+
+[1mDe-stationary Projector Params[0m
+  P Hidden Dims:      128, 128            P Hidden Layers:    2                   
+
+Use GPU: cuda:0
+120
+320
+🚀 Lazy Loading: MambaSingleLayer ...
+>>>>>>>testing : classification_CLS_UWaveGestureLibrary_MambaSingleLayer_UEA_ftM_sl315_ll0_pl0_dm1024_ds2_expand1_dc4_nk7_tvdt0_tvB0_tvC1_useD0_gating4proposed_0<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+320
+loading model
+test shape: torch.Size([320, 8]) torch.Size([320, 1])
+accuracy:0.934375
