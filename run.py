@@ -49,6 +49,10 @@ if __name__ == '__main__':
     # model define
     parser.add_argument('--expand', type=int, default=2, help='expansion factor for Mamba')
     parser.add_argument('--d_conv', type=int, default=4, help='conv kernel size for Mamba')
+    parser.add_argument('--tv_dt', type=int, default=0, help='whether to use time variant dt for MambaSL')
+    parser.add_argument('--tv_B', type=int, default=0, help='whether to use time variant B for MambaSL')
+    parser.add_argument('--tv_C', type=int, default=0, help='whether to use time variant C for MambaSL')
+    parser.add_argument('--use_D', type=int, default=0, help='whether to use D for MambaSL')
     parser.add_argument('--top_k', type=int, default=5, help='for TimesBlock')
     parser.add_argument('--num_kernels', type=int, default=6, help='for Inception')
     parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
@@ -219,6 +223,13 @@ if __name__ == '__main__':
                 args.embed,
                 args.distil,
                 args.des, ii)
+            
+            # Override setting for specific model to ensure proper checkpoint naming and logging
+            if args.model == 'MambaSingleLayer' and args.task_name == 'classification':
+                setting = f'{args.task_name}_CLS_{args.model_id}_{args.model}_{args.data}_ft{args.features}' \
+                        + f'_sl{args.seq_len}_ll{args.label_len}_pl{args.pred_len}_dm{args.d_model}_ds{args.d_ff}' \
+                        + f'_expand{args.expand}_dc{args.d_conv}_nk{args.num_kernels}' \
+                        + f'_tvdt{int(args.tv_dt)}_tvB{int(args.tv_B)}_tvC{int(args.tv_C)}_useD{int(args.use_D)}_{args.des}_{ii}'
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             exp.train(setting)
@@ -253,6 +264,13 @@ if __name__ == '__main__':
             args.embed,
             args.distil,
             args.des, ii)
+        
+        # Override setting for specific model to ensure proper checkpoint naming and logging
+        if args.model == 'MambaSingleLayer' and args.task_name == 'classification':
+            setting = f'{args.task_name}_CLS_{args.model_id}_{args.model}_{args.data}_ft{args.features}' \
+                    + f'_sl{args.seq_len}_ll{args.label_len}_pl{args.pred_len}_dm{args.d_model}_ds{args.d_ff}' \
+                    + f'_expand{args.expand}_dc{args.d_conv}_nk{args.num_kernels}' \
+                    + f'_tvdt{args.tv_dt}_tvB{args.tv_B}_tvC{args.tv_C}_useD{int(args.use_D)}_{args.des}_{ii}'
 
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)
