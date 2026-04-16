@@ -27,6 +27,8 @@ class Exp_Classification(Exp_Basic):
         self.args.seq_len = max(train_data.max_seq_len, test_data.max_seq_len)
         self.args.pred_len = 0
         self.args.enc_in = train_data.feature_df.shape[1]
+        self.args.dec_in = self.args.enc_in
+        self.args.c_out = self.args.enc_in
         self.args.num_class = len(train_data.class_names)
         # model init
         model = self.model_dict[self.args.model](self.args).float()
