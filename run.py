@@ -26,6 +26,19 @@ if __name__ == '__main__':
     parser.add_argument('--data', type=str, required=True, default='ETTh1', help='dataset type')
     parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
+    parser.add_argument('--label_col', type=str, default='label', help='label column for CSV classification datasets')
+    parser.add_argument('--drop_cols', type=str, default='',
+                        help='comma-separated columns to exclude from CSV classification features')
+    parser.add_argument('--window_step', type=int, default=1,
+                        help='stride of the sliding window for CSV classification datasets')
+    parser.add_argument('--train_ratio', type=float, default=0.7,
+                        help='train split ratio for CSV classification datasets')
+    parser.add_argument('--val_ratio', type=float, default=0.15,
+                        help='validation split ratio for CSV classification datasets')
+    parser.add_argument('--file_split_mode', type=str, default='shuffle',
+                        help='CSV classification file split mode, options:[shuffle, sorted]')
+    parser.add_argument('--window_label_mode', type=str, default='last',
+                        help='CSV classification window label mode, options:[last, majority]')
     parser.add_argument('--features', type=str, default='M',
                         help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
     parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
@@ -91,6 +104,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
+    parser.add_argument('--use_class_weights', action='store_true', default=False,
+                        help='use inverse-frequency class weights for classification')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')

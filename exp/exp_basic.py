@@ -1,53 +1,33 @@
-import os
-import torch
 import importlib
-import pkgutil  
+import os
 
-# Just put your model files under models/ folder
-# e.g., models/Transformer.py, models/LSTM.py, etc.
-# All models will be automatically detected and can be used by specifying their names.
+import torch
+
 
 class Exp_Basic(object):
     def __init__(self, args):
         self.args = args
-        
-        # -------------------------------------------------------
-        #  Automatically generate model map
-        # -------------------------------------------------------
-        model_map = self._scan_models_directory()
 
-        # Use smart dictionary
+        model_map = self._scan_models_directory()
         self.model_dict = LazyModelDict(model_map)
 
         self.device = self._acquire_device()
         self.model = self._build_model().to(self.device)
 
     def _scan_models_directory(self):
-        """
-        Automatically scan all .py files in the models folder
-        """
         model_map = {}
         models_dir = 'models'
 
-        # Iterate through all files in 'models' directory
         if os.path.exists(models_dir):
             for filename in os.listdir(models_dir):
-                # Ignore __init__.py and non-.py files
                 if filename.endswith('.py') and filename != '__init__.py':
-                    # Remove .py extension to get module name
                     module_name = filename[:-3]
-                    
-                    # Build full import path
-                    full_path = f"{models_dir}.{module_name}"
-                    
-                    # loading dict: {'Transformer': 'models.Transformer'}
-                    model_map[module_name] = full_path
-        
+                    model_map[module_name] = f"{models_dir}.{module_name}"
+
         return model_map
 
     def _build_model(self):
         raise NotImplementedError
-        return None
 
     def _acquire_device(self):
         if self.args.use_gpu and self.args.gpu_type == 'cuda':
@@ -77,9 +57,6 @@ class Exp_Basic(object):
 
 
 class LazyModelDict(dict):
-    """
-    Smart Lazy-Loading Dictionary
-    """
     def __init__(self, model_map):
         self.model_map = model_map
         super().__init__()
@@ -87,19 +64,18 @@ class LazyModelDict(dict):
     def __getitem__(self, key):
         if key in self:
             return super().__getitem__(key)
-        
+
         if key not in self.model_map:
             raise NotImplementedError(f"Model [{key}] not found in 'models' directory.")
-            
+
         module_path = self.model_map[key]
         try:
-            print(f"🚀 Lazy Loading: {key} ...") 
+            print(f"Lazy Loading: {key} ...")
             module = importlib.import_module(module_path)
-        except ImportError as e:
-            print(f"❌ Error: Failed to import model [{key}]. Dependencies missing?")
-            raise e
+        except ImportError as exc:
+            print(f"Error: Failed to import model [{key}]. Dependencies missing?")
+            raise exc
 
-        # Try to find the model class
         if hasattr(module, 'Model'):
             model_class = module.Model
         elif hasattr(module, key):
@@ -109,4 +85,3 @@ class LazyModelDict(dict):
 
         self[key] = model_class
         return model_class
-

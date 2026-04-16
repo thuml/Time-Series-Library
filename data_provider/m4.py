@@ -23,7 +23,6 @@ from glob import glob
 
 import numpy as np
 import pandas as pd
-import patoolib
 from tqdm import tqdm
 import logging
 import os
@@ -31,6 +30,11 @@ import pathlib
 import sys
 from urllib import request
 from huggingface_hub import hf_hub_download
+
+try:
+    import patoolib  # noqa: F401
+except ImportError:
+    patoolib = None
 
 HUGGINGFACE_REPO = "thuml/Time-Series-Library"
 

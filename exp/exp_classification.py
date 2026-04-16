@@ -3,12 +3,15 @@ from exp.exp_basic import Exp_Basic
 from utils.tools import EarlyStopping, adjust_learning_rate, cal_accuracy
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 import os
 import time
 import warnings
 import numpy as np
 import pdb
+import pandas as pd
+from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix, f1_score
 
 warnings.filterwarnings('ignore')
 
@@ -41,7 +44,13 @@ class Exp_Classification(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.CrossEntropyLoss()
+        class_weights = None
+        if getattr(self.args, 'use_class_weights', False):
+            train_data, _ = self._get_data(flag='TRAIN')
+            if getattr(train_data, 'class_weights', None) is not None:
+                class_weights = torch.tensor(train_data.class_weights, dtype=torch.float32, device=self.device)
+
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
         return criterion
 
     def vali(self, vali_data, vali_loader, criterion):
@@ -68,7 +77,7 @@ class Exp_Classification(Exp_Basic):
 
         preds = torch.cat(preds, 0)
         trues = torch.cat(trues, 0)
-        probs = torch.nn.functional.softmax(preds)  # (total_samples, num_classes) est. prob. for each class and sample
+        probs = F.softmax(preds, dim=1)  # (total_samples, num_classes) est. prob. for each class and sample
         predictions = torch.argmax(probs, dim=1).cpu().numpy()  # (total_samples,) int class index for each sample
         trues = trues.flatten().cpu().numpy()
         accuracy = cal_accuracy(predictions, trues)
@@ -78,7 +87,7 @@ class Exp_Classification(Exp_Basic):
 
     def train(self, setting):
         train_data, train_loader = self._get_data(flag='TRAIN')
-        vali_data, vali_loader = self._get_data(flag='TEST')
+        vali_data, vali_loader = self._get_data(flag='VAL')
         test_data, test_loader = self._get_data(flag='TEST')
 
         path = os.path.join(self.args.checkpoints, setting)
@@ -150,9 +159,8 @@ class Exp_Classification(Exp_Basic):
 
         preds = []
         trues = []
-        folder_path = './test_results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        folder_path = os.path.abspath(os.path.join('test_results', setting))
+        os.makedirs(folder_path, exist_ok=True)
 
         self.model.eval()
         with torch.no_grad():
@@ -170,22 +178,64 @@ class Exp_Classification(Exp_Basic):
         trues = torch.cat(trues, 0)
         print('test shape:', preds.shape, trues.shape)
 
-        probs = torch.nn.functional.softmax(preds)  # (total_samples, num_classes) est. prob. for each class and sample
+        probs = F.softmax(preds, dim=1)  # (total_samples, num_classes) est. prob. for each class and sample
         predictions = torch.argmax(probs, dim=1).cpu().numpy()  # (total_samples,) int class index for each sample
         trues = trues.flatten().cpu().numpy()
         accuracy = cal_accuracy(predictions, trues)
+        macro_f1 = f1_score(trues, predictions, average='macro', zero_division=0)
+        weighted_f1 = f1_score(trues, predictions, average='weighted', zero_division=0)
+        balanced_acc = balanced_accuracy_score(trues, predictions)
+
+        class_names = [str(name) for name in getattr(test_data, 'class_names', list(range(self.args.num_class)))]
+        class_indices = list(range(len(class_names)))
+        report = classification_report(
+            trues,
+            predictions,
+            labels=class_indices,
+            target_names=class_names,
+            digits=4,
+            zero_division=0
+        )
+        conf_mat = confusion_matrix(trues, predictions, labels=class_indices)
 
         # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        folder_path = os.path.abspath(os.path.join('results', setting))
+        os.makedirs(folder_path, exist_ok=True)
 
         print('accuracy:{}'.format(accuracy))
-        file_name='result_classification.txt'
-        f = open(os.path.join(folder_path,file_name), 'a')
-        f.write(setting + "  \n")
-        f.write('accuracy:{}'.format(accuracy))
-        f.write('\n')
-        f.write('\n')
-        f.close()
+        print('macro_f1:{}'.format(macro_f1))
+        print('weighted_f1:{}'.format(weighted_f1))
+        print('balanced_accuracy:{}'.format(balanced_acc))
+        print(report)
+        result_file = os.path.join(folder_path, 'metrics.txt')
+        os.makedirs(os.path.dirname(result_file), exist_ok=True)
+        with open(result_file, 'a', encoding='utf-8') as f:
+            f.write(setting + "  \n")
+            f.write('accuracy:{}'.format(accuracy))
+            f.write('\n')
+            f.write('macro_f1:{}'.format(macro_f1))
+            f.write('\n')
+            f.write('weighted_f1:{}'.format(weighted_f1))
+            f.write('\n')
+            f.write('balanced_accuracy:{}'.format(balanced_acc))
+            f.write('\n')
+            f.write(report)
+            f.write('\n')
+            f.write('\n')
+
+        pred_label_names = class_names
+        prediction_rows = pd.DataFrame({
+            'true_index': trues,
+            'pred_index': predictions,
+            'true_label': [pred_label_names[idx] for idx in trues],
+            'pred_label': [pred_label_names[idx] for idx in predictions],
+        })
+        sample_metadata = getattr(test_data, 'sample_metadata', None)
+        if sample_metadata is not None and len(sample_metadata) == len(prediction_rows):
+            prediction_rows = pd.concat([pd.DataFrame(sample_metadata), prediction_rows], axis=1)
+
+        prediction_rows.to_csv(os.path.join(folder_path, 'pred.csv'), index=False)
+        pd.DataFrame(conf_mat, index=class_names, columns=class_names).to_csv(
+            os.path.join(folder_path, 'cm.csv')
+        )
         return

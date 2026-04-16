@@ -1,5 +1,6 @@
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader
+from data_provider.csv_classification_loader import CSVMultiFileClassificationLoader
 from data_provider.uea import collate_fn
 from torch.utils.data import DataLoader
 
@@ -15,7 +16,8 @@ data_dict = {
     'SMAP': SMAPSegLoader,
     'SMD': SMDSegLoader,
     'SWAT': SWATSegLoader,
-    'UEA': UEAloader
+    'UEA': UEAloader,
+    'CSV_CLS': CSVMultiFileClassificationLoader
 }
 
 
