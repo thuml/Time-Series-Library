@@ -95,7 +95,8 @@ class CSVMultiFileClassificationLoader(Dataset):
 
         split_files = list(files)
         if self.file_split_mode == "shuffle":
-            random.Random(getattr(self.args, "seed", 2)).shuffle(split_files)
+            split_seed = int(getattr(self.args, "split_seed", getattr(self.args, "seed", 2)))
+            random.Random(split_seed).shuffle(split_files)
         elif self.file_split_mode != "sorted":
             raise ValueError(
                 f"Unsupported file_split_mode={self.file_split_mode}. Use 'shuffle' or 'sorted'."

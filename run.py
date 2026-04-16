@@ -6,11 +6,19 @@ from utils.print_args import print_args
 import random
 import numpy as np
 
+def set_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    if hasattr(torch.backends, "cudnn"):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+
 if __name__ == '__main__':
-    fix_seed = 2021
-    random.seed(fix_seed)
-    torch.manual_seed(fix_seed)
-    np.random.seed(fix_seed)
 
     parser = argparse.ArgumentParser(description='TimesNet')
 
@@ -37,6 +45,8 @@ if __name__ == '__main__':
                         help='validation split ratio for CSV classification datasets')
     parser.add_argument('--file_split_mode', type=str, default='shuffle',
                         help='CSV classification file split mode, options:[shuffle, sorted]')
+    parser.add_argument('--split_seed', type=int, default=2,
+                        help='random seed for file-level split in CSV classification')
     parser.add_argument('--window_label_mode', type=str, default='last',
                         help='CSV classification window label mode, options:[last, majority]')
     parser.add_argument('--features', type=str, default='M',
@@ -184,6 +194,7 @@ if __name__ == '__main__':
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
 
     args = parser.parse_args()
+    set_random_seed(args.seed)
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
         print('Using GPU')
@@ -228,6 +239,8 @@ if __name__ == '__main__':
 
     if args.is_training:
         for ii in range(args.itr):
+            run_seed = args.seed + ii
+            set_random_seed(run_seed)
             # setting record of experiments
             exp = Exp(args)  # set experiments
             setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(

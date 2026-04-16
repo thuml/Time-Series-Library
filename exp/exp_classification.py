@@ -233,7 +233,30 @@ class Exp_Classification(Exp_Basic):
             digits=4,
             zero_division=0
         )
+        report_dict = classification_report(
+            trues,
+            predictions,
+            labels=class_indices,
+            target_names=class_names,
+            output_dict=True,
+            zero_division=0
+        )
         conf_mat = confusion_matrix(trues, predictions, labels=class_indices)
+
+        raw_label_to_idx = {str(raw_label): idx for idx, raw_label in enumerate(class_names)}
+        fault_indices = [raw_label_to_idx[key] for key in ['3', '7', '9'] if key in raw_label_to_idx]
+        if fault_indices:
+            fault_macro_f1 = f1_score(
+                trues, predictions, labels=fault_indices, average='macro', zero_division=0
+            )
+        else:
+            fault_macro_f1 = float('nan')
+
+        class9_metrics = report_dict.get('9', {})
+        class9_precision = float(class9_metrics.get('precision', 0.0))
+        class9_recall = float(class9_metrics.get('recall', 0.0))
+        class9_f1 = float(class9_metrics.get('f1-score', 0.0))
+        class9_support = float(class9_metrics.get('support', 0.0))
 
         # result save
         folder_path = os.path.abspath(os.path.join('results', setting))
@@ -243,6 +266,10 @@ class Exp_Classification(Exp_Basic):
         print('macro_f1:{}'.format(macro_f1))
         print('weighted_f1:{}'.format(weighted_f1))
         print('balanced_accuracy:{}'.format(balanced_acc))
+        print('fault_macro_f1:{}'.format(fault_macro_f1))
+        print('class9_precision:{}'.format(class9_precision))
+        print('class9_recall:{}'.format(class9_recall))
+        print('class9_f1:{}'.format(class9_f1))
         print(report)
         result_file = os.path.join(folder_path, 'metrics.txt')
         os.makedirs(os.path.dirname(result_file), exist_ok=True)
@@ -256,9 +283,33 @@ class Exp_Classification(Exp_Basic):
             f.write('\n')
             f.write('balanced_accuracy:{}'.format(balanced_acc))
             f.write('\n')
+            f.write('fault_macro_f1:{}'.format(fault_macro_f1))
+            f.write('\n')
+            f.write('class9_precision:{}'.format(class9_precision))
+            f.write('\n')
+            f.write('class9_recall:{}'.format(class9_recall))
+            f.write('\n')
+            f.write('class9_f1:{}'.format(class9_f1))
+            f.write('\n')
             f.write(report)
             f.write('\n')
             f.write('\n')
+
+        summary_df = pd.DataFrame([
+            {
+                'setting': setting,
+                'accuracy': accuracy,
+                'macro_f1': macro_f1,
+                'weighted_f1': weighted_f1,
+                'balanced_accuracy': balanced_acc,
+                'fault_macro_f1': fault_macro_f1,
+                'class9_precision': class9_precision,
+                'class9_recall': class9_recall,
+                'class9_f1': class9_f1,
+                'class9_support': class9_support,
+            }
+        ])
+        summary_df.to_csv(os.path.join(folder_path, 'summary.csv'), index=False)
 
         pred_label_names = class_names
         prediction_rows = pd.DataFrame({
