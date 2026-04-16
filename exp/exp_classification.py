@@ -69,7 +69,7 @@ class Exp_Classification(Exp_Basic):
                 outputs = self.model(batch_x, padding_mask, None, None)
 
                 pred = outputs.detach()
-                loss = criterion(pred, label.long().squeeze())
+                loss = criterion(pred, label.long().squeeze(-1))
                 total_loss.append(loss.item())
 
                 preds.append(outputs.detach())
