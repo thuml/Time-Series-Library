@@ -2,7 +2,8 @@ from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Data
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader
 from data_provider.csv_classification_loader import CSVMultiFileClassificationLoader
 from data_provider.uea import collate_fn
-from torch.utils.data import DataLoader
+import torch
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
 data_dict = {
     'ETTh1': Dataset_ETT_hour,
@@ -54,10 +55,23 @@ def data_provider(args, flag):
             flag=flag,
         )
 
+        sampler = None
+        if (flag == 'train' or flag == 'TRAIN') and getattr(args, 'use_balanced_sampler', False):
+            sample_weights = getattr(data_set, 'sample_weights', None)
+            if sample_weights is None:
+                raise ValueError('Dataset does not provide sample_weights for balanced sampling.')
+            sampler = WeightedRandomSampler(
+                weights=torch.as_tensor(sample_weights, dtype=torch.double),
+                num_samples=len(sample_weights),
+                replacement=True
+            )
+            shuffle_flag = False
+
         data_loader = DataLoader(
             data_set,
             batch_size=batch_size,
-            shuffle=shuffle_flag,
+            shuffle=shuffle_flag if sampler is None else False,
+            sampler=sampler,
             num_workers=args.num_workers,
             drop_last=drop_last,
             collate_fn=lambda x: collate_fn(x, max_len=args.seq_len)

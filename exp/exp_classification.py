@@ -16,6 +16,36 @@ from sklearn.metrics import balanced_accuracy_score, classification_report, conf
 warnings.filterwarnings('ignore')
 
 
+class FocalLoss(nn.Module):
+    def __init__(self, weight=None, gamma=2.0, reduction='mean'):
+        super().__init__()
+        self.weight = weight
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, logits, targets):
+        targets = targets.long().view(-1)
+        log_probs = F.log_softmax(logits, dim=1)
+        probs = torch.exp(log_probs)
+
+        gather_index = targets.unsqueeze(1)
+        log_pt = log_probs.gather(1, gather_index).squeeze(1)
+        pt = probs.gather(1, gather_index).squeeze(1)
+
+        focal_weight = (1.0 - pt).pow(self.gamma)
+        if self.weight is not None:
+            alpha_t = self.weight.gather(0, targets)
+            loss = -alpha_t * focal_weight * log_pt
+        else:
+            loss = -focal_weight * log_pt
+
+        if self.reduction == 'sum':
+            return loss.sum()
+        if self.reduction == 'none':
+            return loss
+        return loss.mean()
+
+
 class Exp_Classification(Exp_Basic):
     def __init__(self, args):
         super(Exp_Classification, self).__init__(args)
@@ -52,7 +82,12 @@ class Exp_Classification(Exp_Basic):
             if getattr(train_data, 'class_weights', None) is not None:
                 class_weights = torch.tensor(train_data.class_weights, dtype=torch.float32, device=self.device)
 
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        loss_name = str(getattr(self.args, 'cls_loss', 'ce')).lower()
+        if loss_name == 'focal':
+            gamma = float(getattr(self.args, 'focal_gamma', 2.0))
+            criterion = FocalLoss(weight=class_weights, gamma=gamma)
+        else:
+            criterion = nn.CrossEntropyLoss(weight=class_weights)
         return criterion
 
     def vali(self, vali_data, vali_loader, criterion):

@@ -106,6 +106,18 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--use_class_weights', action='store_true', default=False,
                         help='use inverse-frequency class weights for classification')
+    parser.add_argument('--use_balanced_sampler', action='store_true', default=False,
+                        help='use WeightedRandomSampler for classification training')
+    parser.add_argument('--sampler_power', type=float, default=1.0,
+                        help='exponent applied to per-sample weights for balanced sampler')
+    parser.add_argument('--minority_raw_label', type=str, default='',
+                        help='raw label value to additionally boost in balanced sampler, e.g. 9')
+    parser.add_argument('--minority_boost', type=float, default=1.0,
+                        help='extra multiplier for minority_raw_label in balanced sampler')
+    parser.add_argument('--cls_loss', type=str, default='ce',
+                        help='classification loss type, options:[ce, focal]')
+    parser.add_argument('--focal_gamma', type=float, default=2.0,
+                        help='focal loss gamma when --cls_loss focal')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')

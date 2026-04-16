@@ -24,6 +24,9 @@ class CSVMultiFileClassificationLoader(Dataset):
         self.drop_cols = {
             col.strip() for col in str(getattr(args, "drop_cols", "")).split(",") if col.strip()
         }
+        self.sampler_power = float(getattr(args, "sampler_power", 1.0))
+        self.minority_boost = float(getattr(args, "minority_boost", 1.0))
+        self.minority_raw_label = self._parse_optional_label(getattr(args, "minority_raw_label", ""))
         self._file_cache = {}
 
         self.csv_files = self._list_csv_files()
@@ -40,6 +43,7 @@ class CSVMultiFileClassificationLoader(Dataset):
         self.train_mean, self.train_std = self._fit_normalizer(self.split_files["TRAIN"])
         self.class_weights = self._compute_class_weights(self.split_files["TRAIN"])
         self.samples, label_dist = self._build_samples(self.split_files[self.flag])
+        self.sample_weights = self._compute_sample_weights(self.samples)
         self.sample_metadata = [
             {
                 "file_name": sample["file_name"],
@@ -55,6 +59,24 @@ class CSVMultiFileClassificationLoader(Dataset):
             f"windows={len(self.samples)}, features={len(self.feature_names)}, "
             f"label_dist={dict(sorted(label_dist.items(), key=lambda item: item[0]))}"
         )
+        if self.flag == "TRAIN" and self.minority_raw_label is not None and self.minority_raw_label not in self.class_names:
+            print(f"Warning: minority_raw_label={self.minority_raw_label} not found in train classes {self.class_names}")
+
+    @staticmethod
+    def _parse_optional_label(raw_value):
+        if raw_value is None:
+            return None
+        raw_text = str(raw_value).strip()
+        if not raw_text or raw_text.lower() in {"none", "null", "nan"}:
+            return None
+        try:
+            return int(raw_text)
+        except ValueError:
+            pass
+        try:
+            return float(raw_text)
+        except ValueError:
+            return raw_text
 
     def _list_csv_files(self):
         pattern = os.path.join(self.root_path, "**", "*.csv")
@@ -213,6 +235,20 @@ class CSVMultiFileClassificationLoader(Dataset):
             weight = total / (num_classes * count) if count > 0 else 0.0
             weights.append(weight)
         return np.asarray(weights, dtype=np.float32)
+
+    def _compute_sample_weights(self, samples):
+        if len(self.class_weights) == 0:
+            return np.ones(len(samples), dtype=np.float64)
+
+        sample_weights = []
+        for sample in samples:
+            label_idx = int(sample["label"])
+            base_weight = float(self.class_weights[label_idx])
+            weight = max(base_weight, np.finfo(np.float32).eps) ** self.sampler_power
+            if self.minority_raw_label is not None and sample["raw_label"] == self.minority_raw_label:
+                weight *= self.minority_boost
+            sample_weights.append(weight)
+        return np.asarray(sample_weights, dtype=np.float64)
 
     def decode_indices(self, indices):
         return [self.index_to_label[int(index)] for index in indices]
