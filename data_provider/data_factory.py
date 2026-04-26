@@ -1,6 +1,6 @@
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader
-from data_provider.csv_classification_loader import CSVMultiFileClassificationLoader
+from data_provider.csv_classification_loader import CSVMultiFileClassificationLoader, csv_cls_collate_fn
 from data_provider.uea import collate_fn
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
@@ -74,7 +74,8 @@ def data_provider(args, flag):
             sampler=sampler,
             num_workers=args.num_workers,
             drop_last=drop_last,
-            collate_fn=lambda x: collate_fn(x, max_len=args.seq_len)
+            collate_fn=lambda x: csv_cls_collate_fn(x, max_len=args.seq_len) if args.data == 'CSV_CLS'
+            else collate_fn(x, max_len=args.seq_len)
         )
         return data_set, data_loader
     else:

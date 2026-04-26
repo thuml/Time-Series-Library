@@ -1,0 +1,18 @@
+\section{Introduction}
+
+Hoisting systems operate under strong safety constraints, and overspeed-related failures in the deceleration stage can trigger equipment damage and operational interruption. In industrial practice, it is not sufficient to determine whether a fault has already occurred. Operators also need a model that can distinguish between normal running, early degradation, severe degradation, and completed fault states, while providing short-horizon warning before the system enters the final fault condition.
+
+The private dataset considered in this work does not describe multiple unrelated fault categories. Instead, it records a \emph{single overspeed fault chain} with five state labels: stop, normal operation, first-level degradation, second-level degradation, and fault. This structure changes the research question. The main challenge is no longer standard multiclass classification, but structured lifecycle modeling under state imbalance, transient transitions, and file-level operating-condition variation.
+
+Existing deep models for multivariate time-series classification often treat labels as independent categories. That assumption is weak for the current problem. In our data, the fault flag appears only in the final fault state, while intermediate degradation states are semantically adjacent and operationally constrained. For example, the observed transition pattern is consistent with a directed process such as normal $\rightarrow$ degradation $\rightarrow$ fault, followed by post-fault stop. A flat classifier can fit the labels, but it does not explicitly enforce realistic progression behavior or support warning-oriented outputs.
+
+To address this gap, we propose a \emph{State-Graph Progression Hazard Network} (SGPH-Net). The method retains a compact temporal encoder suitable for small industrial datasets, but replaces flat label modeling with a constrained progression formulation. The state space is represented as a directed graph, the current state is estimated jointly with future worsening risk, and the time to fault is modeled with a bucketized warning head. This design is intended to improve both state recognition and short-horizon warning consistency.
+
+The contributions of this draft are as follows:
+\begin{enumerate}
+\item We reformulate hoisting overspeed monitoring as a \emph{state-graph-constrained progression learning} problem rather than a flat five-class classification task.
+\item We propose SGPH-Net, which jointly performs current-state recognition, short-horizon worsening prediction, and time-to-fault bucket estimation using a shared sensor-group temporal encoder.
+\item We define an IEEE IAS-oriented evaluation protocol for the private hoisting dataset, including file-level splits, event-level warning metrics, and ablations that isolate the contribution of graph constraint and hazard modeling.
+\end{enumerate}
+
+The rest of the paper is organized as follows. Section~\ref{sec:related} reviews the most relevant literature. Section~\ref{sec:method} presents the SGPH-Net formulation. Section~\ref{sec:experiments} describes the dataset, protocol, and experiment plan. Section~\ref{sec:conclusion} concludes the paper.

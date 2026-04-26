@@ -1,0 +1,146 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem formulation}
+
+Let $X=\{x_t\}_{t=1}^{T}$ denote a multivariate industrial time series, where $x_t \in \R^d$ contains all sensor channels at time step $t$. For a given time index $t$, the model receives a past observation window
+\begin{equation}
+W_t = \{x_{t-L+1}, \ldots, x_t\}.
+\end{equation}
+
+The current state label belongs to the set
+\begin{equation}
+\mathcal{S} = \{\stopmode, \normal, \degone, \degtwo, \fault\},
+\end{equation}
+which corresponds to the encoded labels $\{1, 5, 7, 9, 3\}$ in the dataset.
+
+Unlike flat classification, we define a directed state graph
+\begin{equation}
+\mathcal{G}=(\mathcal{S}, \mathcal{E}),
+\end{equation}
+where $\mathcal{E}$ contains only valid operational transitions. A practical graph for this task is
+\begin{equation}
+\mathcal{E} = \{
+\stopmode \rightarrow \normal,\,
+\normal \rightarrow \degone,\,
+\degone \rightarrow \degtwo,\,
+\degone \rightarrow \fault,\,
+\degtwo \rightarrow \fault,\,
+\fault \rightarrow \stopmode,\,
+\normal \rightarrow \stopmode
+\}.
+\end{equation}
+
+The model jointly predicts:
+\begin{align}
+\hat{y}_t &= f_{\st}(W_t), \\
+\hat{z}_t &= f_{\fault}(W_t; H), \\
+\hat{b}_t &= f_{\mathrm{time}}(W_t),
+\end{align}
+where $\hat{y}_t$ is the current state, $\hat{z}_t$ is a short-horizon worsening or fault-entry risk within horizon $H$, and $\hat{b}_t$ is a time-to-fault bucket.
+
+\subsection{Overall architecture}
+
+SGPH-Net consists of four parts:
+\begin{enumerate}
+\item a sensor-group temporal encoder,
+\item a current-state recognition head,
+\item a state-graph progression head, and
+\item a time-to-fault bucket head.
+\end{enumerate}
+
+The goal is to retain a compact backbone while placing the main inductive bias in the output structure.
+
+\subsection{Sensor-group temporal encoder}
+
+The raw channels are divided into physically meaningful groups:
+\begin{itemize}
+\item speed group,
+\item depth group,
+\item current group,
+\item load and pressure group.
+\end{itemize}
+
+Each group is encoded by a lightweight temporal block. In the initial implementation, this block can be instantiated as a temporal convolutional network (TCN) with gated residual layers. Let the group embeddings be
+\begin{equation}
+h_t^{(g)} = \phi_g(W_t), \quad g \in \{1, \ldots, G\}.
+\end{equation}
+The final shared representation is
+\begin{equation}
+h_t = \psi\left(h_t^{(1)}, \ldots, h_t^{(G)}\right),
+\end{equation}
+where $\psi(\cdot)$ denotes concatenation followed by a fusion multilayer perceptron.
+
+\subsection{Current-state recognition head}
+
+The current state distribution is predicted as
+\begin{equation}
+p_t = \softmax(W_y h_t + b_y),
+\end{equation}
+where $p_t \in \R^{|\mathcal{S}|}$.
+
+This head is responsible for five-state recognition. However, unlike a flat classifier, its output is coupled to the progression head described next.
+
+\subsection{State-graph progression head}
+
+We define a learnable transition score matrix $T_t \in \R^{|\mathcal{S}| \times |\mathcal{S}|}$ conditioned on the current window:
+\begin{equation}
+T_t = \mathrm{reshape}(W_T h_t + b_T).
+\end{equation}
+
+To suppress invalid transitions, we introduce a binary adjacency mask $M$ derived from $\mathcal{E}$:
+\begin{equation}
+\tilde{T}_t = T_t \odot M.
+\end{equation}
+
+The one-step progression distribution is then approximated by
+\begin{equation}
+q_t = p_t \tilde{T}_t.
+\end{equation}
+
+The short-horizon worsening score is predicted as
+\begin{equation}
+\hat{z}_t = \sigmoid(W_h h_t + b_h).
+\end{equation}
+
+This design couples current-state representation with transition-aware warning, which is more appropriate than optimizing warning as a detached auxiliary label.
+
+\subsection{Time-to-fault bucket head}
+
+For samples that have not yet entered the final fault state, SGPH-Net predicts a bucketized time-to-fault distribution:
+\begin{equation}
+\hat{b}_t = \softmax(W_b h_t + b_b).
+\end{equation}
+
+In the current draft, we use the following buckets:
+\begin{itemize}
+\item 0--4 s,
+\item 4--12 s,
+\item 12--20 s,
+\item 20--40 s,
+\item no fault within horizon.
+\end{itemize}
+
+Bucketization is preferred over direct regression because the dataset is limited and highly imbalanced, especially around the second-level degradation state.
+
+\subsection{Training objective}
+
+The total loss is defined as
+\begin{equation}
+\loss = \loss_{\st} + \lambda_1 \loss_{\mathrm{prog}} + \lambda_2 \loss_{\mathrm{hazard}} + \lambda_3 \loss_{\mathrm{time}}.
+\end{equation}
+
+Here:
+\begin{itemize}
+\item $\loss_{\st}$ is the class-balanced state-recognition loss,
+\item $\loss_{\mathrm{prog}}$ penalizes mass assigned to invalid edges,
+\item $\loss_{\mathrm{hazard}}$ supervises short-horizon worsening prediction,
+\item $\loss_{\mathrm{time}}$ supervises the time-to-fault bucket prediction.
+\end{itemize}
+
+A simple invalid-transition penalty is
+\begin{equation}
+\loss_{\mathrm{prog}} = \sum_{i,j} (1-M_{ij}) \tilde{T}_{t,ij}^{2}.
+\end{equation}
+
+The proposed formulation is intentionally compact. The novelty lies in the state-graph-constrained progression learning view, not in building a heavier backbone.

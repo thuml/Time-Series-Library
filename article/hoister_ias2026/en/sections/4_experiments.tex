@@ -1,0 +1,99 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Dataset and label semantics}
+
+The dataset used in this work contains 27 CSV files and 37,417 timestamps sampled at a fixed interval of 4 seconds. Each row contains multi-sensor measurements and three label-related fields, among which \texttt{running\_state\_five\_class} is the main target. The verified state counts are:
+\begin{itemize}
+\item stop (`1`): 10,959,
+\item normal (`5`): 15,695,
+\item first-level degradation (`7`): 5,364,
+\item second-level degradation (`9`): 185,
+\item fault (`3`): 5,214.
+\end{itemize}
+
+The binary fault indicator \texttt{JianSuDuan\_ChaoSu} equals 1 only when the final fault state (`3`) is active, which supports the interpretation that the remaining labels are pre-fault or non-fault operational states within the same overspeed lifecycle.
+
+\subsection{Evaluation protocol}
+
+The main evaluation must use file-level generalization:
+\begin{itemize}
+\item leave-one-file-out cross-validation as the primary protocol,
+\item grouped K-fold by file as a supplementary protocol.
+\end{itemize}
+
+Random window split is not used as the main setting because it overestimates generalization under strong temporal correlation.
+
+Two tasks are evaluated:
+\begin{enumerate}
+\item current five-state recognition,
+\item short-horizon warning with horizons of 12 s, 20 s, and 40 s.
+\end{enumerate}
+
+For state recognition, the main metrics are macro-F1, balanced accuracy, and per-class F1. For short-horizon warning, the main metrics are AUROC, AUPRC, event-level recall, false alarm rate, and time-bucket accuracy.
+
+\subsection{Baselines and ablations}
+
+The benchmark suite should include:
+\begin{itemize}
+\item flat 5-class TCN,
+\item flat 5-class Transformer,
+\item class-balanced TCN,
+\item class-balanced Transformer,
+\item SGPH-Net.
+\end{itemize}
+
+Mandatory ablations include:
+\begin{itemize}
+\item SGPH-Net without the state-graph constraint,
+\item SGPH-Net without the hazard head,
+\item SGPH-Net without the time-bucket head,
+\item SGPH-Net without sensor grouping.
+\end{itemize}
+
+\subsection{Result tables to be filled after benchmark runs}
+
+Table~\ref{tab:main_results} is reserved for the main comparison. The cells are intentionally left blank in this draft to avoid fabricating results before controlled runs.
+
+\begin{table}[t]
+\centering
+\caption{Main comparison on five-state recognition.}
+\label{tab:main_results}
+\begin{tabular}{lccc}
+\toprule
+Method & Macro-F1 & Balanced Acc. & Fault F1 \\
+\midrule
+Flat TCN & -- & -- & -- \\
+Flat Transformer & -- & -- & -- \\
+Balanced TCN & -- & -- & -- \\
+Balanced Transformer & -- & -- & -- \\
+SGPH-Net & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Short-horizon warning results.}
+\label{tab:warning_results}
+\begin{tabular}{lccc}
+\toprule
+Method & AUROC & AUPRC & Time-Bucket Acc. \\
+\midrule
+Balanced TCN & -- & -- & -- \\
+Balanced Transformer & -- & -- & -- \\
+SGPH-Net & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{What the final paper must demonstrate}
+
+The final version of the paper should demonstrate three empirical points:
+\begin{enumerate}
+\item SGPH-Net outperforms flat classifiers on macro-F1 or balanced accuracy.
+\item SGPH-Net improves recognition of degradation states, especially the rare second-level degradation state.
+\item SGPH-Net provides earlier and more stable warning than baselines at short horizons.
+\end{enumerate}
+
+Without these three points, the manuscript remains a method proposal rather than a submission-ready conference paper.

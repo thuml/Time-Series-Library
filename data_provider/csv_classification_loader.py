@@ -18,11 +18,22 @@ class CSVMultiFileClassificationLoader(Dataset):
         self.window_step = max(1, int(getattr(args, "window_step", 1)))
         self.label_col = getattr(args, "label_col", "label")
         self.window_label_mode = getattr(args, "window_label_mode", "last").lower()
+        self.enable_future_state_targets = bool(getattr(args, "enable_future_state_targets", False))
+        self.label_shift = max(0, int(getattr(args, "label_shift", 0)))
+        self.enable_progression_targets = bool(getattr(args, "enable_progression_targets", False))
+        self.state_graph_profile = str(getattr(args, "state_graph_profile", "none")).lower()
+        self.warning_horizon = max(1, int(getattr(args, "warning_horizon", 5)))
+        self.fault_raw_label = self._parse_optional_label(getattr(args, "fault_raw_label", "3"))
+        self.time_bucket_steps = self._parse_time_bucket_steps(getattr(args, "time_bucket_steps", "1,3,5,10"))
         self.train_ratio = float(getattr(args, "train_ratio", 0.7))
         self.val_ratio = float(getattr(args, "val_ratio", 0.15))
         self.file_split_mode = getattr(args, "file_split_mode", "shuffle").lower()
         self.drop_cols = {
             col.strip() for col in str(getattr(args, "drop_cols", "")).split(",") if col.strip()
+        }
+        self.csv_ignore_subdirs = {
+            item.strip() for item in str(getattr(args, "csv_ignore_subdirs", "experiment_outputs")).split(",")
+            if item.strip()
         }
         self.sampler_power = float(getattr(args, "sampler_power", 1.0))
         self.minority_boost = float(getattr(args, "minority_boost", 1.0))
@@ -34,6 +45,8 @@ class CSVMultiFileClassificationLoader(Dataset):
         self.class_names = self._collect_class_names(self.csv_files)
         self.label_to_index = {label: idx for idx, label in enumerate(self.class_names)}
         self.index_to_label = {idx: label for label, idx in self.label_to_index.items()}
+        self.severity_map = self._build_severity_map()
+        self.time_bucket_count = len(self.time_bucket_steps) + 1
 
         sample_features, _ = self._load_file(self.csv_files[0])
         self.feature_names = list(sample_features.columns)
@@ -78,9 +91,28 @@ class CSVMultiFileClassificationLoader(Dataset):
         except ValueError:
             return raw_text
 
+    @staticmethod
+    def _parse_time_bucket_steps(raw_value):
+        if raw_value is None:
+            return [1, 3, 5, 10]
+        if isinstance(raw_value, (list, tuple)):
+            steps = sorted({max(1, int(v)) for v in raw_value})
+            return steps or [1, 3, 5, 10]
+        raw_text = str(raw_value).strip()
+        if not raw_text:
+            return [1, 3, 5, 10]
+        steps = sorted({max(1, int(item.strip())) for item in raw_text.split(",") if item.strip()})
+        return steps or [1, 3, 5, 10]
+
     def _list_csv_files(self):
         pattern = os.path.join(self.root_path, "**", "*.csv")
-        csv_files = sorted(glob.glob(pattern, recursive=True))
+        csv_files = []
+        for file_path in sorted(glob.glob(pattern, recursive=True)):
+            rel_path = os.path.relpath(file_path, self.root_path)
+            path_parts = set(rel_path.split(os.sep))
+            if self.csv_ignore_subdirs and path_parts.intersection(self.csv_ignore_subdirs):
+                continue
+            csv_files.append(file_path)
         if not csv_files:
             raise FileNotFoundError(f"No CSV files found under {self.root_path}")
         return csv_files
@@ -156,6 +188,18 @@ class CSVMultiFileClassificationLoader(Dataset):
             label_values.update(label_series.dropna().tolist())
         return sorted(label_values)
 
+    def _build_severity_map(self):
+        if self.state_graph_profile == "hoister_overspeed":
+            rank = {
+                self._parse_optional_label(1): 0,
+                self._parse_optional_label(5): 0,
+                self._parse_optional_label(7): 1,
+                self._parse_optional_label(9): 2,
+                self._parse_optional_label(3): 3,
+            }
+            return {label: rank.get(label, 0) for label in self.class_names}
+        return {label: idx for idx, label in enumerate(self.class_names)}
+
     def _fit_normalizer(self, train_files):
         train_features = []
         for file_path in train_files:
@@ -179,6 +223,35 @@ class CSVMultiFileClassificationLoader(Dataset):
             f"Unsupported window_label_mode={self.window_label_mode}. Use 'last' or 'majority'."
         )
 
+    def _compute_aux_targets(self, current_raw_label, label_values, end_idx):
+        current_label_idx = self.label_to_index[current_raw_label]
+        next_raw_label = label_values[end_idx] if end_idx < len(label_values) else current_raw_label
+        next_label_idx = self.label_to_index.get(next_raw_label, current_label_idx)
+
+        future_end = min(len(label_values), end_idx + self.warning_horizon)
+        future_labels = label_values[end_idx:future_end]
+        current_rank = self.severity_map.get(current_raw_label, 0)
+        worsening_flag = 0
+        for future_raw in future_labels:
+            if self.severity_map.get(future_raw, current_rank) > current_rank:
+                worsening_flag = 1
+                break
+
+        time_bucket = len(self.time_bucket_steps)
+        if current_raw_label != self.fault_raw_label:
+            for step_offset, future_raw in enumerate(future_labels, start=1):
+                if future_raw == self.fault_raw_label:
+                    bucket_idx = 0
+                    while bucket_idx < len(self.time_bucket_steps) and step_offset > self.time_bucket_steps[bucket_idx]:
+                        bucket_idx += 1
+                    time_bucket = bucket_idx
+                    break
+
+        return np.asarray(
+            [current_label_idx, worsening_flag, time_bucket, next_label_idx],
+            dtype=np.int64,
+        )
+
     def _build_samples(self, files):
         samples = []
         label_dist = Counter()
@@ -194,13 +267,45 @@ class CSVMultiFileClassificationLoader(Dataset):
 
             for start_idx in range(0, len(feature_values) - self.seq_len + 1, self.window_step):
                 end_idx = start_idx + self.seq_len
-                raw_label = self._window_label(label_values[start_idx:end_idx])
-                label_idx = self.label_to_index[raw_label]
+                future_start_idx = start_idx + self.label_shift
+                future_end_idx = end_idx + self.label_shift
+
+                if self.enable_future_state_targets and future_end_idx > len(feature_values):
+                    continue
+
+                current_raw_label = self._window_label(label_values[start_idx:end_idx])
+                current_label_idx = self.label_to_index[current_raw_label]
+
+                if self.enable_future_state_targets:
+                    future_raw_label = self._window_label(label_values[future_start_idx:future_end_idx])
+                    future_label_idx = self.label_to_index[future_raw_label]
+                    boundary_flag = int(current_raw_label != future_raw_label)
+                    label_payload = np.asarray(
+                        [future_label_idx, current_label_idx, boundary_flag],
+                        dtype=np.int64,
+                    )
+                    raw_label = future_raw_label
+                    label_idx = future_label_idx
+                    future_x = np.ascontiguousarray(feature_values[future_start_idx:future_end_idx])
+                elif self.enable_progression_targets:
+                    label_payload = self._compute_aux_targets(current_raw_label, label_values, end_idx)
+                    raw_label = current_raw_label
+                    label_idx = current_label_idx
+                    future_x = None
+                else:
+                    raw_label = current_raw_label
+                    label_idx = current_label_idx
+                    label_payload = np.asarray([label_idx], dtype=np.int64)
+                    future_x = None
                 samples.append(
                     {
                         "x": np.ascontiguousarray(feature_values[start_idx:end_idx]),
-                        "label": label_idx,
+                        "label": np.ascontiguousarray(label_payload),
+                        "label_idx": label_idx,
                         "raw_label": raw_label,
+                        "current_raw_label": current_raw_label,
+                        "future_raw_label": raw_label if self.enable_future_state_targets else current_raw_label,
+                        "future_x": future_x,
                         "file_name": os.path.basename(file_path),
                         "start_idx": start_idx,
                         "end_idx": end_idx - 1,
@@ -243,7 +348,7 @@ class CSVMultiFileClassificationLoader(Dataset):
 
         sample_weights = []
         for sample in samples:
-            label_idx = int(sample["label"])
+            label_idx = int(sample["label_idx"])
             base_weight = float(self.class_weights[label_idx])
             weight = max(base_weight, np.finfo(np.float32).eps) ** self.sampler_power
             if self.minority_raw_label is not None and sample["raw_label"] == self.minority_raw_label:
@@ -256,10 +361,58 @@ class CSVMultiFileClassificationLoader(Dataset):
 
     def __getitem__(self, index):
         sample = self.samples[index]
+        if self.enable_future_state_targets:
+            return (
+                torch.from_numpy(sample["x"]),
+                torch.from_numpy(sample["label"]).long(),
+                torch.from_numpy(sample["future_x"]),
+            )
         return (
             torch.from_numpy(sample["x"]),
-            torch.tensor([sample["label"]], dtype=torch.long),
+            torch.from_numpy(sample["label"]).long(),
         )
 
     def __len__(self):
         return len(self.samples)
+
+
+def _padding_mask(lengths, max_len):
+    return (
+        torch.arange(0, max_len, device=lengths.device)
+        .type_as(lengths)
+        .repeat(lengths.numel(), 1)
+        .lt(lengths.unsqueeze(1))
+    )
+
+
+def csv_cls_collate_fn(data, max_len=None):
+    batch_size = len(data)
+    has_future_x = len(data[0]) == 3
+
+    if has_future_x:
+        features, labels, future_features = zip(*data)
+    else:
+        features, labels = zip(*data)
+        future_features = None
+
+    lengths = [x.shape[0] for x in features]
+    if max_len is None:
+        max_len = max(lengths)
+
+    batch_x = torch.zeros(batch_size, max_len, features[0].shape[-1], dtype=features[0].dtype)
+    for idx, feature in enumerate(features):
+        end = min(feature.shape[0], max_len)
+        batch_x[idx, :end, :] = feature[:end, :]
+
+    targets = torch.stack(labels, dim=0)
+    padding_masks = _padding_mask(torch.tensor(lengths, dtype=torch.int16), max_len=max_len)
+
+    if not has_future_x:
+        return batch_x, targets, padding_masks
+
+    future_x = torch.zeros(batch_size, max_len, future_features[0].shape[-1], dtype=future_features[0].dtype)
+    for idx, feature in enumerate(future_features):
+        end = min(feature.shape[0], max_len)
+        future_x[idx, :end, :] = feature[:end, :]
+
+    return batch_x, targets, padding_masks, future_x

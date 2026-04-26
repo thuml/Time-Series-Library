@@ -49,12 +49,27 @@ if __name__ == '__main__':
                         help='random seed for file-level split in CSV classification')
     parser.add_argument('--window_label_mode', type=str, default='last',
                         help='CSV classification window label mode, options:[last, majority]')
+    parser.add_argument('--enable_future_state_targets', action='store_true', default=False,
+                        help='enable future-state targets for lead-time classification models')
+    parser.add_argument('--label_shift', type=int, default=0,
+                        help='future-state lead time in steps for classification targets')
+    parser.add_argument('--enable_progression_targets', action='store_true', default=False,
+                        help='enable auxiliary progression labels for structured classification tasks')
+    parser.add_argument('--state_graph_profile', type=str, default='none',
+                        help='state graph profile, options:[none, hoister_overspeed]')
+    parser.add_argument('--warning_horizon', type=int, default=5,
+                        help='future horizon in steps for worsening / fault warning targets')
+    parser.add_argument('--time_bucket_steps', type=str, default='1,3,5,10',
+                        help='comma-separated step boundaries for time-to-fault buckets')
+    parser.add_argument('--fault_raw_label', type=str, default='3',
+                        help='raw label value representing the terminal fault state')
     parser.add_argument('--features', type=str, default='M',
                         help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
     parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
     parser.add_argument('--freq', type=str, default='h',
                         help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
     parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
+    parser.add_argument('--results_root', type=str, default='./results/', help='location of test result summaries')
 
     # forecasting task
     parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
@@ -128,6 +143,107 @@ if __name__ == '__main__':
                         help='classification loss type, options:[ce, focal]')
     parser.add_argument('--focal_gamma', type=float, default=2.0,
                         help='focal loss gamma when --cls_loss focal')
+    parser.add_argument('--classification_early_stop_metric', type=str, default='accuracy',
+                        help='validation metric used for classification checkpoint selection: accuracy, macro_f1, balanced_accuracy, fault_macro_f1')
+    parser.add_argument('--aux_hazard_weight', type=float, default=0.5,
+                        help='loss weight for short-horizon hazard prediction')
+    parser.add_argument('--aux_time_weight', type=float, default=0.3,
+                        help='loss weight for time-to-fault bucket prediction')
+    parser.add_argument('--aux_next_state_weight', type=float, default=0.3,
+                        help='loss weight for next-state progression supervision')
+    parser.add_argument('--aux_invalid_transition_weight', type=float, default=0.05,
+                        help='loss weight for penalizing invalid state transitions')
+    parser.add_argument('--sgto_current_weight', type=float, default=0.3,
+                        help='auxiliary current-state classification weight for SGTONet')
+    parser.add_argument('--sgto_boundary_weight', type=float, default=0.2,
+                        help='boundary gate supervision weight for SGTONet')
+    parser.add_argument('--sgto_graph_weight', type=float, default=0.02,
+                        help='graph invalid-transition penalty weight for SGTONet')
+    parser.add_argument('--sgto_align_weight', type=float, default=0.1,
+                        help='future representation alignment weight for SGTONet')
+    parser.add_argument('--sgto_boundary_soft_weight', type=float, default=0.4,
+                        help='soft future-target loss weight on boundary windows for SGTONet')
+    parser.add_argument('--sgto_boundary_beta', type=float, default=0.5,
+                        help='mixture ratio for current vs future class on SGTO boundary windows')
+    parser.add_argument('--sgto_proto_weight', type=float, default=0.15,
+                        help='prototype classification loss weight for SGTO rare-class variants')
+    parser.add_argument('--sgto_proto_sep_weight', type=float, default=0.05,
+                        help='prototype separation margin loss weight for SGTO rare-class variants')
+    parser.add_argument('--sgto_rare_gate_weight', type=float, default=0.1,
+                        help='rare-class gate supervision weight for SGTO rare-class variants')
+    parser.add_argument('--sgto_rare_pull_weight', type=float, default=0.15,
+                        help='rare-class prototype pull loss weight for SGTO rare-class variants')
+    parser.add_argument('--sgto_rare_pos_weight', type=float, default=4.0,
+                        help='positive-class weight for rare-class gate supervision')
+    parser.add_argument('--sgto_proto_margin', type=float, default=0.5,
+                        help='margin used by prototype separation loss')
+    parser.add_argument('--sgto_proto_logit_scale', type=float, default=8.0,
+                        help='logit scale for cosine prototype classifier in SGTO rare-class variants')
+    parser.add_argument('--sgto_proto_mix_weight', type=float, default=0.35,
+                        help='mixture weight for prototype logits in SGTO rare-class variants')
+    parser.add_argument('--sgto_rare_boost_scale', type=float, default=1.25,
+                        help='logit boost strength applied to the configured rare class in SGTO rare-class variants')
+    parser.add_argument('--sgto_rare_margin', type=float, default=0.6,
+                        help='margin used by rare-class prototype margin loss')
+    parser.add_argument('--sgto_rare_margin_weight', type=float, default=0.1,
+                        help='rare-class prototype margin loss weight')
+    parser.add_argument('--sgto_rare_align_weight', type=float, default=0.15,
+                        help='rare-class future alignment loss weight')
+    parser.add_argument('--sgto_rare_rank_weight', type=float, default=0.0,
+                        help='ranking loss weight for separating exact rare positives from hard rare-neighborhood negatives')
+    parser.add_argument('--sgto_rare_rank_margin', type=float, default=1.0,
+                        help='logit margin used by the SGTO rare ranking loss')
+    parser.add_argument('--sgto_rare_hard_negative_labels', type=str, default='5,7',
+                        help='comma-separated current raw labels treated as hard negatives for rare ranking')
+    parser.add_argument('--sgto_patch_stride', type=int, default=0,
+                        help='patch stride for SGTO patch-token encoders; defaults to patch_len // 2 when <= 0')
+    parser.add_argument('--sgto_dual_rare_fuse_weight', type=float, default=0.0,
+                        help='optional rare-trigger logit fusion weight for dual-mode SGTO variants')
+    parser.add_argument('--sgto_dual_rare_suppress_weight', type=float, default=0.0,
+                        help='optional non-rare suppression weight for dual-mode SGTO variants')
+    parser.add_argument('--sgto_dual_rare_context', type=str, default='attention',
+                        help='rare-trigger context for dual-mode SGTO variants: attention, mean, hidden')
+    parser.add_argument('--sgto_rare_fuse_weight', type=float, default=2.0,
+                        help='binary rare-head fusion strength into the final class logits')
+    parser.add_argument('--sgto_nonrare_suppress_weight', type=float, default=0.35,
+                        help='suppression applied to non-rare logits when rare probability is high')
+    parser.add_argument('--sgto_rare_broad_gate', action='store_true', default=False,
+                        help='train rare binary branch on a broader rare-neighborhood target instead of exact rare class only')
+    parser.add_argument('--sgto_rare_precursor_labels', type=str, default='5,7',
+                        help='comma-separated raw labels treated as rare precursors on boundary windows')
+    parser.add_argument('--sgto_rare_override', action='store_true', default=False,
+                        help='override final predictions with the rare binary branch during evaluation')
+    parser.add_argument('--sgto_rare_override_threshold', type=float, default=0.8,
+                        help='rare branch probability threshold used by evaluation-time override')
+    parser.add_argument('--sgto_rare_override_require_boundary', action='store_true', default=True,
+                        help='require boundary windows for rare override')
+    parser.add_argument('--sgto_rare_override_no_boundary', action='store_false',
+                        dest='sgto_rare_override_require_boundary',
+                        help='allow rare override on non-boundary windows')
+    parser.add_argument('--sgto_rare_override_precursor_labels', type=str, default='5,7',
+                        help='comma-separated current raw labels allowed to trigger rare override')
+    parser.add_argument('--sgto_rare_override_auto_threshold', action='store_true', default=False,
+                        help='select rare override threshold on the validation split before testing')
+    parser.add_argument('--sgto_rare_override_objective', type=str, default='rare_f1',
+                        help='validation objective for rare override threshold: rare_f1, macro_f1, balanced_accuracy, macro_plus_recall')
+    parser.add_argument('--sgto_rare_override_threshold_min', type=float, default=0.05,
+                        help='minimum threshold scanned for rare override calibration')
+    parser.add_argument('--sgto_rare_override_threshold_max', type=float, default=0.95,
+                        help='maximum threshold scanned for rare override calibration')
+    parser.add_argument('--sgto_rare_override_threshold_steps', type=int, default=19,
+                        help='number of thresholds scanned for rare override calibration')
+    parser.add_argument('--sgto_rare_override_fallback_threshold', type=float, default=1.01,
+                        help='threshold used when validation split has no rare-class samples')
+    parser.add_argument('--sgto_rare_override_min_precision', type=float, default=0.0,
+                        help='minimum validation rare precision required during threshold calibration')
+    parser.add_argument('--sgto_rare_override_min_recall', type=float, default=0.0,
+                        help='minimum validation rare recall required during threshold calibration')
+    parser.add_argument('--sgto_rare_override_recall_bonus', type=float, default=0.05,
+                        help='recall bonus used by macro_plus_recall calibration objective')
+    parser.add_argument('--sgto_rare_override_min_softmax', type=float, default=0.0,
+                        help='minimum rare softmax probability required for rare override')
+    parser.add_argument('--sgto_rare_override_margin', type=float, default=-1.0,
+                        help='allow override only when rare probability is within this margin of the best non-rare probability')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')

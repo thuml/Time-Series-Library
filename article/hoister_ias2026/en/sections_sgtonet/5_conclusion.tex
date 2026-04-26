@@ -1,0 +1,6 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper studies short-horizon hoister future-state classification under severe rare-state imbalance. We show that strong time-series classifiers can achieve high accuracy while missing the rare class-9 degradation state. SGTONetV6 addresses this failure mode by combining conservative multiclass classification with a boundary-constrained rare-fault trigger. On the private Hoister dataset, the method recovers class 9 with F1 0.5556 and improves fault macro-F1 over the tested baselines.
+
+The current evidence supports a scoped claim rather than a broad one. SGTONetV6 is useful for short-horizon rare-fault recovery at $\Delta=1$, but it should not yet be presented as a general multi-horizon predictor or a universally stronger time-series classifier. Future work should validate the method on public or multi-site industrial datasets and redesign trigger calibration for longer prediction horizons.

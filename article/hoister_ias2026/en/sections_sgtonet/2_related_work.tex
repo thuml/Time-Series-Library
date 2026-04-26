@@ -1,0 +1,14 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Industrial time-series fault diagnosis.}
+Industrial fault diagnosis commonly treats multivariate sensor streams as time-series classification inputs and predicts either a fault type or a health state. Modern approaches include convolutional models, recurrent models, transformer-style architectures, graph-enhanced models, and hybrid feature-learning pipelines. These methods are effective when the target classes are sufficiently represented, but they often optimize aggregate classification metrics. In the hoister setting studied here, aggregate accuracy is not enough because a rare degradation state can be completely missed.
+
+\paragraph{Early and lead-time classification.}
+Early time-series classification studies when a model can emit a label before observing the entire sequence. Lead-time fault prediction similarly asks whether a future state or event can be predicted before it occurs. Our task is narrower: given a fixed current window, predict the label at a fixed future offset. This avoids the stopping-policy problem in early classification, but introduces a label-shift problem near transition boundaries.
+
+\paragraph{Class imbalance and rare-event prediction.}
+Class imbalance is a central issue in industrial fault datasets. Common remedies include class-weighted losses, focal losses, resampling, anomaly scores, and threshold calibration. However, these methods do not directly encode when a rare state is physically plausible. SGTONetV6 adds this missing constraint by allowing the rare trigger to affect predictions only near valid boundaries and precursor states.
+
+\paragraph{Boundary-aware temporal supervision.}
+Temporal labels in industrial streams are often imperfectly aligned with the sensor evidence, especially around state transitions. Boundary-aware losses and transition-sensitive supervision can reduce this mismatch. Our method follows this direction, but focuses on inference-time rare-state recovery: the model keeps a conservative future-state classifier and adds a constrained trigger for the rare degradation state.
