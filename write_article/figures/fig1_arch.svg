@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="Arial, Helvetica, sans-serif">
+  <rect width="960" height="560" fill="#FFFFFF"/>
+  <defs>
+    <marker id="arrow-default" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#555555"/>
+    </marker>
+    <marker id="arrow-c0" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#DBEAFE"/>
+    </marker>
+    <marker id="arrow-c1" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#D1FAE5"/>
+    </marker>
+    <marker id="arrow-c2" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#FEF3C7"/>
+    </marker>
+    <marker id="arrow-c3" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#FCE7F3"/>
+    </marker>
+    <marker id="arrow-c4" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#EDE9FE"/>
+    </marker>
+    <marker id="arrow-c5" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 4, 0 8" fill="#F0FDF4"/>
+    </marker>
+  </defs>
+  <rect x="112.0" y="197.0" width="216.0" height="243.5" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1" rx="8"/>
+  <text x="120.0" y="213.0" font-size="11" fill="#999999" font-weight="bold">Conservative Base Classifier</text>
+  <rect x="622.0" y="194.5" width="236.0" height="296.0" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1" rx="8"/>
+  <text x="630.0" y="210.5" font-size="11" fill="#999999" font-weight="bold">Boundary-Constrained Rare Trigger</text>
+  <path d="M 480.0,77.5 L 480.0,115.0" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <path d="M 415.0,165.0 L 285.0,215.0" stroke="#3B82F6" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <rect x="316.0" y="172.0" width="68.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="350.0" y="184.0" font-size="10" fill="#777777" text-anchor="middle">H_patch, h</text>
+  <path d="M 545.0,165.0 L 668.5,212.5" stroke="#F59E0B" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <rect x="581.8" y="170.8" width="50.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="606.8" y="182.8" font-size="10" fill="#777777" text-anchor="middle">H_patch</text>
+  <path d="M 220.0,265.0 L 220.0,295.0" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <path d="M 220.0,345.0 L 220.0,377.5" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <path d="M 740.0,267.5 L 740.0,315.0" stroke="#F59E0B" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <rect x="718.0" y="273.2" width="44.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="740.0" y="285.2" font-size="10" fill="#777777" text-anchor="middle">c_rare</text>
+  <path d="M 740.0,365.0 L 740.0,407.5" stroke="#D97706" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <rect x="733.0" y="368.2" width="14.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="740.0" y="380.2" font-size="10" fill="#777777" text-anchor="middle">s</text>
+  <path d="M 273.2,422.5 L 426.8,487.5" stroke="#059669" stroke-width="2" fill="none" marker-end="url(#arrow-default)" stroke-dasharray="8,4"/>
+  <rect x="304.0" y="437.0" width="92.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="350.0" y="449.0" font-size="10" fill="#777777" text-anchor="middle">if no override</text>
+  <path d="M 685.3,454.7 L 563.6,487.5" stroke="#EC4899" stroke-width="2" fill="none" marker-end="url(#arrow-default)"/>
+  <rect x="584.4" y="453.1" width="80.0" height="16" fill="#FFFFFF" rx="3" opacity="0.85"/>
+  <text x="624.4" y="465.1" font-size="10" fill="#777777" text-anchor="middle">ŷ=9 if fires</text>
+  <rect x="380.0" y="22.5" width="200.0" height="55.0" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" rx="8"/>
+  <text x="480.0" y="40.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Multivariate</text>
+  <text x="480.0" y="54.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Sensor Window</text>
+  <text x="480.0" y="68.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">W_t ∈ R^{96×d}</text>
+  <rect x="340.0" y="115.0" width="280.0" height="50.0" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2" rx="8"/>
+  <text x="480.0" y="137.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Patch Temporal Encoder</text>
+  <text x="480.0" y="151.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">(patch tokens H_patch, hidden h)</text>
+  <rect x="130.0" y="215.0" width="180.0" height="50.0" fill="#D1FAE5" stroke="#10B981" stroke-width="2" rx="8"/>
+  <text x="220.0" y="237.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Graph-Aware</text>
+  <text x="220.0" y="251.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Transition Refinement</text>
+  <rect x="130.0" y="295.0" width="180.0" height="50.0" fill="#D1FAE5" stroke="#10B981" stroke-width="2" rx="8"/>
+  <text x="220.0" y="317.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Destination Experts</text>
+  <text x="220.0" y="331.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">+ Prototype Logits</text>
+  <rect x="145.0" y="377.5" width="150.0" height="45.0" fill="#BBF7D0" stroke="#059669" stroke-width="2" rx="8"/>
+  <text x="220.0" y="397.1" font-size="13" fill="#333333" text-anchor="middle" font-weight="bold">Base Prediction</text>
+  <text x="220.0" y="412.1" font-size="13" fill="#333333" text-anchor="middle" font-weight="bold">ŷ_base</text>
+  <rect x="650.0" y="212.5" width="180.0" height="55.0" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2" rx="8"/>
+  <text x="740.0" y="230.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Patch-Attentive</text>
+  <text x="740.0" y="244.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Rare Context</text>
+  <text x="740.0" y="258.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">(c_rare)</text>
+  <rect x="650.0" y="315.0" width="180.0" height="50.0" fill="#FDE68A" stroke="#D97706" stroke-width="2" rx="8"/>
+  <text x="740.0" y="337.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">Rare Trigger Head</text>
+  <text x="740.0" y="351.2" font-size="12" fill="#333333" text-anchor="middle" font-weight="bold">(rare score s)</text>
+  <polygon points="740.0,407.5 840.0,440.0 740.0,472.5 640.0,440.0" fill="#FCE7F3" stroke="#EC4899" stroke-width="2"/>
+  <text x="740.0" y="424.4" font-size="11" fill="#333333" text-anchor="middle" font-weight="bold">Boundary-Constrained</text>
+  <text x="740.0" y="437.4" font-size="11" fill="#333333" text-anchor="middle" font-weight="bold">Override</text>
+  <text x="740.0" y="450.4" font-size="11" fill="#333333" text-anchor="middle" font-weight="bold">s ≥ τ AND boundary</text>
+  <text x="740.0" y="463.4" font-size="11" fill="#333333" text-anchor="middle" font-weight="bold">AND current ∈ {5,7}</text>
+  <rect x="390.0" y="487.5" width="180.0" height="45.0" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2" rx="8"/>
+  <text x="480.0" y="514.5" font-size="13" fill="#333333" text-anchor="middle" font-weight="bold">Final Prediction ŷ</text>
+  <text x="480.0" y="108.0" font-size="11" fill="#64748B" text-anchor="middle">Shared Encoder</text>
+</svg>

@@ -1,0 +1,8 @@
+Short-horizon future-state prediction for industrial hoisting systems must detect rare degradation states before they escalate to fault.
+We study this problem on a private Hoister dataset of 37,417 timestamps with five operating states, where the second-level degradation state (class~9) accounts for fewer than 0.5\% of samples.
+Standard time-series classifiers optimize aggregate accuracy and exhibit a \emph{rare-boundary collapse} failure mode: on the $\Delta{=}1$ prediction task, iTransformer achieves 81.8\% accuracy but class-9 F1 of 0.000, and all five tested baselines share this failure.
+Missing this state is operationally worse than lower overall accuracy, because class~9 immediately precedes fault occurrence.
+We propose \textbf{SGTONetV6}, a dual-mode model that separates conservative multiclass future-state prediction from a boundary-constrained rare-fault trigger.
+The trigger fires only when a patch-attentive rare score exceeds a validation-calibrated threshold \emph{and} the sample satisfies physical boundary and precursor-state constraints.
+On the private Hoister case study with three file-level splits, SGTONetV6 achieves class-9 F1 of 0.556 and fault macro-F1 of 0.541, while maintaining competitive overall macro-F1 of 0.623 (vs.\ best baseline 0.619).
+Ablation over six variants confirms that both the rare override and the boundary constraint are necessary: removing the override reduces class-9 F1 to 0.000, and removing the boundary constraint reduces it to 0.016.

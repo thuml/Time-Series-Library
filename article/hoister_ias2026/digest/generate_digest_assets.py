@@ -73,7 +73,7 @@ def method_overview():
     ax.text(
         0.50,
         0.04,
-        r"Override fires only if rare score $\geq \tau$, boundary flag = 1, and current label $\in \{5,7\}$.",
+        r"SGTONet override fires only if rare score $\geq \tau$, boundary flag = 1, and current label $\in \{5,7\}$.",
         ha="center",
         va="bottom",
         fontsize=9,

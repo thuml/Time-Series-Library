@@ -1,0 +1,25 @@
+% math_commands.tex — Shared notation for SGTONetV6 paper
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\softmax}{softmax}
+
+% Vectors and matrices
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vy}{\mathbf{y}}
+\newcommand{\mW}{\mathbf{W}}
+\newcommand{\mH}{\mathbf{H}}
+
+% Paper-specific notation
+\newcommand{\Win}{\mathbf{W}_t}          % input window
+\newcommand{\Hpatch}{\mathbf{H}_{\mathrm{patch}}}  % patch token matrix
+\newcommand{\hwin}{\mathbf{h}}           % window-level hidden
+\newcommand{\crare}{\mathbf{c}_{\mathrm{rare}}}    % rare context vector
+\newcommand{\ybase}{\hat{y}_{\mathrm{base}}}       % base prediction
+\newcommand{\yfinal}{\hat{y}}            % final prediction
+\newcommand{\srate}{s}                   % rare score
+\newcommand{\thresh}{\tau}              % calibrated threshold
+\newcommand{\Lset}{\mathcal{L}}         % label set
+\newcommand{\Cset}{\mathcal{C}}         % class set
+\newcommand{\norm}[1]{\left\|#1\right\|}

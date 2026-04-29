@@ -1,0 +1,159 @@
+# Paper Plan
+
+**Title**: Boundary-Constrained Rare-Fault Triggering for Short-Horizon Hoister Fault-State Prediction
+**One-sentence contribution**: SGTONetV6 recovers the rare second-level degradation state in short-horizon hoister future-state prediction by decoupling a conservative multiclass classifier from a boundary-constrained rare-fault trigger, achieving class-9 F1 of 0.5556 where all tested baselines score 0.0000.
+**Venue**: IEEE_CONF (IEEE IAS / Industrial Electronics conference)
+**Type**: empirical / method
+**Date**: 2026-04-26
+**Page budget**: 6 pages total including references (IEEE conference two-column format)
+**Section count**: 5
+
+---
+
+## Claims-Evidence Matrix
+
+| # | Claim | Evidence | Status | Section |
+|---|-------|----------|--------|---------|
+| C1 | Fixed-horizon Hoister future-state prediction has a rare-boundary collapse failure mode: strong baselines achieve high accuracy while missing class 9 entirely. | iTransformer accuracy 0.8175 but class-9 F1 0.0000; DLinear, TimesNet, PatchTST, SGTONetV4Conservative all class-9 F1 0.0000. | Supported | §1, §4 |
+| C2 | SGTONetV6 recovers the rare second-level degradation state while improving macro-level fault metrics under label_shift=1. | SGTONetV6DualOverride: macro-F1 0.6233, balanced accuracy 0.6731, fault macro-F1 0.5411, class-9 F1 0.5556. | Supported | §4 |
+| C3 | The improvement comes from boundary-constrained rare triggering, not from a stronger backbone alone. | No rare override → class-9 F1 0.0000; no boundary constraint → 0.0158; mean rare context → 0.2317; full model → 0.5556. | Supported | §3, §4 |
+| C4 | The current result supports a short-horizon claim only; the method does not transfer cleanly to label_shift=3. | At label_shift=3, PatchTST macro-F1 0.5877 / class-9 F1 0.1919 vs. SGTONetV6 macro-F1 0.5006 / class-9 F1 0.1070. | Supported | §4, §5 |
+
+---
+
+## Structure
+
+### §0 Abstract
+- **What we achieve**: SGTONetV6 recovers the rare second-level degradation state (class 9) in short-horizon hoister future-state prediction, achieving class-9 F1 0.5556 while all tested baselines score 0.0000.
+- **Why it matters / is hard**: Class 9 accounts for <0.5% of timestamps yet is safety-critical; standard classifiers maximize accuracy by ignoring it entirely.
+- **How we do it**: Decouple a conservative multiclass future-state classifier from a boundary-constrained rare-fault trigger that fires only when a calibrated rare score exceeds a threshold AND the sample satisfies boundary and precursor-state constraints.
+- **Evidence**: 5-model comparison on a private 37,417-timestamp Hoister dataset; ablation over 6 variants; threshold sensitivity analysis.
+- **Most remarkable result**: Class-9 F1 0.5556 vs. 0.0000 for all baselines; fault macro-F1 0.5411 vs. best baseline 0.4615.
+- **Estimated length**: 150-200 words
+
+### §1 Introduction (~1 page, two-column)
+- **Opening hook**: Industrial hoisting systems require short-horizon state prediction to detect rare degradation before it escalates to fault.
+- **Gap / challenge**: Standard time-series classifiers optimize aggregate accuracy and collapse on rare transition states. On the private Hoister dataset, iTransformer achieves 81.8% accuracy but class-9 F1 0.0000.
+- **One-sentence contribution**: SGTONetV6 recovers the rare second-level degradation state by separating conservative future-state classification from a boundary-constrained rare-fault trigger.
+- **Approach overview**: Dual-mode inference: base classifier for common states; rare trigger fires only when rare score ≥ τ AND boundary flag AND current label ∈ {5, 7}.
+- **Contributions**:
+  1. We identify the rare-boundary collapse failure mode in short-horizon hoister future-state prediction.
+  2. We propose SGTONetV6, a dual-mode model with patch-attentive rare context and boundary-constrained inference override.
+  3. SGTONetV6 achieves class-9 F1 0.5556 and fault macro-F1 0.5411 on the private Hoister dataset; all five baselines score class-9 F1 0.0000.
+  4. Ablation confirms that both the rare override and the boundary constraint are necessary for rare recovery.
+- **Results preview**: Class-9 F1 0.5556 vs. 0.0000 for all baselines; macro-F1 0.6233 vs. best baseline 0.6185.
+- **Hero figure**: Fig. 1 — SGTONetV6 architecture overview showing the patch temporal encoder, conservative future-state classifier path, patch-attentive rare context module, rare trigger head, and boundary-constrained inference override rule. Should visually separate the two paths (base vs. rare) and annotate the override condition.
+- **Estimated length**: ~1 page
+- **Key citations**: [VERIFY] iTransformer, PatchTST, DLinear, TimesNet, focal loss / class imbalance
+
+### §2 Related Work (~0.75 page)
+- **Subtopics**:
+  1. Industrial time-series fault diagnosis and predictive maintenance
+  2. Early and future-state time-series classification
+  3. Class imbalance and rare-event detection (focal loss, resampling, threshold calibration)
+  4. Time-series backbones (DLinear, TimesNet, iTransformer, PatchTST)
+- **Positioning**: SGTONetV6 differs from (1) by targeting future-state prediction rather than retrospective diagnosis; from (2) by using a fixed horizon rather than adaptive early stopping; from (3) by encoding physical boundary plausibility rather than applying generic reweighting; from (4) by adding a constrained rare-trigger layer on top of a patch-based backbone.
+- **Organization**: by methodological family, not paper-by-paper
+- **Minimum length**: 3-4 substantive paragraphs
+- **Citation note**: Do not fabricate references. All citations must be verified before final LaTeX.
+
+### §3 Method (~1.5 pages)
+- **Notation**: W_t = input window of length L=96; y_{t+Δ} = future state label; Δ=1 (main); label set {1,5,7,9,3}; class 9 = rare target.
+- **Problem formulation**: Given W_t ∈ R^{L×d}, predict y_{t+1} ∈ {1,5,7,9,3}. The rare-boundary collapse problem: P(y=9) < 0.005 in training data.
+- **Components**:
+  1. Patch temporal encoder: tokenize W_t into patches, produce patch tokens H_patch and window hidden h.
+  2. Conservative future-state classifier: graph-aware transition refinement → destination experts → prototype logits → future-state head → base prediction ŷ_base.
+  3. Patch-attentive rare context: rare query attends over H_patch via key/value projections → localized rare evidence vector c_rare.
+  4. Rare trigger head: combines h, h_future, c_rare, current probs, transition prior, rare prototype similarity, boundary logit → scalar rare score s.
+  5. Boundary-constrained inference override: if s ≥ τ AND boundary_flag AND current_label ∈ {5,7}: ŷ = 9; else ŷ = ŷ_base.
+  6. Threshold calibration: τ set on validation set; fallback prior τ_0 used when validation rare samples < threshold.
+- **Key design rationale**: The override is intentionally narrow — it fires only when physical plausibility conditions are met, preventing uncontrolled rare false alarms.
+- **Estimated length**: ~1.5 pages
+
+### §4 Experiments (~2 pages)
+- **Dataset**: Private Hoister dataset, 27 CSV files, 37,417 timestamps, 20 columns. Target: running_state_five_class. Drop JianSuDuan_ChaoSu (direct fault indicator). Class distribution: 1→10,959; 5→15,695; 7→5,364; 9→185; 3→5,214.
+- **Protocol**: File-level splits, seeds {14,22,30}, seq_len=96, window_step=8, label_shift=1, batch=16, class weights, macro-F1 early stopping.
+- **Baselines**: DLinear, TimesNet, iTransformer, PatchTST, SGTONetV4Conservative.
+- **Metrics**: accuracy, macro-F1, balanced accuracy, fault macro-F1, class-9 P/R/F1.
+- **Figures planned**:
+  - Fig 1: Architecture diagram (Phase 2b, figurespec or manual)
+  - Fig 2: Bar chart — main Δ=1 metric comparison (fig1_main_d1_metrics.pdf) — shows all 5 metrics across 6 models
+  - Fig 3: Bar chart — class-9 P/R/F1 (fig2_class9_prf1.pdf) — highlights rare-state collapse vs. recovery
+  - Fig 4: Bar chart — ablation study (fig3_ablation.pdf) — 6 variants, macro-F1 and class-9 F1
+  - Fig 5: Confusion matrices — SGTONetV6 vs. iTransformer (fig5_confusion_v6_vs_itransformer.pdf)
+  - Fig 6: Line plot — threshold sensitivity (fig6_threshold_sensitivity.pdf) — in appendix or discussion
+  - Appendix Fig: Horizon transfer (fig4_horizon_transfer.pdf)
+  - Table 1: Main comparison (full_d1_main_comparison.csv)
+  - Table 2: Ablation (final_main_and_ablations.csv)
+- **Subsections**:
+  - 4.1 Experimental Setup
+  - 4.2 Main Results (Table 1, Fig 2, Fig 3)
+  - 4.3 Ablation Study (Table 2, Fig 4)
+  - 4.4 Confusion Matrix Analysis (Fig 5)
+  - 4.5 Threshold Calibration (Fig 6)
+  - 4.6 Horizon Transfer Limitation (Appendix Fig or inline)
+
+### §5 Conclusion (~0.5 page)
+- **Restatement**: SGTONetV6 addresses rare-boundary collapse in short-horizon hoister future-state prediction by separating conservative classification from boundary-constrained rare triggering.
+- **Limitations**: (1) Evidence from one private dataset only; (2) lower overall accuracy than iTransformer; (3) rare-trigger calibration does not transfer cleanly to label_shift=3; (4) no public-dataset sanity check.
+- **Future work**: Multi-site or public-dataset validation; horizon-specific calibration; deployment-oriented false-alarm cost analysis.
+- **Estimated length**: ~0.5 page
+
+---
+
+## Figure Plan
+
+| ID | Type | Description | Data Source | Priority | Auto? |
+|----|------|-------------|-------------|----------|-------|
+| Fig 1 | Architecture | SGTONetV6 dual-mode overview: patch encoder → base classifier path + rare context → rare trigger → boundary override | manual / figurespec | HIGH | figurespec |
+| Fig 2 | Bar chart | Main Δ=1 metric comparison (accuracy, macro-F1, balanced acc, fault macro-F1) across 6 models | fig1_main_d1_metrics.pdf | HIGH | EXISTS |
+| Fig 3 | Bar chart | Class-9 precision/recall/F1 across models — shows collapse vs. recovery | fig2_class9_prf1.pdf | HIGH | EXISTS |
+| Fig 4 | Bar chart | Ablation: 6 variants, macro-F1 and class-9 F1 | fig3_ablation.pdf | HIGH | EXISTS |
+| Fig 5 | Confusion matrix | SGTONetV6 vs. iTransformer row-normalized confusion matrices | fig5_confusion_v6_vs_itransformer.pdf | HIGH | EXISTS |
+| Fig 6 | Line plot | Rare-trigger threshold sensitivity curve | fig6_threshold_sensitivity.pdf | MEDIUM | EXISTS |
+| App Fig | Line/grouped | Horizon-1 vs. horizon-3 transfer limitation | fig4_horizon_transfer.pdf | MEDIUM | EXISTS |
+| Table 1 | Comparison | Main model comparison (Acc, Macro-F1, Fault Macro-F1, Class-9 F1) | full_d1_main_comparison.csv | HIGH | EXISTS (table_main_d1.tex) |
+| Table 2 | Ablation | Mechanism ablations (6 variants) | final_main_and_ablations.csv | HIGH | needs LaTeX |
+
+**Hero Figure (Fig 1) detail**: Show two parallel paths from the patch temporal encoder output. Left path: graph-aware transition refinement → destination experts → prototype logits → base prediction. Right path: patch-attentive rare context → rare trigger head → boundary-constrained override. Annotate the override condition: `s ≥ τ AND boundary_flag AND current ∈ {5,7}`. Caption: "SGTONetV6 dual-mode architecture. The base classifier (left) handles common states conservatively. The rare trigger (right) overrides the base prediction to class 9 only when the rare score exceeds the calibrated threshold and boundary/precursor constraints are satisfied."
+
+---
+
+## Citation Plan
+
+- §1 Intro: iTransformer [VERIFY], PatchTST [VERIFY], DLinear [VERIFY], TimesNet [VERIFY], focal loss [VERIFY], industrial fault diagnosis survey [VERIFY]
+- §2 Related:
+  - Industrial fault diagnosis: [VERIFY] 3-4 papers on sensor-based fault diagnosis / predictive maintenance
+  - Early/future-state classification: [VERIFY] 2-3 papers on early time-series classification, lead-time prediction
+  - Class imbalance: focal loss [VERIFY], SMOTE [VERIFY], threshold calibration [VERIFY]
+  - Backbones: DLinear [VERIFY], TimesNet [VERIFY], iTransformer [VERIFY], PatchTST [VERIFY]
+- §3 Method: PatchTST [VERIFY] (patch tokenization), graph temporal networks [VERIFY]
+- §4 Experiments: same backbone citations
+
+**Citation rule**: Do NOT generate BibTeX from memory. All entries must be verified via literature search before final writing. Flag all citations with [VERIFY] until confirmed.
+
+---
+
+## Reviewer Feedback (GPT-5.4 xhigh review — 2026-04-26)
+
+**Scores**: Flow 7/10 | Claim-evidence 8/10 | Missing experiments 5/10 | Positioning 5/10 | Page budget 4/10 | Front-matter 6/10
+
+**Applied fixes**:
+1. **Page budget** (HIGH): Revised section plan — fold Related Work into Introduction, compress Conclusion to one paragraph, move threshold sensitivity and horizon transfer to appendix. New budget: Intro+RW ~1.5p, Method ~1.5p, Experiments ~2p, Conclusion ~0.25p, References ~0.75p = 6p total.
+2. **C2 overclaim** (HIGH): Rewritten as "recovers class 9 while maintaining competitive macro metrics" — not claiming broad superiority.
+3. **Calibration credibility** (HIGH): Add explicit validation-only threshold calibration paragraph in §3; state threshold frozen before test evaluation.
+4. **Imbalance baseline** (MEDIUM): Weighted CE already used; document explicitly in experimental setup.
+5. **Positioning** (MEDIUM): Add one paragraph in Related Work distinguishing from global loss reweighting, two-stage classifiers, and post-hoc threshold moving.
+6. **Hero figure** (MEDIUM): Three-panel: (a) baseline class-9 collapse bar, (b) SGTONetV6 override path diagram, (c) recovered class-9 results bar.
+7. **label_shift=3** (LOW): Keep as one compact limitation row in Conclusion, not a full subsection.
+8. **Private dataset framing** (HIGH): Add "case study" language to abstract; add sentence that missed degradation is operationally worse than lower accuracy.
+
+---
+
+## Next Steps
+- [x] PAPER_PLAN.md created
+- [x] GPT-5.4 review applied
+- [ ] /paper-figure — figures already exist; need architecture Fig 1 via figurespec
+- [ ] /paper-write — draft LaTeX section by section
+- [ ] /paper-compile — build PDF
+- [ ] /auto-paper-improvement-loop — 2 rounds of review and polish
