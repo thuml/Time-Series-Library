@@ -1,0 +1,14 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Multivariate time-series classification.}
+Recent multivariate time-series classification (MTSC) methods have achieved strong performance through transformers, temporal attention, and multi-instance learning. TimeMIL reformulates MTSC as a weakly supervised problem and uses time-aware multiple-instance pooling to localize discriminative segments~\cite{pmlr-v235-chen24af}. Mgformer improves channel interaction modeling through multi-group transformer design~\cite{zhang2024mgformer}. MTS2Graph introduces temporal evolving graphs for more interpretable classification~\cite{demertzis2024mts2graph}. These methods are relevant because they highlight the value of sparse temporal evidence, grouped channel structure, and graph-based temporal reasoning. However, they mainly target generic MTSC settings and do not explicitly model a constrained industrial state progression process.
+
+\paragraph{Hoisting-system fault diagnosis.}
+Hoisting systems have attracted increasing attention in intelligent monitoring because of their safety-critical role and the difficulty of collecting balanced fault data. Li \emph{et al.} proposed a deep graph convolutional generative adversarial framework for few-shot fault diagnosis under complex hoisting conditions~\cite{li2025hoistingdgcgan}. That line of work focuses on scarce fault samples and augmentation. In contrast, the present task is not few-shot multiclass fault diagnosis. It is a structured state recognition problem for a single overspeed fault chain, where intermediate degradation states are part of the target output and warning consistency matters as much as final fault recognition.
+
+\paragraph{Early warning and progression-aware diagnosis.}
+Industrial early warning problems differ from post-fault diagnosis because the target is future worsening rather than current label identification alone. Many predictive maintenance studies treat early warning as anomaly detection or generic time-to-event estimation, but that abstraction can hide intermediate operational semantics. In the current dataset, the degradation process is partially labeled through manually defined stages, making it possible to impose explicit state-transition constraints. Our work therefore focuses on progression-aware modeling with directed state semantics, rather than generic anomaly scoring.
+
+\paragraph{Positioning of this work.}
+Compared with prior MTSC and hoisting diagnosis studies, this paper contributes a state-structured formulation tailored to a single industrial fault lifecycle. The main difference is not a larger backbone, but the use of a state graph to connect state recognition and short-horizon warning in one compact model.

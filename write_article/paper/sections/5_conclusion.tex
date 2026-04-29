@@ -1,0 +1,16 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We identified the rare-boundary collapse failure mode in short-horizon hoister future-state prediction and proposed SGTONetV6 to address it.
+By decoupling a conservative base classifier from a boundary-constrained rare-fault trigger, SGTONetV6 achieves class-9 F1 of 0.556 and fault macro-F1 of 0.541 on the private Hoister case study, while all five tested baselines score class-9 F1 of 0.000.
+Ablation confirms that both the rare override and the boundary constraint are necessary.
+
+\textbf{Limitations.}
+Evidence is from one private dataset; no public-dataset sanity check has been performed.
+SGTONetV6 has lower overall accuracy than iTransformer (71.0\% vs.\ 81.8\%).
+The macro-F1 margin over iTransformer is small (0.623 vs.\ 0.619).
+The rare-trigger calibration does not transfer cleanly to $\Delta{=}3$: at that horizon, PatchTST outperforms SGTONetV6 on both macro-F1 and class-9 F1 (see \cref{app:horizon}).
+
+\textbf{Future work.}
+Multi-site or public-dataset validation would strengthen the generalizability claim.
+Horizon-specific calibration and deployment-oriented false-alarm cost analysis are natural next steps.

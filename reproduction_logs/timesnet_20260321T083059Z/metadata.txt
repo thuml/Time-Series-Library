@@ -1,0 +1,7 @@
+start_utc=2026-03-21T08:30:59Z
+root_dir=/root/zm/Time-Series-Library-meter-main_success
+conda_env=timesnet
+gpu=0
+hostname=ubuntu2204-cygtest-hgxtest
+
+[python]

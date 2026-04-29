@@ -1,0 +1,18 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Hoisting systems are safety-critical industrial equipment. During an overspeed fault process, operators need more than a binary indication of whether a fault has already occurred. They need to know whether the system is currently normal, entering an early degradation stage, approaching a severe degradation stage, or already in a fault state. This makes fault-state prediction a short-horizon decision problem rather than a conventional after-the-fact classification problem.
+
+The private hoister dataset used in this study contains five structured states: stop, normal operation, first-level degradation, second-level degradation, and fault occurrence. The second-level degradation state is especially rare, with only 185 timestamps out of 37,417. This imbalance creates a practical failure mode: a model can look accurate while never predicting the rare but safety-relevant class. In our experiments, iTransformer reaches the highest overall accuracy among the tested baselines, but its class-9 F1 is 0.0000. The same rare-class collapse occurs for DLinear, TimesNet, PatchTST, and a conservative SGTO baseline.
+
+This observation motivates a different design objective. Instead of building a heavier generic backbone, we target the boundary region where the future label changes before the current window fully resembles the future state. We argue that short-horizon hoister fault-state prediction needs two behaviors at the same time: conservative multiclass classification for common states, and a selective rare trigger that is only allowed to fire under plausible transition conditions.
+
+We propose SGTONetV6, a shift-aware graph and trigger oriented network for short-horizon future-state classification. The model consists of a patch temporal encoder, a conservative future-state classifier, a patch-attentive rare context module, and a rare-trigger head. At inference time, the rare trigger can override the base classifier only when the rare score exceeds a calibrated threshold and the sample satisfies boundary and precursor constraints. This explicitly separates common-state prediction from rare-state recovery.
+
+The main contributions are:
+\begin{itemize}
+\item We formulate hoister overspeed monitoring as fixed-horizon future-state classification and identify rare-boundary collapse as a key failure mode of standard classifiers.
+\item We propose SGTONetV6, which decouples conservative multiclass prediction from boundary-constrained rare-fault triggering.
+\item We provide a controlled comparison against DLinear, TimesNet, iTransformer, PatchTST, and SGTO variants over three file-level split seeds.
+\item We show through ablations that rare override, boundary constraint, fallback prior, and patch-attentive context are required for class-9 recovery.
+\end{itemize}

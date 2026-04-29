@@ -1,0 +1,31 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Industrial time-series fault diagnosis.}
+Sensor-based fault diagnosis and predictive maintenance have been studied extensively for rotating machinery, bearings, and industrial drives~\cite{lei2020machinery,zhao2019deep}.
+Most methods frame the problem as retrospective classification: given a labeled window, identify the current fault state.
+Deep learning approaches including CNNs, LSTMs, and attention-based models have achieved strong performance on benchmark datasets~\cite{zhang2019deep}.
+However, retrospective classification does not directly address the fixed-horizon future-state prediction task, where the model must predict the state $\Delta$ steps ahead from the current window.
+Our work targets this future-state formulation, which is more directly relevant to early intervention in hoisting systems.
+
+\paragraph{Early and future-state time-series classification.}
+Early classification methods~\cite{mori2017early,schafer2020teaser} aim to classify a time series as early as possible, typically by learning a stopping rule.
+Fixed-horizon future-state prediction is a related but distinct task: the horizon $\Delta$ is fixed, and the model must predict the label at a specific future time rather than deciding when to stop.
+Label-shift windowing, where each training sample carries the label of the window endpoint shifted by $\Delta$, creates rare-boundary samples near state transitions.
+These boundary samples are underrepresented in training and are precisely the safety-critical cases that standard classifiers miss.
+SGTONetV6 addresses this by explicitly modeling the boundary condition as a constraint on the rare trigger.
+
+\paragraph{Class imbalance and rare-event detection.}
+Standard remedies for class imbalance include class-weighted cross-entropy~\cite{king2001logistic}, focal loss~\cite{lin2017focal}, and oversampling methods such as SMOTE~\cite{chawla2002smote}.
+These approaches reweight the loss or augment the training distribution globally, without encoding when a rare state is physically plausible.
+Post-hoc threshold moving~\cite{menon2021longtail} adjusts the decision boundary after training but does not constrain the trigger to physically valid regions.
+Two-stage cascade classifiers~\cite{wang2016training} separate rare-class detection from common-class classification but typically do not incorporate domain-specific boundary semantics.
+SGTONetV6 differs from all of these: the rare trigger is constrained by boundary and precursor-state conditions derived from the operational state machine of the hoisting system, preventing false alarms in physically implausible regions.
+
+\paragraph{Time-series backbones.}
+Recent time-series models have achieved strong performance on forecasting and classification benchmarks.
+DLinear~\cite{zeng2023dlinear} uses a simple linear decomposition and is competitive on many tasks.
+TimesNet~\cite{wu2023timesnet} transforms 1D time series into 2D representations for multi-period analysis.
+iTransformer~\cite{liu2024itransformer} applies attention across the variate dimension rather than the time dimension.
+PatchTST~\cite{nie2023patchtst} tokenizes time series into patches and applies a Transformer encoder, achieving strong results on classification tasks.
+SGTONetV6 builds on the patch tokenization idea from PatchTST but adds graph-aware transition refinement and a boundary-constrained rare trigger, which are not present in any of these backbones.

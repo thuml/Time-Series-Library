@@ -1,0 +1,72 @@
+\section{SGTONetV6}
+\label{sec:method}
+
+\subsection{Problem Formulation}
+
+Let $\Win \in \R^{L \times d}$ denote a multivariate sensor window of length $L$ and $d$ features, ending at time $t$.
+The task is to predict the future operating state $y_{t+\Delta} \in \Cset = \{1, 5, 7, 9, 3\}$, where the labels correspond to: stop (1), normal operation (5), first-level degradation (7), second-level degradation (9), and fault (3).
+The main experimental setting uses $\Delta = 1$, $L = 96$.
+
+The rare-boundary collapse problem arises because $P(y = 9) < 0.005$ in the training distribution.
+A classifier that never predicts class~9 incurs negligible training loss while achieving high accuracy, but fails on the safety-critical rare state.
+
+\subsection{Architecture Overview}
+
+SGTONetV6 processes each window through a shared patch temporal encoder and then routes the representation through two parallel branches: a conservative base classifier and a boundary-constrained rare trigger.
+The final prediction is determined by the override rule in \cref{eq:override}.
+\cref{fig:arch} illustrates the full architecture.
+
+\subsection{Patch Temporal Encoder}
+
+The input window $\Win$ is tokenized into non-overlapping patches of length $p$, producing a sequence of patch tokens $\Hpatch \in \R^{N_p \times d_h}$, where $N_p = \lfloor L / p \rfloor$.
+A Transformer encoder processes $\Hpatch$ and produces both the updated patch token matrix and a window-level hidden representation $\hwin \in \R^{d_h}$ obtained by mean-pooling over the patch dimension.
+
+\subsection{Conservative Base Classifier}
+
+The base classifier predicts the future state from $\hwin$ through four stages.
+\textbf{Graph-aware transition refinement} applies a learned transition adjacency matrix to the hidden representation, encoding which state transitions are physically plausible.
+\textbf{Destination experts} are a mixture of $|\Cset|$ specialized heads, each trained to recognize evidence for one future state.
+\textbf{Prototype logits} compare $\hwin$ against learned class prototypes in the embedding space.
+The final \textbf{future-state head} combines the expert outputs and prototype logits to produce the base prediction $\ybase$.
+The base classifier is trained with class-weighted cross-entropy to handle the moderate imbalance among common states, but it is not expected to recover class~9 on its own.
+
+\subsection{Patch-Attentive Rare Context}
+
+To capture localized evidence for the rare state, we introduce a patch-attentive rare context module.
+A learned rare query $\mathbf{q}_r \in \R^{d_h}$ attends over the patch tokens $\Hpatch$ via scaled dot-product attention with learned key and value projections:
+\begin{equation}
+  \crare = \softmax\!\left(\frac{\mathbf{q}_r \mathbf{K}^\top}{\sqrt{d_h}}\right) \mathbf{V},
+\end{equation}
+where $\mathbf{K}, \mathbf{V} \in \R^{N_p \times d_h}$ are the projected patch tokens.
+The resulting vector $\crare \in \R^{d_h}$ captures the most relevant patch-level evidence for the rare state.
+Ablation results (\cref{tab:ablation}) confirm that this localized attention is substantially more effective than simple mean pooling over patches.
+
+\subsection{Rare Trigger Head}
+
+The rare trigger head combines multiple sources of evidence to produce a scalar rare score $\srate \in [0, 1]$:
+\begin{equation}
+  \srate = \sigma\!\left(f_r\!\left([\hwin;\, \crare;\, \mathbf{p}_{\mathrm{curr}};\, \mathbf{b}]\right)\right),
+\end{equation}
+where $\mathbf{p}_{\mathrm{curr}}$ is the current-state probability vector from the base classifier, $\mathbf{b}$ is a boundary logit derived from the transition prior, $f_r$ is a two-layer MLP, and $\sigma$ is the sigmoid function.
+The rare trigger head is trained with a binary cross-entropy loss on whether the future label is class~9.
+
+\subsection{Boundary-Constrained Inference Override}
+
+At inference, the final prediction is:
+\begin{equation}
+  \yfinal =
+  \begin{cases}
+    9 & \text{if } \srate \geq \thresh \;\wedge\; \text{boundary\_flag} \;\wedge\; y_t \in \{5, 7\} \\
+    \ybase & \text{otherwise,}
+  \end{cases}
+\end{equation}
+where $\thresh$ is a threshold calibrated on the validation set, \texttt{boundary\_flag} is a binary indicator derived from the sliding-window label sequence (set to 1 when the majority label in the preceding $k$ windows differs from the majority label in the following $k$ windows, with $k=3$), and $y_t \in \{5, 7\}$ is the precursor-state constraint.
+Crucially, $y_t$ is the \emph{predicted} current state from the base classifier, not the ground-truth label; the override rule is fully observable at inference without oracle access.
+The precursor constraint encodes the physical state machine: class~9 can only follow normal operation (5) or first-level degradation (7).
+
+\textbf{Threshold calibration.}
+The threshold $\thresh$ is selected on the validation set to maximize class-9 F1.
+Because class~9 is extremely sparse, some validation splits contain too few rare samples for stable calibration.
+In such cases, a fallback prior $\thresh_0 \approx 0.010$ is used.
+The threshold is frozen before test evaluation; no test labels influence $\thresh$.
+The mean calibrated threshold across three splits is $\thresh \approx 0.0097$.

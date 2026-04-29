@@ -1,0 +1,127 @@
+{
+  "title": "SGTONetV6 Dual-Mode Architecture",
+  "canvas": {"width": 960, "height": 560},
+  "style": {
+    "font_family": "Arial, Helvetica, sans-serif",
+    "font_size": 13,
+    "bg_color": "#FFFFFF",
+    "palette": ["#DBEAFE", "#D1FAE5", "#FEF3C7", "#FCE7F3", "#EDE9FE", "#F0FDF4"]
+  },
+  "nodes": [
+    {
+      "id": "input",
+      "label": "Multivariate\nSensor Window\nW_t ∈ R^{96×d}",
+      "x": 480, "y": 50,
+      "width": 200, "height": 55,
+      "shape": "rounded",
+      "fill": "#F1F5F9", "stroke": "#94A3B8",
+      "font_size": 12
+    },
+    {
+      "id": "patch_enc",
+      "label": "Patch Temporal Encoder\n(patch tokens H_patch, hidden h)",
+      "x": 480, "y": 140,
+      "width": 280, "height": 50,
+      "shape": "rounded",
+      "fill": "#DBEAFE", "stroke": "#3B82F6",
+      "font_size": 12
+    },
+    {
+      "id": "graph_ref",
+      "label": "Graph-Aware\nTransition Refinement",
+      "x": 220, "y": 240,
+      "width": 180, "height": 50,
+      "shape": "rounded",
+      "fill": "#D1FAE5", "stroke": "#10B981",
+      "font_size": 12
+    },
+    {
+      "id": "dest_exp",
+      "label": "Destination Experts\n+ Prototype Logits",
+      "x": 220, "y": 320,
+      "width": 180, "height": 50,
+      "shape": "rounded",
+      "fill": "#D1FAE5", "stroke": "#10B981",
+      "font_size": 12
+    },
+    {
+      "id": "base_pred",
+      "label": "Base Prediction\nŷ_base",
+      "x": 220, "y": 400,
+      "width": 150, "height": 45,
+      "shape": "rounded",
+      "fill": "#BBF7D0", "stroke": "#059669",
+      "font_size": 13
+    },
+    {
+      "id": "rare_ctx",
+      "label": "Patch-Attentive\nRare Context\n(c_rare)",
+      "x": 740, "y": 240,
+      "width": 180, "height": 55,
+      "shape": "rounded",
+      "fill": "#FEF3C7", "stroke": "#F59E0B",
+      "font_size": 12
+    },
+    {
+      "id": "rare_head",
+      "label": "Rare Trigger Head\n(rare score s)",
+      "x": 740, "y": 340,
+      "width": 180, "height": 50,
+      "shape": "rounded",
+      "fill": "#FDE68A", "stroke": "#D97706",
+      "font_size": 12
+    },
+    {
+      "id": "override",
+      "label": "Boundary-Constrained\nOverride\ns ≥ τ AND boundary\nAND current ∈ {5,7}",
+      "x": 740, "y": 440,
+      "width": 200, "height": 65,
+      "shape": "diamond",
+      "fill": "#FCE7F3", "stroke": "#EC4899",
+      "font_size": 11
+    },
+    {
+      "id": "output",
+      "label": "Final Prediction ŷ",
+      "x": 480, "y": 510,
+      "width": 180, "height": 45,
+      "shape": "rounded",
+      "fill": "#EDE9FE", "stroke": "#7C3AED",
+      "font_size": 13
+    }
+  ],
+  "edges": [
+    {"from": "input", "to": "patch_enc", "style": "solid", "color": "#475569"},
+    {"from": "patch_enc", "to": "graph_ref", "label": "H_patch, h", "style": "solid", "color": "#3B82F6"},
+    {"from": "patch_enc", "to": "rare_ctx", "label": "H_patch", "style": "solid", "color": "#F59E0B"},
+    {"from": "graph_ref", "to": "dest_exp", "style": "solid", "color": "#10B981"},
+    {"from": "dest_exp", "to": "base_pred", "style": "solid", "color": "#10B981"},
+    {"from": "rare_ctx", "to": "rare_head", "label": "c_rare", "style": "solid", "color": "#F59E0B"},
+    {"from": "rare_head", "to": "override", "label": "s", "style": "solid", "color": "#D97706"},
+    {"from": "base_pred", "to": "output", "label": "if no override", "style": "dashed", "color": "#059669"},
+    {"from": "override", "to": "output", "label": "ŷ=9 if fires", "style": "solid", "color": "#EC4899"}
+  ],
+  "groups": [
+    {
+      "id": "base_path",
+      "label": "Conservative Base Classifier",
+      "node_ids": ["graph_ref", "dest_exp", "base_pred"],
+      "fill": "#F0FDF4", "stroke": "#86EFAC",
+      "padding": 18
+    },
+    {
+      "id": "rare_path",
+      "label": "Boundary-Constrained Rare Trigger",
+      "node_ids": ["rare_ctx", "rare_head", "override"],
+      "fill": "#FFFBEB", "stroke": "#FCD34D",
+      "padding": 18
+    }
+  ],
+  "labels": [
+    {
+      "text": "Shared Encoder",
+      "x": 480, "y": 108,
+      "font_size": 11, "color": "#64748B", "anchor": "middle"
+    }
+  ]
+}

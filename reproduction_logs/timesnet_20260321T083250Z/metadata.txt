@@ -1,0 +1,36 @@
+start_utc=2026-03-21T08:32:48Z
+root_dir=/root/zm/Time-Series-Library-meter-main_success
+conda_env=timesnet
+gpu=0
+hostname=ubuntu2204-cygtest-hgxtest
+
+[python]
+Python 3.10.19
+
+[torch]
+torch_version= 2.6.0+cu124
+cuda_available= True
+device_count= 1
+device0= NVIDIA A800 80GB PCIe
+
+[nvidia-smi]
+Sat Mar 21 08:32:50 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.144.03             Driver Version: 550.144.03     CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A800 80GB PCIe          Off |   00000000:00:1A.0 Off |                    0 |
+| N/A   55C    P0             69W /  300W |       1MiB /  81920MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

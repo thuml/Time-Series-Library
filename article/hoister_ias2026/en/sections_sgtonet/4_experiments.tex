@@ -1,0 +1,90 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Dataset and protocol}
+
+The private hoister dataset contains 27 CSV files and 37,417 timestamps sampled every 4 seconds. The verified class counts are: stop class 1 with 10,959 timestamps, normal class 5 with 15,695 timestamps, first-level degradation class 7 with 5,364 timestamps, second-level degradation class 9 with 185 timestamps, and fault class 3 with 5,214 timestamps. The target column is \texttt{running\_state\_five\_class}. The binary indicator \texttt{JianSuDuan\_ChaoSu} is dropped from the input because it is a direct fault indicator and appears only in class 3.
+
+All reported main results use sequence length 96, window step 8, horizon $\Delta=1$, and split seeds $\{14,22,30\}$. The primary metrics are macro-F1, balanced accuracy, fault macro-F1, and class-9 precision/recall/F1. Accuracy is reported but is not the main objective because the dataset is highly imbalanced.
+
+\subsection{Baselines}
+
+The comparison includes DLinear, TimesNet, iTransformer, PatchTST, and SGTONetV4Conservative. These baselines represent strong time-series classification backbones and a conservative SGTO variant without the final dual rare-trigger mechanism.
+
+\subsection{Main results}
+
+\begin{table*}[t]
+\centering
+\caption{Main comparison on the $\Delta=1$ future-state classification task. Results are averaged over three split seeds.}
+\label{tab:main_results_sgto}
+\begin{tabular}{lccccc}
+\toprule
+Model & Accuracy & Macro-F1 & Balanced Acc. & Fault Macro-F1 & Class9 F1 \\
+\midrule
+SGTONetV6DualOverride & 0.7102 & 0.6233 & 0.6731 & 0.5411 & 0.5556 \\
+iTransformer & 0.8175 & 0.6185 & 0.6594 & 0.4615 & 0.0000 \\
+DLinear & 0.7895 & 0.5961 & 0.6466 & 0.4426 & 0.0000 \\
+TimesNet & 0.7958 & 0.5893 & 0.6207 & 0.4275 & 0.0000 \\
+PatchTST & 0.7559 & 0.5687 & 0.6154 & 0.4194 & 0.0000 \\
+SGTONetV4Conservative & 0.7630 & 0.5605 & 0.5961 & 0.3999 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+SGTONetV6 obtains the highest macro-F1 and fault macro-F1 among the tested models. More importantly, it is the only method that recovers the rare class-9 state. The margin over iTransformer in macro-F1 is small, but the rare-state difference is large: iTransformer reaches higher accuracy but never predicts class 9 correctly.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig1_main_d1_metrics.pdf}
+\caption{Main $\Delta=1$ comparison. SGTONetV6 is competitive in macro-F1 and is the only model that recovers class 9.}
+\label{fig:main_d1_metrics}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig2_class9_prf1.pdf}
+\caption{Class-9 precision, recall, and F1. Baselines obtain zero class-9 F1, while SGTONetV6 recovers the rare fault class.}
+\label{fig:class9_prf1}
+\end{figure}
+
+\subsection{Ablation study}
+
+\begin{table}[t]
+\centering
+\caption{Ablation study for SGTONetV6.}
+\label{tab:ablation_sgto}
+\begin{tabular}{lccc}
+\toprule
+Variant & Macro-F1 & Bal. Acc. & Class9 F1 \\
+\midrule
+Full SGTONetV6 & 0.6233 & 0.6731 & 0.5556 \\
+No precursor constraint & 0.6139 & 0.6725 & 0.5101 \\
+Mean rare context & 0.5848 & 0.6654 & 0.2317 \\
+No fallback prior & 0.5830 & 0.6397 & 0.3556 \\
+No rare override & 0.5113 & 0.5568 & 0.0000 \\
+No boundary constraint & 0.4550 & 0.5469 & 0.0158 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablation results support the proposed mechanism. Without rare override, class-9 F1 collapses to zero. Without the boundary constraint, the rare trigger becomes poorly controlled and class-9 F1 falls to 0.0158. Replacing patch-attentive rare context with mean context also substantially weakens rare-state recovery.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fig3_ablation.pdf}
+\caption{Ablation study for SGTONetV6. Rare override, boundary constraint, fallback prior, and patch-attentive context are important for rare fault recovery.}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Threshold sensitivity and limitation}
+
+A threshold sweep using the constrained inference rule shows the precision-recall tradeoff of the rare trigger. The best tested global threshold in the saved curve is approximately 0.009, with macro-F1 0.6069 and class-9 F1 0.4732. This result should be interpreted as a sensitivity analysis rather than the headline number, because the main experiment uses per-split calibration and fallback.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{fig6_threshold_sensitivity.pdf}
+\caption{Rare-trigger threshold sensitivity using the boundary and precursor constraints. A low threshold is needed for rare-fault recall, while overly aggressive triggering reduces precision.}
+\label{fig:threshold_sensitivity}
+\end{figure}
+
+The current method does not transfer directly to longer prediction horizons. At $\Delta=3$, PatchTST obtains macro-F1 0.5877 and class-9 F1 0.1919, while SGTONetV6 obtains macro-F1 0.5006 and class-9 F1 0.1070. SGTONetV6 still improves over SGTONetV4Conservative on class-9 recovery, but it does not support a general multi-horizon superiority claim.

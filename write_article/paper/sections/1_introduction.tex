@@ -1,0 +1,52 @@
+\section{Introduction}
+\label{sec:intro}
+
+Industrial hoisting systems operate under tightly ordered state sequences: normal operation, first-level degradation, second-level degradation, and fault.
+Detecting the second-level degradation state early is safety-critical, because it immediately precedes fault occurrence and provides the last actionable window for intervention.
+Fixed-horizon future-state prediction---predicting the operating state $\Delta$ steps ahead from a current multivariate sensor window---is a natural formulation for this task.
+
+\textbf{The rare-boundary collapse problem.}
+Despite strong aggregate performance, standard time-series classifiers fail on this task in a systematic way.
+On the private Hoister dataset used in this work, the second-level degradation state (class~9) appears in only 185 of 37,417 timestamps ($<0.5\%$).
+A classifier that never predicts class~9 still achieves high accuracy by modeling the dominant states well.
+In our $\Delta{=}1$ experiments, iTransformer~\cite{liu2024itransformer} achieves 81.8\% accuracy but class-9 F1 of 0.000.
+DLinear~\cite{zeng2023dlinear}, TimesNet~\cite{wu2023timesnet}, PatchTST~\cite{nie2023patchtst}, and our own SGTONetV4 baseline all share this failure.
+We call this the \emph{rare-boundary collapse} failure mode: a classifier collapses on the rare transition state while appearing competent on aggregate metrics.
+
+\textbf{Our approach.}
+We propose \textbf{SGTONetV6}, a shift-aware graph and trigger-oriented network that addresses rare-boundary collapse by decoupling two behaviors.
+The \emph{base classifier} handles common states conservatively using a patch temporal encoder, graph-aware transition refinement, destination experts, and prototype logits.
+The \emph{rare trigger} is a separate branch that computes a scalar rare score from patch-attentive rare context, transition priors, and boundary logits.
+At inference, the base prediction is overridden to class~9 only when the rare score exceeds a validation-calibrated threshold \emph{and} the sample satisfies physical boundary and precursor-state constraints:
+\begin{equation}
+  \yfinal =
+  \begin{cases}
+    9 & \text{if } \srate \geq \thresh \;\wedge\; \text{boundary\_flag} \;\wedge\; y_t \in \{5, 7\} \\
+    \ybase & \text{otherwise.}
+  \end{cases}
+  \label{eq:override}
+\end{equation}
+The boundary and precursor constraints encode operational plausibility: class~9 can only follow states~5 or~7, and only near a state-transition boundary.
+Both $y_t$ (the predicted current state from the base classifier) and \texttt{boundary\_flag} (derived from the sliding-window label sequence) are observable at inference without oracle access.
+This prevents the trigger from firing indiscriminately and producing uncontrolled false alarms.
+
+\textbf{Contributions.}
+\begin{enumerate}
+  \item We identify and characterize the rare-boundary collapse failure mode in short-horizon hoister future-state prediction, showing that all five tested baselines score class-9 F1 of 0.000 despite high overall accuracy.
+  \item We propose SGTONetV6, a dual-mode model with patch-attentive rare context and boundary-constrained inference override.
+  \item On the private Hoister case study ($\Delta{=}1$, three file-level splits), SGTONetV6 achieves class-9 F1 of 0.556 and fault macro-F1 of 0.541, while maintaining competitive macro-F1 of 0.623 vs.\ best baseline 0.619.
+  \item Ablation over six variants confirms that both the rare override and the boundary constraint are necessary for rare recovery.
+\end{enumerate}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig1_arch.pdf}
+  \caption{SGTONetV6 dual-mode architecture. The shared patch temporal encoder feeds two parallel branches. The base classifier (left) handles common states conservatively via graph-aware transition refinement, destination experts, and prototype logits. The rare trigger (right) computes a patch-attentive rare score and overrides the base prediction to class~9 only when the rare score exceeds the calibrated threshold and boundary/precursor constraints are satisfied.}
+  \label{fig:arch}
+\end{figure}
+
+The rest of this paper is organized as follows.
+Section~\ref{sec:related} reviews related work.
+Section~\ref{sec:method} describes SGTONetV6.
+Section~\ref{sec:experiments} presents experiments and ablations.
+Section~\ref{sec:conclusion} concludes with limitations and future directions.

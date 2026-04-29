@@ -1,0 +1,44 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem formulation}
+
+Let $X=\{x_t\}_{t=1}^{T}$ denote a multivariate industrial time series, where $x_t \in \mathbb{R}^{d}$ contains the sensor measurements at time step $t$. For each time index $t$, the model receives a past window
+\begin{equation}
+W_t = \{x_{t-L+1}, \ldots, x_t\}.
+\end{equation}
+The label belongs to the five-state set $\mathcal{S}=\{1,5,7,9,3\}$, corresponding to stop, normal operation, first-level degradation, second-level degradation, and fault occurrence.
+
+The main task is fixed-horizon future-state classification:
+\begin{equation}
+\hat{y}_{t+\Delta} = f(W_t).
+\end{equation}
+This paper focuses on $\Delta=1$, which is the horizon supported by the main positive evidence. Longer-horizon results are reported only as a scope limitation.
+
+\subsection{Overview}
+
+SGTONetV6 is designed around a simple principle: common-state prediction and rare-state triggering should not be forced into the same flat classifier. The model therefore has two coupled paths. The first path is a conservative multiclass classifier for the future state. The second path is a rare-trigger branch that can override the base classifier only when transition constraints are satisfied.
+
+\subsection{Patch temporal encoder}
+
+The input window is divided into temporal patches and encoded into a shared representation. This gives the model local temporal context while keeping the encoder compact. The same encoder supports both the base future-state classifier and the rare-trigger branch.
+
+\subsection{Conservative future-state classifier}
+
+The base classifier predicts the five future states with a standard multiclass head. It is optimized to remain conservative under severe imbalance. This is important because an aggressive rare predictor can create many false alarms and reduce trust in deployment.
+
+\subsection{Patch-attentive rare context}
+
+The rare branch computes a patch-attentive context representation for the rare class. This mechanism is used because rare degradation evidence may appear only in a short part of the input window. Replacing this module with mean context substantially reduces rare-state recovery, as shown in the ablation study.
+
+\subsection{Boundary-constrained rare trigger}
+
+The rare head outputs a scalar rare score $r_t$. At inference time, the base prediction can be overridden only when all rare-trigger conditions are satisfied:
+\begin{equation}
+r_t \geq \tau,\quad b_t=1,\quad y_t \in \{5,7\},
+\end{equation}
+where $\tau$ is a calibrated threshold and $b_t$ is the transition-boundary flag. If the conditions are met, the prediction is changed to class 9. Otherwise, the model keeps the conservative base prediction. This rule is intentionally restrictive: it improves rare-state recall without allowing the rare head to fire globally.
+
+\subsection{Threshold calibration and fallback prior}
+
+The rare threshold is calibrated on validation data when possible. Because class 9 is extremely sparse, some validation splits may contain too few rare samples for stable calibration. SGTONetV6 therefore uses a fallback prior threshold. The ablation study shows that removing this fallback weakens class-9 recovery.
