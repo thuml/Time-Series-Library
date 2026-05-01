@@ -159,3 +159,30 @@ def load_m4_info() -> pd.DataFrame:
     :return: Pandas DataFrame of M4Info.
     """
     # return pd.read_csv(INFO_FILE_PATH)
+
+
+def pad_sequences(sequences, target_len, mode='edge'):
+    """
+    统一序列长度（填充或截断）
+    :param sequences: 原始序列列表（长度可能不同）
+    :param target_len: 目标长度
+    :param mode: 填充模式，'edge' 用最后一个值填充，'zero' 用0填充
+    :return: 长度统一的序列数组
+    """
+    padded = []
+    for seq in sequences:
+        seq_len = len(seq)
+        if seq_len < target_len:
+            # 填充到目标长度
+            pad_length = target_len - seq_len
+            if mode == 'edge':
+                # 用最后一个值填充（更适合时间序列）
+                padded_seq = np.pad(seq, (0, pad_length), mode='edge')
+            else:
+                # 用0填充
+                padded_seq = np.pad(seq, (0, pad_length), mode='constant', constant_values=0)
+        else:
+            # 截断到目标长度
+            padded_seq = seq[:target_len]
+        padded.append(padded_seq)
+    return np.array(padded)
