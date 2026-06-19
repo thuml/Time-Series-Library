@@ -92,7 +92,14 @@ if __name__ == '__main__':
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
-    parser.add_argument('--loss', type=str, default='MSE', help='loss function')
+    parser.add_argument('--loss', type=str, default='MSE', help='loss function, options include MSE and QDF')
+    parser.add_argument('--meta_l_lr', type=float, default=1e-4, help='learning rate for QDF L updates')
+    parser.add_argument('--meta_warmup_epochs', type=int, default=5, help='model warmup epochs before QDF updates L')
+    parser.add_argument('--meta_l_delta_threshold', type=float, default=1e-4,
+                        help='stop QDF L updates when max absolute change exceeds this value')
+    parser.add_argument('--meta_l_steps', type=int, default=1, help='number of QDF L update steps after warmup')
+    parser.add_argument('--meta_l_save', action='store_true', default=True, help='save QDF L and A matrices')
+    parser.add_argument('--no_meta_l_save', action='store_false', dest='meta_l_save', help='disable QDF matrix saving')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 
@@ -230,6 +237,8 @@ if __name__ == '__main__':
                         + f'_sl{args.seq_len}_ll{args.label_len}_pl{args.pred_len}_dm{args.d_model}_ds{args.d_ff}' \
                         + f'_expand{args.expand}_dc{args.d_conv}_nk{args.num_kernels}' \
                         + f'_tvdt{int(args.tv_dt)}_tvB{int(args.tv_B)}_tvC{int(args.tv_C)}_useD{int(args.use_D)}_{args.des}_{ii}'
+            if args.task_name == 'long_term_forecast' and args.loss.upper() == 'QDF':
+                setting = setting + '_lossQDF'
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             exp.train(setting)
@@ -271,6 +280,8 @@ if __name__ == '__main__':
                     + f'_sl{args.seq_len}_ll{args.label_len}_pl{args.pred_len}_dm{args.d_model}_ds{args.d_ff}' \
                     + f'_expand{args.expand}_dc{args.d_conv}_nk{args.num_kernels}' \
                     + f'_tvdt{args.tv_dt}_tvB{args.tv_B}_tvC{args.tv_C}_useD{int(args.use_D)}_{args.des}_{ii}'
+        if args.task_name == 'long_term_forecast' and args.loss.upper() == 'QDF':
+            setting = setting + '_lossQDF'
 
         print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
         exp.test(setting, test=1)

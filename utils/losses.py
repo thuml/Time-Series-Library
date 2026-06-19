@@ -32,6 +32,42 @@ def divide_no_nan(a, b):
     return result
 
 
+class QDFLoss(nn.Module):
+    def __init__(self, pred_len):
+        super(QDFLoss, self).__init__()
+        self.pred_len = pred_len
+        self.L = nn.Parameter(t.eye(pred_len))
+
+    def quadratic_matrix(self):
+        return t.matmul(self.L, self.L.transpose(0, 1))
+
+    def freeze_l(self):
+        self.L.requires_grad_(False)
+
+    def unfreeze_l(self):
+        self.L.requires_grad_(True)
+
+    def delta_from(self, old_l):
+        old_l = old_l.to(device=self.L.device, dtype=self.L.dtype)
+        return t.max(t.abs(self.L.detach() - old_l)).item()
+
+    def forward(self, pred: t.Tensor, true: t.Tensor) -> t.float:
+        if pred.dim() != 3 or true.dim() != 3:
+            raise ValueError("QDFLoss expects pred and true with shape [B, T, C].")
+        if pred.shape != true.shape:
+            raise ValueError("QDFLoss expects pred and true to have the same shape.")
+        if pred.size(1) != self.pred_len:
+            raise ValueError(
+                f"QDFLoss was initialized with pred_len={self.pred_len}, "
+                f"but received T={pred.size(1)}."
+            )
+
+        error = true - pred
+        quadratic = self.quadratic_matrix().to(device=error.device, dtype=error.dtype)
+        loss = t.einsum('btc,tu,buc->bc', error, quadratic, error)
+        return loss.mean() / self.pred_len
+
+
 class mape_loss(nn.Module):
     def __init__(self):
         super(mape_loss, self).__init__()

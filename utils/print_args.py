@@ -45,6 +45,10 @@ def print_args(args):
     print(f'  {"Patience:":<20}{args.patience:<20}{"Learning Rate:":<20}{args.learning_rate:<20}')
     print(f'  {"Des:":<20}{args.des:<20}{"Loss:":<20}{args.loss:<20}')
     print(f'  {"Lradj:":<20}{args.lradj:<20}{"Use Amp:":<20}{args.use_amp:<20}')
+    if getattr(args, 'loss', '').upper() == 'QDF':
+        print(f'  {"Meta L LR:":<20}{args.meta_l_lr:<20}{"Meta Warmup:":<20}{args.meta_warmup_epochs:<20}')
+        print(f'  {"Meta L Delta:":<20}{args.meta_l_delta_threshold:<20}{"Meta L Steps:":<20}{args.meta_l_steps:<20}')
+        print(f'  {"Meta L Save:":<20}{args.meta_l_save:<20}')
     print()
 
     print("\033[1m" + "GPU" + "\033[0m")

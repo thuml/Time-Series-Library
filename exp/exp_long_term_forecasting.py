@@ -2,6 +2,7 @@ from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from utils.tools import EarlyStopping, adjust_learning_rate, visual
 from utils.metrics import metric
+from utils.losses import QDFLoss
 import torch
 import torch.nn as nn
 from torch import optim
@@ -35,12 +36,18 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
-        return criterion
+        loss_name = self.args.loss.upper()
+        if loss_name == 'MSE':
+            return nn.MSELoss()
+        if loss_name == 'QDF':
+            return QDFLoss(self.args.pred_len).to(self.device)
+        raise ValueError(f"Unsupported loss for long_term_forecast: {self.args.loss}")
  
 
-    def vali(self, vali_data, vali_loader, criterion):
+    def vali(self, vali_data, vali_loader, criterion, return_mse=False):
         total_loss = []
+        total_mse = []
+        mse = nn.MSELoss()
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
@@ -69,9 +76,100 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 loss = criterion(pred, true)
 
                 total_loss.append(loss.item())
+                if return_mse:
+                    total_mse.append(mse(pred, true).item())
         total_loss = np.average(total_loss)
         self.model.train()
+        if return_mse:
+            return total_loss, np.average(total_mse)
         return total_loss
+
+    def _update_qdf_l(self, vali_loader, criterion, epoch):
+        if self.args.meta_l_steps <= 0:
+            return [{'epoch': epoch, 'step': 0, 'loss': np.nan, 'delta_l': 0.0, 'stopped': False}]
+
+        old_requires_grad = [param.requires_grad for param in self.model.parameters()]
+        for param in self.model.parameters():
+            param.requires_grad_(False)
+
+        old_l = criterion.L.detach().clone()
+        criterion.unfreeze_l()
+        qdf_optim = optim.Adam([criterion.L], lr=self.args.meta_l_lr)
+        meta_logs = []
+        num_batches = max(1, len(vali_loader))
+
+        self.model.eval()
+        for step in range(self.args.meta_l_steps):
+            qdf_optim.zero_grad()
+            total_loss = []
+
+            for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(vali_loader):
+                batch_x = batch_x.float().to(self.device)
+                batch_y = batch_y.float().to(self.device)
+                batch_x_mark = batch_x_mark.float().to(self.device)
+                batch_y_mark = batch_y_mark.float().to(self.device)
+
+                dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
+                dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
+
+                with torch.no_grad():
+                    if self.args.use_amp:
+                        with torch.cuda.amp.autocast():
+                            outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+                    else:
+                        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+
+                    f_dim = -1 if self.args.features == 'MS' else 0
+                    outputs = outputs[:, -self.args.pred_len:, f_dim:].detach()
+                    batch_y = batch_y[:, -self.args.pred_len:, f_dim:].detach()
+
+                loss = criterion(outputs, batch_y)
+                (loss / num_batches).backward()
+                total_loss.append(loss.item())
+
+            qdf_optim.step()
+            delta_l = criterion.delta_from(old_l)
+            stopped = delta_l > self.args.meta_l_delta_threshold
+            avg_loss = np.average(total_loss)
+            meta_logs.append({
+                'epoch': epoch,
+                'step': step + 1,
+                'loss': avg_loss,
+                'delta_l': delta_l,
+                'stopped': stopped
+            })
+            print("QDF L update | epoch: {0}, step: {1}, loss: {2:.7f}, delta_L: {3:.7f}".format(
+                epoch, step + 1, avg_loss, delta_l))
+            if stopped:
+                print("QDF L update stopped because delta_L exceeded {}".format(
+                    self.args.meta_l_delta_threshold))
+                break
+
+        criterion.freeze_l()
+        for param, requires_grad in zip(self.model.parameters(), old_requires_grad):
+            param.requires_grad_(requires_grad)
+        self.model.train()
+        return meta_logs
+
+    def _save_qdf_artifacts(self, setting, criterion, meta_logs):
+        if not self.args.meta_l_save:
+            return
+
+        folder_path = './results/' + setting + '/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        np.save(os.path.join(folder_path, 'meta_L.npy'), criterion.L.detach().cpu().numpy())
+        np.save(os.path.join(folder_path, 'meta_A.npy'), criterion.quadratic_matrix().detach().cpu().numpy())
+
+        with open(os.path.join(folder_path, 'meta_loss_log.txt'), 'w') as f:
+            if not meta_logs:
+                f.write('QDF L was not updated. Check meta_warmup_epochs and train_epochs.\n')
+            for log in meta_logs:
+                f.write(
+                    'epoch:{epoch}, step:{step}, loss:{loss}, delta_L:{delta_l}, stopped:{stopped}\n'.format(
+                        **log)
+                )
 
     def train(self, setting):
         train_data, train_loader = self._get_data(flag='train')
@@ -89,9 +187,19 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
+        is_qdf = isinstance(criterion, QDFLoss)
+        qdf_l_updated = False
+        qdf_meta_logs = []
+
+        if is_qdf:
+            criterion.freeze_l()
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
+
+        if is_qdf and self.args.meta_warmup_epochs <= 0:
+            qdf_meta_logs.extend(self._update_qdf_l(vali_loader, criterion, 0))
+            qdf_l_updated = True
 
         for epoch in range(self.args.train_epochs):
             iter_count = 0
@@ -148,12 +256,25 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
-            vali_loss = self.vali(vali_data, vali_loader, criterion)
-            test_loss = self.vali(test_data, test_loader, criterion)
+            if is_qdf and not qdf_l_updated and epoch + 1 >= self.args.meta_warmup_epochs:
+                qdf_meta_logs.extend(self._update_qdf_l(vali_loader, criterion, epoch + 1))
+                qdf_l_updated = True
 
-            print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
-                epoch + 1, train_steps, train_loss, vali_loss, test_loss))
-            early_stopping(vali_loss, self.model, path)
+            if is_qdf:
+                vali_loss, vali_mse = self.vali(vali_data, vali_loader, criterion, return_mse=True)
+                test_loss, test_mse = self.vali(test_data, test_loader, criterion, return_mse=True)
+                print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} "
+                      "Vali MSE: {4:.7f} Test Loss: {5:.7f} Test MSE: {6:.7f}".format(
+                          epoch + 1, train_steps, train_loss, vali_loss, vali_mse, test_loss, test_mse))
+                early_metric = vali_mse
+            else:
+                vali_loss = self.vali(vali_data, vali_loader, criterion)
+                test_loss = self.vali(test_data, test_loader, criterion)
+                print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
+                    epoch + 1, train_steps, train_loss, vali_loss, test_loss))
+                early_metric = vali_loss
+
+            early_stopping(early_metric, self.model, path)
             if early_stopping.early_stop:
                 print("Early stopping")
                 break
@@ -162,6 +283,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
+
+        if is_qdf:
+            self._save_qdf_artifacts(setting, criterion, qdf_meta_logs)
 
         return self.model
 
