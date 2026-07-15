@@ -9,7 +9,7 @@ class Model(nn.Module):
     Paper link: https://arxiv.org/pdf/2205.13504.pdf
     """
 
-    def __init__(self, configs, individual=False):
+    def __init__(self, configs):
         """
         individual: Bool, whether shared model among different variates.
         """
@@ -22,7 +22,7 @@ class Model(nn.Module):
             self.pred_len = configs.pred_len
         # Series decomposition block from Autoformer
         self.decompsition = series_decomp(configs.moving_avg)
-        self.individual = individual
+        self.individual = configs.individual
         self.channels = configs.enc_in
 
         if self.individual:
