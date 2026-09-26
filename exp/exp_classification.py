@@ -15,6 +15,7 @@ warnings.filterwarnings('ignore')
 
 class Exp_Classification(Exp_Basic):
     def __init__(self, args):
+        self.normalizer = None
         super(Exp_Classification, self).__init__(args)
 
     def _build_model(self):
@@ -32,7 +33,14 @@ class Exp_Classification(Exp_Basic):
         return model
 
     def _get_data(self, flag):
-        data_set, data_loader = data_provider(self.args, flag)
+        is_train = str(flag).lower() == 'train'
+        data_set, data_loader = data_provider(
+            self.args,
+            flag,
+            normalizer=None if is_train else self.normalizer,
+        )
+        if is_train:
+            self.normalizer = data_set.normalizer
         return data_set, data_loader
 
     def _select_optimizer(self):

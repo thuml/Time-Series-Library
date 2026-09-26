@@ -724,6 +724,7 @@ class UEAloader(Dataset):
         Time Series Classification Archive (www.timeseriesclassification.com)
     Argument:
         limit_size: float in (0, 1) for debug
+        normalizer: optional Normalizer fitted on the training split
     Attributes:
         all_df: (num_samples * seq_len, num_columns) dataframe indexed by integer indices, with multiple rows corresponding to the same index (sample).
             Each row is a time step; Each column contains either metadata (e.g. timestamp) or a feature.
@@ -735,7 +736,8 @@ class UEAloader(Dataset):
             (Moreover, script argument overrides this attribute)
     """
 
-    def __init__(self, args, root_path, file_list=None, limit_size=None, flag=None):
+    def __init__(self, args, root_path, file_list=None, limit_size=None, flag=None,
+                 normalizer=None):
         self.args = args
         self.root_path = root_path
         self.flag = flag
@@ -755,8 +757,8 @@ class UEAloader(Dataset):
         self.feature_df = self.all_df
 
         # pre_process
-        normalizer = Normalizer()
-        self.feature_df = normalizer.normalize(self.feature_df)
+        self.normalizer = normalizer if normalizer is not None else Normalizer()
+        self.feature_df = self.normalizer.normalize(self.feature_df)
         print(len(self.all_IDs))
 
     def _resolve_ts_path(self, root_path, dataset_name, flag):
