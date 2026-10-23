@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-21",
+  "unit_tests": 26,
+  "status": "passed",
+  "python": "3.11.9",
+  "torch": "2.14.1",
+  "numpy": "2.4.6",
+  "pyemd": "1.10.0",
+  "checkpoint": "checkpoints/smoke_verified_ceemdan_hybrid_BatchNorm_tr2_imf2_sift20_eps0.005_cs421_k5_seed2021_CEEMDANPatchTST_ETTh1_ftS_sl96_ll48_pl24_dm8_nh2_el2_dl1_df16_fc1_ebtimeF_dtTrue_integration_0",
+  "prediction_matches_reloaded_checkpoint": true,
+  "metrics_match_saved_predictions": true,
+  "data_sha256_matches_record": true,
+  "official_model_and_layer_files_unchanged": {
+    "models/NLinear.py": true,
+    "models/DLinear.py": true,
+    "models/Linear.py": true,
+    "models/PatchTST.py": true,
+    "models/Autoformer.py": true,
+    "models/Transformer.py": true,
+    "models/Informer.py": true,
+    "models/Stat_models.py": true,
+    "layers/Embed.py": true,
+    "layers/PatchTST_backbone.py": true,
+    "layers/SelfAttention_Family.py": true,
+    "layers/Autoformer_EncDec.py": true,
+    "layers/PatchTST_layers.py": true,
+    "layers/AutoCorrelation.py": true,
+    "layers/Transformer_EncDec.py": true,
+    "layers/RevIN.py": true
+  },
+  "limited_run": true,
+  "multivariate_check": "multivariate_check.json"
+}

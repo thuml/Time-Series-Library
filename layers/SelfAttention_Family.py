@@ -1,48 +1,14 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
+import matplotlib.pyplot as plt
+
 import numpy as np
+import math
 from math import sqrt
 from utils.masking import TriangularCausalMask, ProbMask
-from reformer_pytorch import LSHSelfAttention
-from einops import rearrange, repeat
-
-
-class DSAttention(nn.Module):
-    '''De-stationary Attention'''
-
-    def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
-        super(DSAttention, self).__init__()
-        self.scale = scale
-        self.mask_flag = mask_flag
-        self.output_attention = output_attention
-        self.dropout = nn.Dropout(attention_dropout)
-
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
-        B, L, H, E = queries.shape
-        _, S, _, D = values.shape
-        scale = self.scale or 1. / sqrt(E)
-
-        tau = 1.0 if tau is None else tau.unsqueeze(
-            1).unsqueeze(1)  # B x 1 x 1 x 1
-        delta = 0.0 if delta is None else delta.unsqueeze(
-            1).unsqueeze(1)  # B x 1 x 1 x S
-
-        # De-stationary Attention, rescaling pre-softmax score with learned de-stationary factors
-        scores = torch.einsum("blhe,bshe->bhls", queries, keys) * tau + delta
-
-        if self.mask_flag:
-            if attn_mask is None:
-                attn_mask = TriangularCausalMask(B, L, device=queries.device)
-
-            scores.masked_fill_(attn_mask.mask, -np.inf)
-
-        A = self.dropout(torch.softmax(scale * scores, dim=-1))
-        V = torch.einsum("bhls,bshd->blhd", A, values)
-
-        if self.output_attention:
-            return V.contiguous(), A
-        else:
-            return V.contiguous(), None
+import os
 
 
 class FullAttention(nn.Module):
@@ -53,7 +19,7 @@ class FullAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(self, queries, keys, values, attn_mask):
         B, L, H, E = queries.shape
         _, S, _, D = values.shape
         scale = self.scale or 1. / sqrt(E)
@@ -70,9 +36,9 @@ class FullAttention(nn.Module):
         V = torch.einsum("bhls,bshd->blhd", A, values)
 
         if self.output_attention:
-            return V.contiguous(), A
+            return (V.contiguous(), A)
         else:
-            return V.contiguous(), None
+            return (V.contiguous(), None)
 
 
 class ProbAttention(nn.Module):
@@ -91,12 +57,9 @@ class ProbAttention(nn.Module):
 
         # calculate the sampled Q_K
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
-        # real U = U_part(factor*ln(L_k))*L_q
-        index_sample = torch.randint(L_K, (L_Q, sample_k))
-        K_sample = K_expand[:, :, torch.arange(
-            L_Q).unsqueeze(1), index_sample, :]
-        Q_K_sample = torch.matmul(
-            Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze()
+        index_sample = torch.randint(L_K, (L_Q, sample_k))  # real U = U_part(factor*ln(L_k))*L_q
+        K_sample = K_expand[:, :, torch.arange(L_Q).unsqueeze(1), index_sample, :]
+        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze()
 
         # find the Top_k query with sparisty measurement
         M = Q_K_sample.max(-1)[0] - torch.div(Q_K_sample.sum(-1), L_K)
@@ -115,11 +78,9 @@ class ProbAttention(nn.Module):
         if not self.mask_flag:
             # V_sum = V.sum(dim=-2)
             V_sum = V.mean(dim=-2)
-            contex = V_sum.unsqueeze(-2).expand(B, H,
-                                                L_Q, V_sum.shape[-1]).clone()
+            contex = V_sum.unsqueeze(-2).expand(B, H, L_Q, V_sum.shape[-1]).clone()
         else:  # use mask
-            # requires that L_Q == L_V, i.e. for self-attention only
-            assert (L_Q == L_V)
+            assert (L_Q == L_V)  # requires that L_Q == L_V, i.e. for self-attention only
             contex = V.cumsum(dim=-2)
         return contex
 
@@ -136,15 +97,13 @@ class ProbAttention(nn.Module):
         torch.arange(H)[None, :, None],
         index, :] = torch.matmul(attn, V).type_as(context_in)
         if self.output_attention:
-            attns = (torch.ones([B, H, L_V, L_V]) /
-                     L_V).type_as(attn).to(attn.device)
-            attns[torch.arange(B)[:, None, None], torch.arange(H)[
-                                                  None, :, None], index, :] = attn
-            return context_in, attns
+            attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
+            attns[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :] = attn
+            return (context_in, attns)
         else:
-            return context_in, None
+            return (context_in, None)
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(self, queries, keys, values, attn_mask):
         B, L_Q, H, D = queries.shape
         _, L_K, _, _ = keys.shape
 
@@ -152,16 +111,13 @@ class ProbAttention(nn.Module):
         keys = keys.transpose(2, 1)
         values = values.transpose(2, 1)
 
-        U_part = self.factor * \
-                 np.ceil(np.log(L_K)).astype('int').item()  # c*ln(L_k)
-        u = self.factor * \
-            np.ceil(np.log(L_Q)).astype('int').item()  # c*ln(L_q)
+        U_part = self.factor * np.ceil(np.log(L_K)).astype('int').item()  # c*ln(L_k)
+        u = self.factor * np.ceil(np.log(L_Q)).astype('int').item()  # c*ln(L_q)
 
         U_part = U_part if U_part < L_K else L_K
         u = u if u < L_Q else L_Q
 
-        scores_top, index = self._prob_QK(
-            queries, keys, sample_k=U_part, n_top=u)
+        scores_top, index = self._prob_QK(queries, keys, sample_k=U_part, n_top=u)
 
         # add scale factor
         scale = self.scale or 1. / sqrt(D)
@@ -170,8 +126,7 @@ class ProbAttention(nn.Module):
         # get the context
         context = self._get_initial_context(values, L_Q)
         # update the context with selected top_k queries
-        context, attn = self._update_context(
-            context, values, scores_top, index, L_Q, attn_mask)
+        context, attn = self._update_context(context, values, scores_top, index, L_Q, attn_mask)
 
         return context.contiguous(), attn
 
@@ -191,7 +146,7 @@ class AttentionLayer(nn.Module):
         self.out_projection = nn.Linear(d_values * n_heads, d_model)
         self.n_heads = n_heads
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(self, queries, keys, values, attn_mask):
         B, L, _ = queries.shape
         _, S, _ = keys.shape
         H = self.n_heads
@@ -204,99 +159,8 @@ class AttentionLayer(nn.Module):
             queries,
             keys,
             values,
-            attn_mask,
-            tau=tau,
-            delta=delta
+            attn_mask
         )
         out = out.view(B, L, -1)
 
         return self.out_projection(out), attn
-
-
-class ReformerLayer(nn.Module):
-    def __init__(self, attention, d_model, n_heads, d_keys=None,
-                 d_values=None, causal=False, bucket_size=4, n_hashes=4):
-        super().__init__()
-        self.bucket_size = bucket_size
-        self.attn = LSHSelfAttention(
-            dim=d_model,
-            heads=n_heads,
-            bucket_size=bucket_size,
-            n_hashes=n_hashes,
-            causal=causal
-        )
-
-    def fit_length(self, queries):
-        # inside reformer: assert N % (bucket_size * 2) == 0
-        B, N, C = queries.shape
-        if N % (self.bucket_size * 2) == 0:
-            return queries
-        else:
-            # fill the time series
-            fill_len = (self.bucket_size * 2) - (N % (self.bucket_size * 2))
-            return torch.cat([queries, torch.zeros([B, fill_len, C]).to(queries.device)], dim=1)
-
-    def forward(self, queries, keys, values, attn_mask, tau, delta):
-        # in Reformer: defalut queries=keys
-        B, N, C = queries.shape
-        queries = self.attn(self.fit_length(queries))[:, :N, :]
-        return queries, None
-
-
-class TwoStageAttentionLayer(nn.Module):
-    '''
-    The Two Stage Attention (TSA) Layer
-    input/output shape: [batch_size, Data_dim(D), Seg_num(L), d_model]
-    '''
-
-    def __init__(self, configs,
-                 seg_num, factor, d_model, n_heads, d_ff=None, dropout=0.1):
-        super(TwoStageAttentionLayer, self).__init__()
-        d_ff = d_ff or 4 * d_model
-        self.time_attention = AttentionLayer(FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                                           output_attention=False), d_model, n_heads)
-        self.dim_sender = AttentionLayer(FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                                       output_attention=False), d_model, n_heads)
-        self.dim_receiver = AttentionLayer(FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                                         output_attention=False), d_model, n_heads)
-        self.router = nn.Parameter(torch.randn(seg_num, factor, d_model))
-
-        self.dropout = nn.Dropout(dropout)
-
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-        self.norm3 = nn.LayerNorm(d_model)
-        self.norm4 = nn.LayerNorm(d_model)
-
-        self.MLP1 = nn.Sequential(nn.Linear(d_model, d_ff),
-                                  nn.GELU(),
-                                  nn.Linear(d_ff, d_model))
-        self.MLP2 = nn.Sequential(nn.Linear(d_model, d_ff),
-                                  nn.GELU(),
-                                  nn.Linear(d_ff, d_model))
-
-    def forward(self, x, attn_mask=None, tau=None, delta=None):
-        # Cross Time Stage: Directly apply MSA to each dimension
-        batch = x.shape[0]
-        time_in = rearrange(x, 'b ts_d seg_num d_model -> (b ts_d) seg_num d_model')
-        time_enc, attn = self.time_attention(
-            time_in, time_in, time_in, attn_mask=None, tau=None, delta=None
-        )
-        dim_in = time_in + self.dropout(time_enc)
-        dim_in = self.norm1(dim_in)
-        dim_in = dim_in + self.dropout(self.MLP1(dim_in))
-        dim_in = self.norm2(dim_in)
-
-        # Cross Dimension Stage: use a small set of learnable vectors to aggregate and distribute messages to build the D-to-D connection
-        dim_send = rearrange(dim_in, '(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model', b=batch)
-        batch_router = repeat(self.router, 'seg_num factor d_model -> (repeat seg_num) factor d_model', repeat=batch)
-        dim_buffer, attn = self.dim_sender(batch_router, dim_send, dim_send, attn_mask=None, tau=None, delta=None)
-        dim_receive, attn = self.dim_receiver(dim_send, dim_buffer, dim_buffer, attn_mask=None, tau=None, delta=None)
-        dim_enc = dim_send + self.dropout(dim_receive)
-        dim_enc = self.norm3(dim_enc)
-        dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
-        dim_enc = self.norm4(dim_enc)
-
-        final_out = rearrange(dim_enc, '(b seg_num) ts_d d_model -> b ts_d seg_num d_model', b=batch)
-
-        return final_out

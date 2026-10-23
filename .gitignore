@@ -166,3 +166,20 @@ result_anomaly_detection.txt
 scripts/augmentation/
 run_anylearn.py
 environment.txt
+# Current PatchTST experiments
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+checkpoints/
+results/
+test_results/
+result.txt
+.DS_Store
+data/traffic/traffic.csv
+
+# Local datasets and generated experiment output
+data/
+dataset/
+logs/
+*.egg-info/

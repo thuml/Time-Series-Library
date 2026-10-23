@@ -1,0 +1,61 @@
+{
+  "kind": "one_forward_backward_only_not_a_training_benchmark",
+  "configuration": {
+    "enc_in": 7,
+    "seq_len": 96,
+    "pred_len": 96,
+    "e_layers": 2,
+    "n_heads": 4,
+    "d_model": 16,
+    "d_ff": 64,
+    "dropout": 0.1,
+    "fc_dropout": 0.0,
+    "head_dropout": 0.0,
+    "individual": 0,
+    "patch_len": 16,
+    "stride": 8,
+    "padding_patch": "end",
+    "revin": 1,
+    "affine": 1,
+    "subtract_last": 0,
+    "decomposition": 0,
+    "kernel_size": 25,
+    "factor": 1,
+    "ceemdan_trials": 8,
+    "ceemdan_max_imf": 3,
+    "ceemdan_max_sift": 50
+  },
+  "device": "cpu",
+  "output_shape": [
+    4,
+    96,
+    7
+  ],
+  "finite": true,
+  "forward_seconds": 10.354155458997411,
+  "backward_seconds": 0.018954541003040504,
+  "total_parameters": 64610,
+  "decomposition_stages": [
+    {
+      "series": 448,
+      "ceemdan_calls": 448,
+      "length": 12
+    },
+    {
+      "series": 448,
+      "ceemdan_calls": 448,
+      "length": 12
+    },
+    {
+      "series": 448,
+      "ceemdan_calls": 448,
+      "length": 12
+    },
+    {
+      "series": 448,
+      "ceemdan_calls": 448,
+      "length": 12
+    }
+  ],
+  "ceemdan_calls": 1792
+}

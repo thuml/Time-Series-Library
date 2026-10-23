@@ -1,0 +1,56 @@
+{
+  "repository": "https://github.com/yuqinie98/PatchTST",
+  "commit": "204c21efe0b39603ad6e2ca640ef5896646ab1a9",
+  "subdirectory": "PatchTST_supervised",
+  "source": "Existing local official checkout; copied without changing baseline model files",
+  "additions": [
+    "layers/CEEMDAN_decomp.py",
+    "layers/CEEMDAN_PatchTST_backbone.py",
+    "models/CEEMDANPatchTST.py"
+  ],
+  "modified": [
+    "exp/exp_main.py",
+    "run_longExp.py",
+    "utils/tools.py",
+    "data_provider/data_factory.py",
+    "layers/AutoCorrelation.py"
+  ],
+  "compatibility_notes": {
+    "layers/AutoCorrelation.py": "Replace two hard-coded CUDA index allocations with input-device allocations; original attention math unchanged"
+  },
+  "timexer": {
+    "repository": "https://github.com/thuml/TimeXer",
+    "reference": "main retrieved 2026-10-22",
+    "model_source_url": "https://cdn.jsdelivr.net/gh/thuml/TimeXer@main/models/TimeXer.py",
+    "model_source_sha256": "b334d7869544d0a5de7a35501d0342d7bd0be4ebda06ccc045855a42819728c0",
+    "embedding_source_url": "https://cdn.jsdelivr.net/gh/thuml/TimeXer@main/layers/Embed.py",
+    "embedding_source_sha256": "17e7c3577324c41a0da427a199c955b782fde905aabb1f7cbc3c4e15ebd4ae35",
+    "additions": [
+      "models/TimeXer.py",
+      "layers/TimeXer_Embed.py",
+      "scripts/download_traffic.py",
+      "scripts/train_traffic_timexer.sh",
+      "scripts/smoke_traffic_timexer.sh",
+      "tests/test_timexer.py",
+      "tests/test_traffic.py"
+    ],
+    "adaptations": [
+      "Reuse existing FullAttention and AttentionLayer without unused tau/delta arguments",
+      "Isolate official inverted embedding so existing model embeddings are unchanged",
+      "Default missing task_name to long_term_forecast; validate forecasting configs and input dimensions",
+      "Replace in-place normalization division with equivalent out-of-place division to support input gradients",
+      "Support optional decoder arguments and output_attention=(prediction, None) runner contract; official attention-map collection remains disabled",
+      "Register traffic/Traffic as Dataset_Custom; preserve 70/10/20 split and train-only scaler",
+      "CLI traffic defaults for path and channels; TimeXer experiment IDs include patch length, normalization and seed",
+      "Optional MS target_indices: multiple independent endogenous streams share a common exogenous context excluding all selected targets; default last-channel MS remains unchanged; indices are nonpersistent buffers, selection is saved in experiment config"
+    ]
+  },
+  "tslib_base": {
+    "repository": "https://github.com/thuml/Time-Series-Library",
+    "fork": "https://github.com/Castle47/Time-Series-Library",
+    "branch": "main",
+    "commit": "4e938a1767106324dd753b2a44832bf870a0252e",
+    "development_branch": "castle_1023",
+    "integration": "Existing PatchTST project overlaid on TSLib main; current run_longExp.py entry point preserved. Shared modules retain project versions; full compatibility with the upstream run.py task runner is not yet established."
+  }
+}

@@ -15,7 +15,6 @@ class AutoCorrelation(nn.Module):
     (2) time delay aggregation
     This block can replace the self-attention family mechanism seamlessly.
     """
-
     def __init__(self, mask_flag=True, factor=1, scale=None, attention_dropout=0.1, output_attention=False):
         super(AutoCorrelation, self).__init__()
         self.factor = factor
@@ -58,11 +57,13 @@ class AutoCorrelation(nn.Module):
         channel = values.shape[2]
         length = values.shape[3]
         # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).to(values.device)
+        # Modified 2026-10-21: follow the input device for CPU/CUDA portability.
+        init_index = torch.arange(length, device=values.device).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1)
         # find top k
         top_k = int(self.factor * math.log(length))
         mean_value = torch.mean(torch.mean(corr, dim=1), dim=1)
-        weights, delay = torch.topk(mean_value, top_k, dim=-1)
+        weights = torch.topk(mean_value, top_k, dim=-1)[0]
+        delay = torch.topk(mean_value, top_k, dim=-1)[1]
         # update corr
         tmp_corr = torch.softmax(weights, dim=-1)
         # aggregation
@@ -84,10 +85,11 @@ class AutoCorrelation(nn.Module):
         channel = values.shape[2]
         length = values.shape[3]
         # index init
-        init_index = torch.arange(length).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1).to(values.device)
+        init_index = torch.arange(length, device=values.device).unsqueeze(0).unsqueeze(0).unsqueeze(0).repeat(batch, head, channel, 1)
         # find top k
         top_k = int(self.factor * math.log(length))
-        weights, delay = torch.topk(corr, top_k, dim=-1)
+        weights = torch.topk(corr, top_k, dim=-1)[0]
+        delay = torch.topk(corr, top_k, dim=-1)[1]
         # update corr
         tmp_corr = torch.softmax(weights, dim=-1)
         # aggregation
