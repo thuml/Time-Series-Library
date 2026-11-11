@@ -60,6 +60,7 @@ TSLib 是一个面向深度学习研究者的开源库，特别适用于深度�
 更多详情可参考我们关于 [[TimesNet]](https://arxiv.org/abs/2210.02186) 的最新论文，实时在线版本即将发布。
 
 **新增基线模型**（综合评测后将加入排行榜）。
+  - [x] **FISformer** - FISformer: Replacing Self-Attention With a Fuzzy Inference System in Transformer Models for Time Series Forecasting [[IEEE TFS 2026]](https://doi.org/10.1109/TFUZZ.2026.3690012) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/FISformer.py)
   - [x] **MambaSL** - MambaSL: Exploring Single-Layer Mamba for Time Series Classification [[ICLR 2026]](https://openreview.net/forum?id=YDl4vqQqGP) [[Code]](https://github.com/thuml/Time-Series-Library/blob/main/models/MambaSingleLayer.py)
   - [x] **TimeFilter** - TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting [[ICML 2025]](https://arxiv.org/abs/2501.13041) [[代码]](https://github.com/thuml/Time-Series-Library/blob/main/models/TimeFilter.py)
   - [x] **KAN-AD** - KAN-AD: Time Series Anomaly Detection with Kolmogorov-Arnold Networks [[ICML 2025]](https://arxiv.org/abs/2411.00278) [[代码]](https://github.com/thuml/Time-Series-Library/blob/main/models/KANAD.py)
